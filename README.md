@@ -4,12 +4,15 @@ Jonathan Dyer; Max Reno; Zach Scheider
 For everything related to our group's work in the fall 2017 section of Applied Cryptography and Network Security (a.k.a. "Security Engineering").
 
 
-#### Instructor: Prof. Adam J. Lee  
+### COURSE INFORMATION (from course webpage)
+#### Instructor: 
+  Prof. Adam J. Lee  
   Office: 6111 Sennott Square  
   Email: adamlee -at- cs.pitt.edu  
   Phone: 412-624-8416  
    
-#### Teaching Assistant: Veronica Liang
+#### Teaching Assistant: 
+  Veronica Liang
   Office: 6410 SENSQ
   Email: veronica -at- cs.pitt.edu 
     
