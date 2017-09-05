@@ -12,16 +12,16 @@ For everything related to our group's work in the fall 2017 section of Applied C
   Phone: 412-624-8416  
    
 #### Teaching Assistant: 
-  Veronica Liang
-  Office: 6410 SENSQ
+  Veronica Liang  
+  Office: 6410 SENSQ  
   Email: veronica -at- cs.pitt.edu 
     
 #### Lecture:
   TH 2:30 - 3:45 PM, 5129 SENSQ
     
 #### Office Hours:
-  Prof. Lee: M,Tu 1:00-2:30
-  Veronica: W,Th: 10:00-12:00
+  Prof. Lee: M,Tu 1:00-2:30  
+  Veronica: W,Th: 10:00-12:00  
     
 #### Course webpage:
   https://people.cs.pitt.edu/~adamlee/courses/cs1653/index.html
