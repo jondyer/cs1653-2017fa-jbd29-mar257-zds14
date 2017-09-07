@@ -33,5 +33,38 @@
   
 
 ### Threat Models
-1. Inter-planetary File System (IPFS)
-2. Local Family Media Server
+1. Local Family Media Server  
+  - No web access
+  - Assume no malicious users
+  - Single admin account
+  - Players
+    - Dad
+    - fam
+  - **PROPERTIES**
+    - IGW
+    - 1, 2, 3, 4, 6?, 8, 12, 13
+2. Small business
+  - Multiple locations, VPN
+  - remote access from any internet location
+  - Multiple departments/permissions
+  - Assume only employees have access to the VPN
+  - Players
+    - Max
+    - Employees
+    - IT guys
+  - **PROPERTIES**
+    - IGW
+    - 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 17??, 18
+3. Galactic File-hosting service
+  - Multiple locations per planet
+  - Accessible anywhere in the galaxy (via the GWW)
+  - Users are anyone with an account
+  - Backups and synchronization
+  - Players:
+    - Developers
+    - Users
+    - Space pirates
+    - Dawgs
+  - **PROPERTIES**
+    - IGW
+    - 1-18
