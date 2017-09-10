@@ -11,18 +11,32 @@ The user's identity will be verified through an account on the group server. Kno
 #### Property __: Correctness
 If file f is shared with members of group g, then only members of group g should be able to read, modify, delete, or see the existence of f. Without this requirement, any user could access any file, which is contrary to the notion of group-based file sharing.
 
-3. File Integrity  
-  If a file is modified or deleted by one user, it shall be consistent across the system.
-4. File Metadata
+#### Property __: Redundancy Redundancy
+The system should have redundancy built in to provide better uptime and to prevent loss of data. Multiple servers in different locations should be used so if one location is temporarily unavailable, user data is still accessible from another location. This would also serve as a backup of that can be used to restore missing data.
+
+#### Property __: File Integrity
+If a file is modified or deleted by one user, it shall be consistent across the system. It is important to keep the file servers in sync because inconsistancies can lead to confusion and error.
+
+#### Property __: File Metadata
+Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in local server time. This information is important to have as it shows when it was last changed so that users can make sure they have the most up to date version.
+
+#### Property __: Concurrent Access Protocol (CAP)
+Multiple users should be able to read a file at the same time, but only one user at a time should be able to write to a file. A write lock can be put in place so that users are not writing over eachothers' work, resulting in lost data.
+
+#### Property __: System Timeout
+The proposed write lock should have a timeout. This will prevent a user from requesting write access and holding the file forever, effectively making it unusable for anyone else in the system.
+
+#### Property __: Data Encryption
+All data transmissions to/from the server should be encrypted under a well known protocol such as ssh. This is important for both privacy and data and source integrity reasons. It will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Optionally, the user can choose to have the data be encrypted on a per group basis.
+
+1. Handling Passwords
+  Passwords should be hashed and salted
+
 5. File Accountability  
   Change log or history
 7. Authorization  
   Any attempt of access to a resource must be verified.
   How is this different from correctness?
-8. Concurrent Access Protocol (CAP)
-9. System Timeout
-10. Data Encryption  
-  Data encrypted in the file server and in transmission to/from client side. Passwords are encrypted
 11. User Account Properties  
   Passwords can be changed, etc.
 12. Performance
@@ -33,7 +47,6 @@ If file f is shared with members of group g, then only members of group g should
 15. It's gon' work (IGW)
 16. Memory Protection  
   Separation of address spaces. Processes are running within own memory portion.
-17. Redundancy Redundancy
 18. Secure Defaults  
   - Password Rule Enforcement (PRE)
   - Admin Login Enforcement (ALE)
