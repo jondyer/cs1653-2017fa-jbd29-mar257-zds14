@@ -53,30 +53,27 @@ All data transmissions to/from the server should be encrypted under a well known
   - Port Access Law (PAL)
   
 
-### Threat Models
-1. Local Family Media Server  
+## Threat Models
+### Local Family Media Server  
   - No web access
   - Assume no malicious users
   - Single admin account
   - Players
-    - Dad
+    - Dadmin
     - fam
-  - **PROPERTIES**
-    - IGW
-    - 1, 2, 3, 4, 6?, 8, 12, 13
-2. Small business
-  - Multiple locations, VPN
-  - remote access from any internet location
-  - Multiple departments/permissions
-  - Assume only employees have access to the VPN
-  - Players
-    - Max
-    - Employees
-    - IT guys
-  - **PROPERTIES**
-    - IGW
-    - 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 17??, 18
-3. Galactic File-hosting service
+	
+**PROPERTIES**  
+  - 1, 2, 3, 4, 6?, 8, 12, 13
+### Medium-Sized Business
+The system will be deployed in a medium-sized business environment with multiple locations. Access to the file sharing system is only provided through the company VPN or the local intranet. This VPN will allow for remote access from any location, such as the employees that work from home. Within the organization, different teams will require different permissions and access to different files. We are making the assumption that the companies intranet and VPN are not compromised. 
+
+The two groups of players involved are: regular employees who will need to upload and download file, and the IT staff who have the permissions of regular employees as well as permissions necessary to manage the file system. Some examples of these properties are: creating/removing groups, adding/removing users, and the ability to reset a user's password. We are making the assumption that the employee's login credentials are known only to that employee. We are also assuming that employee's VPN access and file sharing accounts are terminated once the employee is no longer with the company. We also assume that we have benevolent IT staff who don't want to destroy everything with their increased permissions.
+
+
+**PROPERTIES**  
+  - 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 17??, 18
+
+### Galactic File-hosting service
   - Multiple locations per planet
   - Accessible anywhere in the galaxy (via the GWW)
   - Users are anyone with an account
@@ -85,7 +82,6 @@ All data transmissions to/from the server should be encrypted under a well known
     - Developers
     - Users
     - Space pirates
-    - Dawgs
-  - **PROPERTIES**
-    - IGW
-    - 1-18
+
+**PROPERTIES**  
+  - 1-18
