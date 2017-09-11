@@ -71,7 +71,19 @@ The two groups of players involved are: regular employees who will need to uploa
 
 
 **PROPERTIES**  
-  - 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 17??, 18
+  * Hierarchical Group Structure  
+  The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff to provide different teams with access to different files and different permissions.
+  * Administrative Groups
+  The concept of Administrative Groups allows the admins to only give employees the permissions that are necessary. It minimizes the number of people that you are required to trust.
+  * Correctness
+  The Correctness property ensures that users are not able to access files that they are not supposed to see, such as payroll information.
+  * File Integrity
+  File Integrity helps to make sure that users at different locations are working on the same version of the file. Data will be kept in sync so that all employees have access to the most recent version.
+  * File Metadata
+  Storing metadata on files will show important information such as the last person to modify a file. This is useful for employees who want to contact that person to ask a question.
+  * File Accountability 
+  This property provides a history to files. A files history is important to have in case any changes need to be reversed.
+  - 6, 7, 8, 10, 11, 13, 14, 16, 17??, 18
 
 ### Galactic File-hosting service
   - Multiple locations per planet
