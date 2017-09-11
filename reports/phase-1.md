@@ -51,7 +51,7 @@ All data transmissions to/from the server should be encrypted under a well known
   - Password Rule Enforcement (PRE)
   - Admin Login Enforcement (ALE)
   - Port Access Law (PAL)
-  
+
 
 ## Threat Models
 ### Local Family Media Server  
@@ -61,30 +61,38 @@ All data transmissions to/from the server should be encrypted under a well known
   - Players
     - Dadmin
     - fam
-	
-**PROPERTIES**  
-  - 1, 2, 3, 4, 6?, 8, 12, 13
+
+#### **PROPERTIES**  
+  - 1, 2, 3, 4, 6?, 8, 12, 13  
+
 ### Medium-Sized Business
-The system will be deployed in a medium-sized business environment with multiple locations. Access to the file sharing system is only provided through the company VPN or the local intranet. This VPN will allow for remote access from any location, such as the employees that work from home. Within the organization, different teams will require different permissions and access to different files. We are making the assumption that the companies intranet and VPN are not compromised. 
+The system will be deployed in a medium-sized business environment with multiple locations. Access to the file sharing system is only provided through the company VPN or the local intranet. This VPN will allow for remote access from any location, such as the employees that work from home. Within the organization, different teams will require different permissions and access to different files. We are making the assumption that the companies intranet and VPN are not compromised.
 
 The two groups of players involved are: regular employees who will need to upload and download file, and the IT staff who have the permissions of regular employees as well as permissions necessary to manage the file system. Some examples of these properties are: creating/removing groups, adding/removing users, and the ability to reset a user's password. We are making the assumption that the employee's login credentials are known only to that employee. We are also assuming that employee's VPN access and file sharing accounts are terminated once the employee is no longer with the company. We also assume that we have benevolent IT staff who don't want to destroy everything with their increased permissions.
 
 
-**PROPERTIES**  
-  * Hierarchical Group Structure  
-  The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff to provide different teams with access to different files and different permissions.
-  * Administrative Groups
-  The concept of Administrative Groups allows the admins to only give employees the permissions that are necessary. It minimizes the number of people that you are required to trust.
-  * Correctness
-  The Correctness property ensures that users are not able to access files that they are not supposed to see, such as payroll information.
-  * File Consistency
-  File Consistency helps to make sure that users at different locations are working on the same version of the file. Data will be kept in sync so that all employees have access to the most recent version.
-  * File Metadata
-  Storing metadata on files will show important information such as the last person to modify a file. This is useful for employees who want to contact that person to ask a question.
-  * File Accountability 
-  This property provides a history to files. A files history is important to have in case any changes need to be reversed.
-  * Authentication  
-  Verifying the identity of users is done to make sure that only the employees of the company have access and they only have access to the files that they should.
+#### **PROPERTIES**  
+  * **Hierarchical Group Structure**  
+  The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff to provide different teams with access to different files and different permissions.  
+
+  * **Administrative Groups**  
+  The concept of Administrative Groups allows the admins to only give employees the permissions that are necessary. It minimizes the number of people that you are required to trust.  
+
+  * **Correctness**  
+  The Correctness property ensures that users are not able to access files that they are not supposed to see, such as payroll information.  
+
+  * **File Consistency**  
+  File Consistency helps to make sure that users at different locations are working on the same version of the file. Data will be kept in sync so that all employees have access to the most recent version.  
+
+  * **File Metadata**  
+  Storing metadata on files will show important information such as the last person to modify a file. This is useful for employees who want to contact that person to ask a question.  
+
+  * **File Accountability**  
+  This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
+
+  * **Authentication**  
+  Verifying the identity of users is done to make sure that only the employees of the company have access and they only have access to the files that they should.  
+
   - 7, 8, 10, 11, 13, 14, 16, 17??, 18
 
 ### Galactic File-hosting service
@@ -97,5 +105,5 @@ The two groups of players involved are: regular employees who will need to uploa
     - Users
     - Space pirates
 
-**PROPERTIES**  
+#### **PROPERTIES**  
   - 1-18
