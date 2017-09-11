@@ -18,16 +18,19 @@ The system should have redundancy built in to provide better uptime and to preve
 If a file is modified or deleted by one user, it shall be consistent across the system. It is important to keep the file servers in sync because inconsistancies can lead to confusion and error.
 
 #### Property __: File Metadata
-Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in local group server time. This information is important to have as it shows when it was last changed so that users can make sure they have the most up to date version.
+Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in group server local time. This information is important to have as it shows when it was last changed so that users can make sure they have the most up to date version.
 
 #### Property __: Concurrent Access Protocol (CAP)
 Multiple users should be able to read a file at the same time, but only one user at a time should be able to write to a file. A write lock can be put in place so that users are not writing over eachothers' work, resulting in lost data.
 
-#### Property __: System Timeout
-The proposed write lock should have a timeout. This will prevent a user from requesting write access and holding the file forever, effectively making it unusable for anyone else in the system.
+#### Property __: File Availability
+A file should be accessible to the users most of the time. A user should not be able to request write access and hold it forever, effectively making it unusable for anyone else in the system. A timeout on the write lock is one method to prevent this.
 
-#### Property __: Data Encryption
-All data transmissions to/from the server should be encrypted under a well known protocol such as ssh. This is important for both privacy and data and source integrity reasons. It will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Optionally, the user can choose to have the data be encrypted on a per group basis.
+#### Property __: Data Confidentiality During Transfer
+All data transmissions to/from the server should be confidential. We can do this over a well known protocol like SSH. This is important for both privacy and data and source integrity reasons. It will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. We are assuming that the protocol we use is implemented correctly and the encryption it uses has not been broken.   
+
+#### Property __: Data Confidentiality During Storage
+Administrators should be able to choose whether or not to provide data confidentiality on a per group basis. We can provide this functionality through th use of a popular encryption algorithm. This is important when storing sensitive information, such as payroll data. We are making the assumption that the algorithm we chose has not been broken and there are no backdoors.  
 
 1. Handling Passwords
   Passwords should be hashed and salted
@@ -92,8 +95,17 @@ The two groups of players involved are: regular employees who will need to uploa
 
   * **Authentication**  
   Verifying the identity of users is done to make sure that only the employees of the company have access and they only have access to the files that they should.  
+  
+  * **Concurrent Access Protocol**  
+  Preventing multiple users from writing to the same file at the same time will help to ensure that the file remains consistent. Multiple employees trying to edit at the same time would just lead to lost work.  
+  
+  * **Data Confidentiality During Transfer**  
+  This will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Doing this is necessary for sensitive information like payroll data.  
+  
+  * **Data Confidentiality During Storage**  
+  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company secrets actually secret.
 
-  - 7, 8, 10, 11, 13, 14, 16, 17??, 18
+  - 11, 13, 14, 16, 17??, 18
 
 ### Galactic File-hosting service
   - Multiple locations per planet
