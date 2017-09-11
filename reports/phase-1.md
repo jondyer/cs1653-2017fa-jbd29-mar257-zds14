@@ -14,11 +14,11 @@ If file f is shared with members of group g, then only members of group g should
 #### Property __: Redundancy Redundancy
 The system should have redundancy built in to provide better uptime and to prevent loss of data. Multiple servers in different locations should be used so if one location is temporarily unavailable, user data is still accessible from another location. This would also serve as a backup of that can be used to restore missing data.
 
-#### Property __: File Integrity
+#### Property __: File Consistency
 If a file is modified or deleted by one user, it shall be consistent across the system. It is important to keep the file servers in sync because inconsistancies can lead to confusion and error.
 
 #### Property __: File Metadata
-Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in local server time. This information is important to have as it shows when it was last changed so that users can make sure they have the most up to date version.
+Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in local group server time. This information is important to have as it shows when it was last changed so that users can make sure they have the most up to date version.
 
 #### Property __: Concurrent Access Protocol (CAP)
 Multiple users should be able to read a file at the same time, but only one user at a time should be able to write to a file. A write lock can be put in place so that users are not writing over eachothers' work, resulting in lost data.
@@ -77,13 +77,15 @@ The two groups of players involved are: regular employees who will need to uploa
   The concept of Administrative Groups allows the admins to only give employees the permissions that are necessary. It minimizes the number of people that you are required to trust.
   * Correctness
   The Correctness property ensures that users are not able to access files that they are not supposed to see, such as payroll information.
-  * File Integrity
-  File Integrity helps to make sure that users at different locations are working on the same version of the file. Data will be kept in sync so that all employees have access to the most recent version.
+  * File Consistency
+  File Consistency helps to make sure that users at different locations are working on the same version of the file. Data will be kept in sync so that all employees have access to the most recent version.
   * File Metadata
   Storing metadata on files will show important information such as the last person to modify a file. This is useful for employees who want to contact that person to ask a question.
   * File Accountability 
   This property provides a history to files. A files history is important to have in case any changes need to be reversed.
-  - 6, 7, 8, 10, 11, 13, 14, 16, 17??, 18
+  * Authentication  
+  Verifying the identity of users is done to make sure that only the employees of the company have access and they only have access to the files that they should.
+  - 7, 8, 10, 11, 13, 14, 16, 17??, 18
 
 ### Galactic File-hosting service
   - Multiple locations per planet
