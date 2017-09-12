@@ -1,62 +1,53 @@
 # CS 1653: Applied Cryptography and Network Security - Phase 1
 ## Security Properties  
 
-### Property __: Hierarchical Group Structure
+### Property 1: Hierarchical Group Structure
 Our group structure is set up so that a group may contain a subgroup and each subgroup has their own set of privileges and their own domain where their privileges apply. For example, you can have a group with a subgroup of administrators. The main group may be able to upload and download files, but only the administrator group is capable of adding and removing users to the group. This is important because it allows for a very flexible system with many possibilities. We must assume that the user implements this in a secure way. (Not giving admin privileges to every user.) We can help by providing a fail-safe default where the least privilege necessary is provided at first.
 
-### Property __: Administrative Groups
+### Property 2: Administrative Groups
 There should be a concept of administrative groups where these users have certain increased privileges within their group compared to its ordinary users. An example of the increased privileges can be the ability to add/remove users to/from a particular group. This is important because it removes the ability for any untrusted user to remove any user that they dislike. However, we have to make the assumption that these administrators can be trusted to not abuse their power.
 
-### Property __: Authentication
+### Property 3: Authentication
 The user's identity will be verified through an account on the group server. Knowing the identity of the user allows the server to provide the user access to the appropriate files and give them the appropriate permissions. This should prevent unauthorized access if we can assume that a user's account has not been compromised.
 
-### Property __: Correctness
+### Property 4: Correctness
 If file f is shared with members of group g, then only members of group g are authorized to read, modify, delete, or see the existence of f. Without this requirement, any user could access any file, which is contrary to the notion of group-based file sharing.
 
-### Property __: Redundancy Redundancy
+### Property 5: Redundancy Redundancy
 The system should have redundancy built in to provide better uptime and to prevent loss of data. Multiple servers in different locations should be used so if one location is temporarily unavailable, user data is still accessible from another location. This would also serve as a backup which can be used to restore missing data.
 
-### Property __: File Consistency
+### Property 6: File Consistency
 If a file is modified or deleted by one user, it shall be consistent across the system. It is important to keep the file servers in sync because inconsistencies can lead to confusion and error.
 
-### Property __: File Metadata
+### Property 7: File Metadata
 Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in group server local time. This information is important to have so that users can make sure they have the most up to date version.
 
-### Property __: Concurrent Access Protocol (CAP)
+### Property 8: Concurrent Access Protocol (CAP)
 Multiple users should be able to read a file at the same time, but only one user at a time should be able to write to a file. A write lock can be put in place so that users are not writing over each others' work, resulting in lost data.
 
-### Property __: File Availability
+### Property 9: File Availability
 A file should be accessible to the users most of the time. A user should not be able to request write access and hold it forever, effectively making it unusable for anyone else in the system. A timeout on the write lock is one method to prevent this.
 
-### Property __: Data Confidentiality During Transfer
+### Property 10: Data Confidentiality During Transfer
 All data transmissions to/from the server should be confidential. We can do this over a well known protocol like SSH. This is important for both privacy and data and source integrity reasons. It will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. We are assuming that the protocol we use is implemented correctly and the encryption it uses has not been broken.   
 
-### Property __: Data Confidentiality During Storage
+### Property 11: Data Confidentiality During Storage
 Administrators should be able to choose whether or not to provide data confidentiality on a per group basis. We can provide this functionality through th use of a popular encryption algorithm. This is important when storing sensitive information, such as payroll data. We are making the assumption that the algorithm we chose has not been broken and there are no backdoors.  
 
-### Property __: Memory Protection
-Address spaces of processes on the server are separated and running within their own portion of memory. This will prevent any one process from accessing another's data altogether, whether malicious or not.
-
-### Property __: User Account Properties
+### Property 12: User Account Properties
 In the event that a user's account becomes compromised or simply needs altered, its properties must be mutable. This includes being able to change login information - i.e. username and password, as well as being able to decommission the account in question.
 
-### Property __: Performance  
+### Property 13: Performance  
 It is important that a system function as intended _reasonably efficiently_ so the criterion of availability can be fulfilled. For example, having a server that becomes prohibitively slow when multiple users are accessing the same file can be as bad as not having the server at all, since availability is compromised. We assume that this type of performance can be achieved without directly infringing on other security criteria.
 
+### Property 14: File Accountability  
+Some means of recording changes made to data, such as a change log or file history, should be provided in order to preserve data integrity and source integrity. This enforces a kind of non-repudiation by allowing administrators to determine the source of a change in the event of an attack or unexpected modification.
 
+### Property 15: Usability ("It's Gon' Work")
+A system should be usable, meaning that to the best of our knowledge it should be free of bugs and program flaws that may result in vulnerabilities. It should also be navigable and manageable for both users and admins--in particular, security features should be straightforwardly implemented and accessible so that they are more easily enforced. More usable features lead to increased user adoption, leading to greater security overall.
 
-1. Handling Passwords
-  Passwords should be hashed and salted
-5. File Accountability  
-  Change log or history
-13. Usability/IGW
-  Not usable = Not secure
-14. Least privilege  
-  Both users _and_ processes should operate with minimum permissions necessary
-18. Secure Defaults  
-  - Password Rule Enforcement (PRE)
-  - Admin Login Enforcement (ALE)
-  - Port Access Law (PAL)
+### Property 16: Separation  
+The general design principle of separating items, tasks, processes, and privileges that do not necessarily need to be together contributes to overall security of a system. For example, memory protection (preventing a process from accessing the address space/resources of another) helps restrict the potential damage caused by a malicious process. Additionally, separating privileges from one process or task to another allows for support of a _least privilege_ principle, so that processes/users are not operating with unnecessarily high permissions.
 
 
 ## Threat Models
@@ -128,15 +119,12 @@ The two groups of players involved are: regular employees who will need to uploa
 
   - 11, 13, 14, 16, 17??, 18
 
+
 ### Galactic File-hosting service
-This platform allows users to access their own private server space via an online web portal (similar to Dropbox). It will span the galaxy, possibly necessitating multiple server locations per planet (for performance and feasability reasons--**UNLESS WE DECIDE TO BUY A PLANET TO STORE ALL OUR DATA**). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
+This platform allows users to access their own private server space via an online web portal (similar to Dropbox). It will span the galaxy, possibly necessitating multiple server locations per planet, or some kind of large, localized data center (for performance and feasability reasons). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
 
-The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials.
+The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials (i.e. no insider threat).
 
-
-  - Multiple locations per planet
-  - Accessible anywhere in the galaxy (via the GWW)
-  - Users are anyone with an account
   - Backups and synchronization
   - Players:
     - Developers
@@ -144,4 +132,5 @@ The two primary groups of concern are the people using the service with user-lev
     - Space pirates
 
 #### **PROPERTIES**  
+
   - 1-18
