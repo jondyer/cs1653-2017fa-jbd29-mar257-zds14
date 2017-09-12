@@ -32,7 +32,7 @@ A file should be accessible to the users most of the time. A user should not be 
 All data transmissions to/from the server should be confidential. We can do this over a well known protocol like SSH. This is important for both privacy and data and source integrity reasons. It will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. We are assuming that the protocol we use is implemented correctly and the encryption it uses has not been broken.   
 
 ### Property __: Data Confidentiality During Storage
-Administrators should be able to choose whether or not to provide data confidentiality on a per group basis. We can provide this functionality through th use of a popular encryption algorithm. This is important when storing sensitive information, such as payroll data. We are making the assumption that the algorithm we chose has not been broken and there are no backdoors.  
+Administrators should be able to choose whether or not to provide data confidentiality on a per group basis. We can provide this functionality through the use of a popular encryption algorithm. This is important when storing sensitive information, such as payroll data. We are making the assumption that the algorithm we chose has not been broken and there are no backdoors.  
 
 ### Property __: Memory Protection
 Address spaces of processes on the server are separated and running within their own portion of memory. This will prevent any one process from accessing another's data altogether, whether malicious or not.
@@ -124,9 +124,15 @@ The two groups of players involved are: regular employees who will need to uploa
   This will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Doing this is necessary for sensitive information like payroll data.  
 
   * **Data Confidentiality During Storage**  
-  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company secrets actually secret.
+  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company secrets actually secret.  
+  
+  * **User Account Properties**__
+  Timely suspension of user accounts is an important security measure to have in place, to prevent access by former employees.  
+  
+  * **Redundancy Redundancy**  
+  Having backups are important for businesses which don't want to lose data. Hard drives fail, data gets corrupted; having a backup is important to mitigate any of these issues.  
 
-  - 11, 13, 14, 16, 17??, 18
+  - 13, 14, 16, 18
 
 ### Galactic File-hosting service
 This platform allows users to access their own private server space via an online web portal (similar to Dropbox). It will span the galaxy, possibly necessitating multiple server locations per planet (for performance and feasability reasons--**UNLESS WE DECIDE TO BUY A PLANET TO STORE ALL OUR DATA**). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
