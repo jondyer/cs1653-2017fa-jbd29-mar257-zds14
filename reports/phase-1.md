@@ -124,13 +124,13 @@ The two groups of players involved are: regular employees who will need to uploa
   Having backups are important for businesses which don't want to lose data. Hard drives fail, data gets corrupted; having a backup is important to mitigate any of these issues.  
 
   * **File Accountability**  
-  Having a file history is important for companies that need to ever revert to an old version of file or to monitor changes between two different versions.  
+  Having a file history is important for companies that may need to revert to an old version of file or to monitor changes between two different versions.  
 
   * **Usability**  
   Usability is an important factor to have to ensure a speedy workflow. The software should be help, never a hinderance, to its users.  
   
   * **Seperation**  
-  Seperation of processes and privileges should be done where possible to minimized the risk of privilege escalation and other vulnerabilities.  
+  Seperation of processes and privileges should be done where possible to minimize the risk of privilege escalation and other vulnerabilities.  
 
 
 ### Galactic File-hosting service
