@@ -1,4 +1,12 @@
 # CS 1653: Applied Cryptography and Network Security - Phase 1
+| Name | Email | Github |
+|------|-------|--------|  
+| Jonathan Dyer | jbd29@pitt.edu  | jondyer   |
+| Max Reno      | mar257@pitt.edu | mar257    |
+| Zach Scheider | zds14@pitt.edu  | zscheider |
+
+___
+
 ## Security Properties  
 
 ### Property 1: Hierarchical Group Structure
@@ -49,6 +57,7 @@ A system should be usable, meaning that to the best of our knowledge it should b
 ### Property 16: Separation  
 The general design principle of separating items, tasks, processes, and privileges that do not necessarily need to be together contributes to overall security of a system. For example, memory protection (preventing a process from accessing the address space/resources of another) helps restrict the potential damage caused by a malicious process. Additionally, separating privileges from one process or task to another allows for support of a _least privilege_ principle, so that processes/users are not operating with unnecessarily high permissions.
 
+___
 
 ## Threat Models
 ### Local Family Media Server  
