@@ -41,7 +41,7 @@ Address spaces of processes on the server are separated and running within their
 In the event that a user's account becomes compromised or simply needs altered, its properties must be mutable. This includes being able to change login information - i.e. username and password, as well as being able to decommission the account in question.
 
 ### Property __: Performance  
-It is important that a system function as intended _reasonably efficiently_ so the criterion of availability can be fulfilled. For example, having a server that becomes prohibitively slow when multiple users are accessing the same file can be as bad as not having the server at all, since availability is compromised.
+It is important that a system function as intended _reasonably efficiently_ so the criterion of availability can be fulfilled. For example, having a server that becomes prohibitively slow when multiple users are accessing the same file can be as bad as not having the server at all, since availability is compromised. We assume that this type of performance can be achieved without directly infringing on other security criteria.
 
 
 
