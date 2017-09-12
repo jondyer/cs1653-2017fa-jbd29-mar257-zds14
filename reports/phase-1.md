@@ -61,7 +61,7 @@ It is important that a system function as intended _reasonably efficiently_ so t
 
 ## Threat Models
 ### Local Family Media Server  
-This is a basic system which will be used in a home environment on a local network. Access is possible via a device on the local network only, so there should be no direct web connection to the server. The organization (call it the "family") is simple, and consists simply of users of the server, plus one administrative account that has typical permissions (such as adding/removing users and resetting passwords). 
+This is a basic system which will be used in a home environment on a local network. Access is possible via a device on the local network only, so there should be no direct web connection to the server. The organization (call it the "family") is simple, and consists simply of users of the server, plus one administrative account that has typical permissions (such as adding/removing users and resetting passwords).
 
 We'll assume that no one in the family has malicious intent, meaning that they are not attempting to access files that are not shared with them or perform unauthorized operations on shared files. We assume that each member of the family has a unique login username and password that provides user-level access to the server, and that this information is known only to that user. Additionally, we will suppose that this server is hosted on a network with standard security measures in place.
 
@@ -129,7 +129,7 @@ The two groups of players involved are: regular employees who will need to uploa
   - 11, 13, 14, 16, 17??, 18
 
 ### Galactic File-hosting service
-This platform allows users to access their own private server space via an online web portal (similar to Dropbox). It will span the galaxy, possibly necessitating multiple server locations per planet (for performance and feasability reasons--**UNLESS WE DECIDE TO BUY A PLANET TO STORE ALL OUR DATA**). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
+This platform allows users to access their own private server space via an online web portal (similar to Dropbox). It will span the galaxy, possibly necessitating multiple server locations per planet (for performance and feasibility reasons--**UNLESS WE DECIDE TO BUY A PLANET TO STORE ALL OUR DATA**). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
 
 The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials.
 
@@ -144,4 +144,38 @@ The two primary groups of concern are the people using the service with user-lev
     - Space pirates
 
 #### **PROPERTIES**  
-  - 1-18
+  * **Hierarchical Group Structure**  
+  The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff/Developers to provide different teams with access to different files and different permissions.
+
+  * **Administrative Groups**  
+  The concept of Administrative Groups allows the IT staff/Developers to only give employees the permissions that are necessary. It minimizes the number of people that you are required to trust.  
+
+  * **Authentication**  
+  Authentication allows for a particular user in the galaxy to be identified to his/her/its account, i.e. so that space pirates would not be able to log in to a user's account that is not their own.
+
+  * **Correctness**  
+  The Correctness property ensures that users are not able to access files that they are not supposed to see. For instance, data from Intra-Galaxy Group A should not be visible/accessible to Intra-Galaxy Group B.
+
+  * **Redundancy Redundancy**  
+  Redundancy is important for having maximum up-time for the system and preserving all user data. Storing multiple copies of information in different locations would be suitable for this.
+
+  * **File Consistency**  
+  File Consistency helps to make sure that users at different locations within the galaxy are working on the same version of the file. This is especially important with the long distances data may have to travel.
+
+  * **File Metadata**  
+  Storing metadata on files will show important information such as the last person to modify a file. This is useful for users who want to contact that person to ask a question.  
+
+  * **File Accountability**  
+  This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
+
+  * **Authentication**  
+  Verifying the identity of users is done to make sure that only the employees of the company have access and they only have access to the files that they should.  
+
+  * **Concurrent Access Protocol**  
+  Preventing multiple users from writing to the same file at the same time will help to ensure that the file remains consistent. Multiple users trying to edit at the same time would just lead to lost work.  
+
+  * **Data Confidentiality During Transfer**  
+  This will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Doing this is necessary for sensitive information like payroll data.  
+
+  * **Data Confidentiality During Storage**  
+  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company secrets actually secret.
