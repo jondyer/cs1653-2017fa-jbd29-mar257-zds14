@@ -131,15 +131,6 @@ This platform allows users to access their own private server space via an onlin
 The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials (i.e. no insider threat).
 
 
-  - Multiple locations per planet
-  - Accessible anywhere in the galaxy (via the GWW)
-  - Users are anyone with an account
-  - Backups and synchronization
-  - Players:
-    - Developers
-    - Users
-    - Space pirates
-
 #### **PROPERTIES**  
   * **Hierarchical Group Structure**  
   The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff/Developers to provide different teams with access to different files and different permissions.
@@ -172,7 +163,7 @@ The two primary groups of concern are the people using the service with user-lev
   Preventing multiple users from writing to the same file at the same time will help to ensure that the file remains consistent. Multiple users trying to edit at the same time would just lead to lost work.  
 
   * **Data Confidentiality During Transfer**  
-  This will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Doing this is necessary for sensitive information like payroll data.  
+  This will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Doing this is necessary for sensitive information like financial transactions, personally identifiable information, etc.  
 
   * **Data Confidentiality During Storage**  
-  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company secrets actually secret.
+  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company and user secrets actually secret.
