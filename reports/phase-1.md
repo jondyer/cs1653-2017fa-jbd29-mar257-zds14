@@ -14,13 +14,13 @@ The user's identity will be verified through an account on the group server. Kno
 If file f is shared with members of group g, then only members of group g are authorized to read, modify, delete, or see the existence of f. Without this requirement, any user could access any file, which is contrary to the notion of group-based file sharing.
 
 ### Property __: Redundancy Redundancy
-The system should have redundancy built in to provide better uptime and to prevent loss of data. Multiple servers in different locations should be used so if one location is temporarily unavailable, user data is still accessible from another location. This would also serve as a backup of that can be used to restore missing data.
+The system should have redundancy built in to provide better uptime and to prevent loss of data. Multiple servers in different locations should be used so if one location is temporarily unavailable, user data is still accessible from another location. This would also serve as a backup which can be used to restore missing data.
 
 ### Property __: File Consistency
 If a file is modified or deleted by one user, it shall be consistent across the system. It is important to keep the file servers in sync because inconsistencies can lead to confusion and error.
 
 ### Property __: File Metadata
-Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in group server local time. This information is important to have as it shows when it was last changed so that users can make sure they have the most up to date version.
+Every file will have metadata associated with it, such as when it was last modified, and who it was modified by. The timestamps will all be in group server local time. This information is important to have so that users can make sure they have the most up to date version.
 
 ### Property __: Concurrent Access Protocol (CAP)
 Multiple users should be able to read a file at the same time, but only one user at a time should be able to write to a file. A write lock can be put in place so that users are not writing over each others' work, resulting in lost data.
@@ -40,16 +40,19 @@ Address spaces of processes on the server are separated and running within their
 ### Property __: User Account Properties
 In the event that a user's account becomes compromised or simply needs altered, its properties must be mutable. This includes being able to change login information - i.e. username and password, as well as being able to decommission the account in question.
 
+### Property __: Performance  
+It is important that a system function as intended _reasonably efficiently_ so the criterion of availability can be fulfilled. For example, having a server that becomes prohibitively slow when multiple users are accessing the same file can be as bad as not having the server at all, since availability is compromised.
+
+
+
 1. Handling Passwords
   Passwords should be hashed and salted
 5. File Accountability  
   Change log or history
-12. Performance
-13. Usability  
+13. Usability/IGW
   Not usable = Not secure
 14. Least privilege  
   Both users _and_ processes should operate with minimum permissions necessary
-15. It's gon' work (IGW)
 18. Secure Defaults  
   - Password Rule Enforcement (PRE)
   - Admin Login Enforcement (ALE)
@@ -58,20 +61,38 @@ In the event that a user's account becomes compromised or simply needs altered, 
 
 ## Threat Models
 ### Local Family Media Server  
-  - No web access
-  - Assume no malicious users
-  - Single admin account
-  - Players
-    - Dadmin
-    - fam
+This is a basic system which will be used in a home environment on a local network. Access is possible via a device on the local network only, so there should be no direct web connection to the server. The organization (call it the "family") is simple, and consists simply of users of the server, plus one administrative account that has typical permissions (such as adding/removing users and resetting passwords). 
+
+We'll assume that no one in the family has malicious intent, meaning that they are not attempting to access files that are not shared with them or perform unauthorized operations on shared files. We assume that each member of the family has a unique login username and password that provides user-level access to the server, and that this information is known only to that user. Additionally, we will suppose that this server is hosted on a network with standard security measures in place.
+
+
 
 #### **PROPERTIES**  
-  - 1, 2, 3, 4, 6?, 8, 12, 13  
+  * **Hierarchical Group Structure**   
+  This structure allows for the admin to give access to different files to different users. This makes the server more useful and flexible, while preventing unauthorized privilege escalation(?).
+
+  * **Administrative Groups**  
+  The concept of Administrative Groups allows the administrator to only give family members the permissions that are necessary. It also restricts the number of accounts with high-level (potentially damaging) permissions.
+
+  * **Correctness**  
+  The Correctness property ensures that users are not able to access files that they are not supposed to see, such as media uploaded by another family member and not shared with them.   
+
+  * **Authentication**  
+  Verifying the identity of users adds an extra layer of security (beyond whatever the local network provides) by ensuring only members (with an account) have access and that they only have access to the files that they should.  
+
+  * **File Consistency**  
+  File Consistency helps to make sure that one user isn't trying to access a file that has been deleted by that file's owner. This information should be synchronized across all file servers in the system.
+
+  * **Concurrent Access Protocol**   
+  The server should allow multiple family members to read a file at once, but it should only be modifiable by one person at a time. This helps ensure consistency and usability throughout the system.
+
+
+  - 8, 12, 13  
 
 ### Medium-Sized Business
-The system will be deployed in a medium-sized business environment with multiple locations. Access to the file sharing system is only provided through the company VPN or the local intranet. This VPN will allow for remote access from any location, such as the employees that work from home. Within the organization, different teams will require different permissions and access to different files. We are making the assumption that the companies intranet and VPN are not compromised.
+The system will be deployed in a medium-sized business environment with multiple locations. Access to the file sharing system is only provided through the company VPN or the local intranet. This VPN will allow for remote access from any location, such as the employees that work from home. Within the organization, different teams will require different permissions and access to different files. We are making the assumption that the company's intranet and VPN are not compromised.
 
-The two groups of players involved are: regular employees who will need to upload and download file, and the IT staff who have the permissions of regular employees as well as permissions necessary to manage the file system. Some examples of these properties are: creating/removing groups, adding/removing users, and the ability to reset a user's password. We are making the assumption that the employee's login credentials are known only to that employee. We are also assuming that employee's VPN access and file sharing accounts are terminated once the employee is no longer with the company. We also assume that we have benevolent IT staff who don't want to destroy everything with their increased permissions.
+The two groups of players involved are: regular employees who will need to upload and download files, and the IT staff who have the permissions of regular employees as well as permissions necessary to manage the file system. Some examples of these properties are: creating/removing groups, adding/removing users, and the ability to reset a user's password. We are making the assumption that the employee's login credentials are known only to that employee. We are also assuming that employee's VPN access and file sharing accounts are terminated once the employee is no longer with the company. We also assume that we have benevolent IT staff who don't want to destroy everything with their increased permissions.
 
 
 #### **PROPERTIES**  
@@ -108,6 +129,11 @@ The two groups of players involved are: regular employees who will need to uploa
   - 11, 13, 14, 16, 17??, 18
 
 ### Galactic File-hosting service
+This platform allows users to access their own private server space via an online web portal (similar to Dropbox). It will span the galaxy, possibly necessitating multiple server locations per planet (for performance and feasability reasons--**UNLESS WE DECIDE TO BUY A PLANET TO STORE ALL OUR DATA**). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
+
+The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials.
+
+
   - Multiple locations per planet
   - Accessible anywhere in the galaxy (via the GWW)
   - Users are anyone with an account
