@@ -1,11 +1,13 @@
-# CS 1653: Applied Cryptography and Network Security - Phase 1
+# CS 1653: Applied Cryptography and Network Security - Phase 1  
+
+
 | Name | Email | Github |
 |------|-------|--------|  
 | Jonathan Dyer | jbd29@pitt.edu  | jondyer   |
 | Max Reno      | mar257@pitt.edu | mar257    |
 | Zach Scheider | zds14@pitt.edu  | zscheider |
 
-___
+
 
 ## Security Properties  
 
@@ -40,7 +42,7 @@ A file should be accessible to the users most of the time. A user should not be 
 All data transmissions to/from the server should be confidential. We can do this over a well known protocol like SSH. This is important for both privacy and data and source integrity reasons. It will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. We are assuming that the protocol we use is implemented correctly and the encryption it uses has not been broken.   
 
 ### Property 11: Data Confidentiality During Storage
-Administrators should be able to choose whether or not to provide data confidentiality on a per group basis. We can provide this functionality through th use of a popular encryption algorithm. This is important when storing sensitive information, such as payroll data. We are making the assumption that the algorithm we chose has not been broken and there are no backdoors.  
+Administrators should be able to choose whether or not to provide data confidentiality on a per group basis. We can provide this functionality through the use of a popular encryption algorithm. This is important when storing sensitive information, such as payroll data. We are making the assumption that the algorithm we chose has not been broken and there are no backdoors.  
 
 ### Property 12: User Account Properties
 In the event that a user's account becomes compromised or simply needs altered, its properties must be mutable. This includes being able to change login information - i.e. username and password, as well as being able to decommission the account in question.
@@ -57,7 +59,7 @@ A system should be usable, meaning that to the best of our knowledge it should b
 ### Property 16: Separation  
 The general design principle of separating items, tasks, processes, and privileges that do not necessarily need to be together contributes to overall security of a system. For example, memory protection (preventing a process from accessing the address space/resources of another) helps restrict the potential damage caused by a malicious process. Additionally, separating privileges from one process or task to another allows for support of a _least privilege_ principle, so that processes/users are not operating with unnecessarily high permissions.
 
-___
+
 
 ## Threat Models
 ### Local Family Media Server  
@@ -67,7 +69,7 @@ We'll assume that no one in the family has malicious intent, meaning that they a
 
 
 
-#### **PROPERTIES**  
+#### PROPERTIES
   * **Hierarchical Group Structure**   
   This structure allows for the admin to give access to different files to different users. This makes the server more useful and flexible, while preventing unauthorized privilege escalation(?).
 
@@ -86,8 +88,9 @@ We'll assume that no one in the family has malicious intent, meaning that they a
   * **Concurrent Access Protocol**   
   The server should allow multiple family members to read a file at once, but it should only be modifiable by one person at a time. This helps ensure consistency and usability throughout the system.
 
+  * **Data Confidentiality during Storage**  
+  It is important that data stored on the server be kept confidential--that is, one family member (or someone maliciously using that member's account) should not be able to access private files of another family member.
 
-  - 8, 12, 13  
 
 ### Medium-Sized Business
 The system will be deployed in a medium-sized business environment with multiple locations. Access to the file sharing system is only provided through the company VPN or the local intranet. This VPN will allow for remote access from any location, such as the employees that work from home. Within the organization, different teams will require different permissions and access to different files. We are making the assumption that the company's intranet and VPN are not compromised.
@@ -95,7 +98,7 @@ The system will be deployed in a medium-sized business environment with multiple
 The two groups of players involved are: regular employees who will need to upload and download files, and the IT staff who have the permissions of regular employees as well as permissions necessary to manage the file system. Some examples of these properties are: creating/removing groups, adding/removing users, and the ability to reset a user's password. We are making the assumption that the employee's login credentials are known only to that employee. We are also assuming that employee's VPN access and file sharing accounts are terminated once the employee is no longer with the company. We also assume that we have benevolent IT staff who don't want to destroy everything with their increased permissions.
 
 
-#### **PROPERTIES**  
+#### PROPERTIES
   * **Hierarchical Group Structure**  
   The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff to provide different teams with access to different files and different permissions.  
 
@@ -143,12 +146,12 @@ The two groups of players involved are: regular employees who will need to uploa
 
 
 ### Galactic File-hosting service
-This platform allows users to access their own private server space via an online web portal (similar to Dropbox). It will span the galaxy, possibly necessitating multiple server locations per planet, or some kind of large, localized data center (for performance and feasibility reasons). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
+This platform allows users to access their own private server space via an online web portal (similar to Dropbox or Box). It will span the galaxy, possibly necessitating multiple server locations per planet, or some kind of large, localized data center (for performance and feasibility reasons). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
 
 The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials (i.e. no insider threat).
 
 
-#### **PROPERTIES**  
+#### PROPERTIES 
   * **Hierarchical Group Structure**  
   The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff/Developers to provide different teams with access to different files and different permissions.
 
@@ -184,3 +187,10 @@ The two primary groups of concern are the people using the service with user-lev
 
   * **Data Confidentiality During Storage**  
   Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company and user secrets actually secret.
+
+
+
+
+## References
+[Dropbox](https://www.dropbox.com/ "Click here to visit the Dropbox website")
+[Box](https://www.box.com/ "Click here to visit the Box website")
