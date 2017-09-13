@@ -45,7 +45,7 @@ All data transmissions to/from the server should be confidential. We can do this
 Administrators should be able to choose whether or not to provide data confidentiality on a per group basis. We can provide this functionality through the use of a popular encryption algorithm. This is important when storing sensitive information, such as payroll data. We are making the assumption that the algorithm we chose has not been broken and there are no backdoors.  
 
 ### Property 12: User Account Properties
-In the event that a user's account becomes compromised or simply needs altered, its properties must be mutable. This includes being able to change login information - i.e. username and password, as well as being able to decommission the account in question.
+In the event that a user's account becomes compromised or simply needs altered, its properties must be mutable. This includes being able to change login information--i.e. username and password--as well as being able to decommission the account in question.
 
 ### Property 13: Performance  
 It is important that a system function as intended _reasonably efficiently_ so the criterion of availability can be fulfilled. For example, having a server that becomes prohibitively slow when multiple users are accessing the same file can be as bad as not having the server at all, since availability is compromised. We assume that this type of performance can be achieved without directly infringing on other security criteria.
