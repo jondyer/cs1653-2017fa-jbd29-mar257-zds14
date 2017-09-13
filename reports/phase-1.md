@@ -189,7 +189,7 @@ The two primary groups of concern are the people using the service with user-lev
   Developers and/or Users in the galaxy need to be able to edit account properties should any issues arise to change anything for personal or security reasons.
 
   * **Performance**
-  It is important that the system remain performant, so that users can access files relatively seamlessly throughout the galaxy without delay. The system not performing efficiently leaves it susceptible to attacks from space pirates.
+  It is important that the system remain performant, so that users can access files relatively seamlessly throughout the galaxy without delay. The system not performing efficiently leads to either cutting back on computationally intensive security measures (leaving it open to attacks from space pirates) or to providing sufficiently powerful systems (possibly involving dedicated hardware for protocols such as TLS/SSL) to perform well (or to lose users, which is not an option for such an important galactic service provider). We advocate for the latter option, so that ease of use and security can both be accommodated.
 
   * **File Accountability**  
   This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
