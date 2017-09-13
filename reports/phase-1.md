@@ -139,16 +139,16 @@ The two groups of players involved are: regular employees who will need to uploa
   Having a file history is important for companies that may need to revert to an old version of file or to monitor changes between two different versions.  
 
   * **Usability**  
-  Usability is an important factor to have to ensure a speedy workflow. The software should be help, never a hinderance, to its users.  
+  Usability is an important factor to have to ensure a speedy work-flow. The software should be help, never a hindrance, to its users.  
 
-  * **Seperation**  
-  Seperation of processes and privileges should be done where possible to minimize the risk of privilege escalation and other vulnerabilities.  
+  * **Separation**  
+  Separation of processes and privileges should be done where possible to minimize the risk of privilege escalation and other vulnerabilities.  
 
 
 ### Galactic File-hosting service
 This platform allows users to access their own private server space via an online web portal (similar to Dropbox or Box). It will span the galaxy, possibly necessitating multiple server locations per planet, or some kind of large, localized data center (for performance and feasibility reasons). In other words, this service will be accessible anywhere in the galaxy (with internet connection) via the Galaxy Wide Web (GWW).
 
-The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials (i.e. no insider threat).
+The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the file-system and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials (i.e. no insider threat).
 
 
 #### PROPERTIES
@@ -195,7 +195,7 @@ The two primary groups of concern are the people using the service with user-lev
   This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
 
   * **Usability**  
-  Usability is an important factor to have to ensure a speedy workflow. The software should be help, never a hinderance, to its users  
+  Usability is an important factor to have to ensure a speedy work-flow. The software should be help, never a hindrance, to its users.  
 
   * **Separation**
   Items, processes, and tasks in the galaxy should be run separate from one another for the sake of preventing space pirates or any other party with malicious intent to access another group's files/data.
