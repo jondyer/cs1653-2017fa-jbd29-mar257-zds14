@@ -65,13 +65,13 @@ The general design principle of separating items, tasks, processes, and privileg
 ### Local Family Media Server  
 This is a basic system which will be used in a home environment on a local network. Access is possible via a device on the local network only, so there should be no direct web connection to the server. The organization (call it the "family") is simple, and consists simply of users of the server, plus one administrative account that has typical permissions (such as adding/removing users and resetting passwords).
 
-We'll assume that no one in the family has malicious intent, meaning that they are not attempting to access files that are not shared with them or perform unauthorized operations on shared files. We assume that each member of the family has a unique login username and password that provides user-level access to the server, and that this information is known only to that user. Additionally, we will suppose that this server is hosted on a network with standard security measures in place.
+We'll assume that no one in the family has malicious intent, meaning that they are not attempting to access files that are not shared with them or perform unauthorized operations on shared files. We assume that each member of the family has a unique login username and password that provides user-level access to the server, and that this information is known only to that user. Additionally, we will suppose that this server is hosted on a network with at least basic security measures in place.
 
 
 
 #### PROPERTIES
   * **Hierarchical Group Structure**   
-  This structure allows for the admin to give access to different files to different users. This makes the server more useful and flexible, while preventing unauthorized privilege escalation(?).
+  This structure allows for the admin to give access to different files to different users. This makes the server more useful and flexible, while preventing unauthorized privilege escalation/modification/etc.
 
   * **Administrative Groups**  
   The concept of Administrative Groups allows the administrator to only give family members the permissions that are necessary. It also restricts the number of accounts with high-level (potentially damaging) permissions.
@@ -133,13 +133,13 @@ The two groups of players involved are: regular employees who will need to uploa
   Timely suspension of user accounts is an important security measure to have in place, to prevent access by former employees.  
 
   * **Redundancy Redundancy**  
-  Having backups are important for businesses which don't want to lose data. Hard drives fail, data gets corrupted; having a backup is important to mitigate any of these issues.  
+  Having backups are important for businesses which don't want to lose data. Hard drives fail, data gets corrupted; having a backup is important to mitigate any of these issues and preserve availability.  
 
   * **File Accountability**  
   Having a file history is important for companies that may need to revert to an old version of file or to monitor changes between two different versions.  
 
   * **Usability**  
-  Usability is an important factor to have to ensure a speedy work-flow. The software should be a help, never a hindrance, to its users.  
+  Usability is an important factor to have to ensure a speedy work-flow. The software should be a help, never a hindrance, to its users. Security features in particular ought to be intuitive and easy to use to encourage adoption by both employees and users.  
 
   * **Separation**  
   Separation of processes and privileges should be done where possible to minimize the risk of privilege escalation and other vulnerabilities.  
@@ -195,11 +195,13 @@ The two primary groups of concern are the people using the service with user-lev
   This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
 
   * **Usability**  
-  Usability is an important factor to have to ensure a speedy work-flow. The software should be a help, never a hindrance, to its users.  
+  Usability is an important factor to have to ensure a speedy work-flow. The software should be a help, never a hindrance, to its users. Security features in particular ought to be intuitive and easy to use to encourage adoption by both employees and users.   
 
   * **Separation**
-  Items, processes, and tasks in the galaxy should be run separate from one another for the sake of preventing space pirates or any other party with malicious intent to access another group's files/data.
+  Items, processes, and tasks in the galaxy should be run separate from one another for the sake of preventing space pirates or any other party with malicious intent from accessing another group's files/data.
+
 
 ## References
 [Dropbox](https://www.dropbox.com/ "Click here to visit the Dropbox website")
 [Box](https://www.box.com/ "Click here to visit the Box website")
+[Speed vs. Security](http://www.webperformancetoday.com/2012/08/14/page-speed-vs-security/ "Inspiration for performance property")
