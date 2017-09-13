@@ -140,7 +140,7 @@ The two groups of players involved are: regular employees who will need to uploa
 
   * **Usability**  
   Usability is an important factor to have to ensure a speedy workflow. The software should be help, never a hinderance, to its users.  
-  
+
   * **Seperation**  
   Seperation of processes and privileges should be done where possible to minimize the risk of privilege escalation and other vulnerabilities.  
 
@@ -151,7 +151,7 @@ This platform allows users to access their own private server space via an onlin
 The two primary groups of concern are the people using the service with user-level permissions and the IT staff/developers who have permission to modify and manage the filesystem and platform itself. We will include in this group any automated processes responsible for function of the service that operate with elevated privileges (e.g. process that creates a new user, resets a password, etc.). We will assume that all of the employees are gruntled, i.e. that none of them have malicious intent towards the company. We suppose that a user's login credentials are private, and that the space pirates that attack such services for fun and profit have no more than user-level credentials (i.e. no insider threat).
 
 
-#### PROPERTIES 
+#### PROPERTIES
   * **Hierarchical Group Structure**  
   The Hierarchical Group Structure allows for a flexible model. This will easily allow the IT staff/Developers to provide different teams with access to different files and different permissions.
 
@@ -173,23 +173,32 @@ The two primary groups of concern are the people using the service with user-lev
   * **File Metadata**  
   Storing metadata on files will show important information such as the last person to modify a file. This is useful for users who want to contact that person to ask a question.  
 
-  * **File Accountability**  
-  This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
-
-  * **Authentication**  
-  Verifying the identity of users is done to make sure that only the employees of the company have access and they only have access to the files that they should.  
-
   * **Concurrent Access Protocol**  
   Preventing multiple users from writing to the same file at the same time will help to ensure that the file remains consistent. Multiple users trying to edit at the same time would just lead to lost work.  
+
+  * **File Availability**  
+  Files should be accessible within the galaxy to users. A user should not be able to 'hold' a file forever while writing to it.
 
   * **Data Confidentiality During Transfer**  
   This will prevent a malicious user from intercepting and reading, or maybe even editing, the data in transit to the server. Doing this is necessary for sensitive information like financial transactions, personally identifiable information, etc.  
 
   * **Data Confidentiality During Storage**  
-  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the company and user secrets actually secret.
+  Providing data confidentiality to stored files will help to protect privacy and to prevent a disclosure threat. Doing this will help to keep the galaxy and user secrets actually secret.
 
+  * **User Account Properties**
+  Developers and/or Users in the galaxy need to be able to edit account properties should any issues arise to change anything for personal or security reasons.
 
+  * **Performance**
+  It is important that the system remain performant, so that users can access files relatively seamlessly throughout the galaxy without delay. The system not performing efficiently leaves it susceptible to attacks from space pirates.
 
+  * **File Accountability**  
+  This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
+
+  * **Usability**  
+  Usability is an important factor to have to ensure a speedy workflow. The software should be help, never a hinderance, to its users  
+
+  * **Separation**
+  Items, processes, and tasks in the galaxy should be run separate from one another for the sake of preventing space pirates or any other party with malicious intent to access another group's files/data.
 
 ## References
 [Dropbox](https://www.dropbox.com/ "Click here to visit the Dropbox website")
