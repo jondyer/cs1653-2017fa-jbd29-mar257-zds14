@@ -139,7 +139,7 @@ The two groups of players involved are: regular employees who will need to uploa
   Having a file history is important for companies that may need to revert to an old version of file or to monitor changes between two different versions.  
 
   * **Usability**  
-  Usability is an important factor to have to ensure a speedy work-flow. The software should be help, never a hindrance, to its users.  
+  Usability is an important factor to have to ensure a speedy work-flow. The software should be a help, never a hindrance, to its users.  
 
   * **Separation**  
   Separation of processes and privileges should be done where possible to minimize the risk of privilege escalation and other vulnerabilities.  
@@ -195,7 +195,7 @@ The two primary groups of concern are the people using the service with user-lev
   This property provides a history to files. A files history is important to have in case any changes need to be reversed.  
 
   * **Usability**  
-  Usability is an important factor to have to ensure a speedy work-flow. The software should be help, never a hindrance, to its users.  
+  Usability is an important factor to have to ensure a speedy work-flow. The software should be a help, never a hindrance, to its users.  
 
   * **Separation**
   Items, processes, and tasks in the galaxy should be run separate from one another for the sake of preventing space pirates or any other party with malicious intent to access another group's files/data.
