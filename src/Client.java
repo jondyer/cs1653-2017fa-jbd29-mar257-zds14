@@ -14,9 +14,21 @@ public abstract class Client {
 	public boolean connect(final String server, final int port) {
 		System.out.println("attempting to connect");
 
-		/* TODO: Write this method */
+		try {
+			// Creates a connection to server at the specified port
+			sock = new Socket(server, port);
+			System.out.println("Connected to " + server + " on port " + port);
 
-		return false;
+			// Creates Input / Output streams with the server we connected to
+			output = new ObjectOutputStream(sock.getOutputStream());
+			input = new ObjectInputStream(sock.getInputStream());
+		} catch(Exception e){
+		    System.err.println("Error: " + e.getMessage());
+		    e.printStackTrace(System.err);
+		    return false;
+		}
+
+		return isConnected();
 	}
 
 	public boolean isConnected() {

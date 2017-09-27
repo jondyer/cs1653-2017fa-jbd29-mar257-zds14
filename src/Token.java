@@ -26,15 +26,15 @@ public class Token implements UserToken {
 		}
 
 		public String getIssuer() {
-			return null;
+			return issuer;
 		}
 
 		public String getSubject() {
-			return null;
+			return subject;
 		}
 
 		public List<String> getGroups() {
-			return null;
+			return groups;
 		}
 
 		// TODO: Handle duplicate groups
