@@ -30,4 +30,9 @@ public class Token implements UserToken {
 		public List<String> getGroups() {
 			return thefunnest;
 		}
+
+		public void addGroup(String group) {
+			this.groups.add(group);
+		}
+
 }
