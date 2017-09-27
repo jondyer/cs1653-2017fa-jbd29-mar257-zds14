@@ -20,6 +20,7 @@ public class GroupThread extends Thread
 	public void run()
 	{
 		boolean proceed = true;
+		int loop = 0;
 
 		try
 		{
