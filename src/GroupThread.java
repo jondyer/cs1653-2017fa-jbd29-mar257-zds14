@@ -222,6 +222,8 @@ public class GroupThread extends Thread
 					{
 						deleteFromGroups.add(my_gs.userList.getUserGroups(username).get(index));
 					}
+
+					// TODO: Actually remove user from groups
 					
 					//If groups are owned, they must be deleted
 					ArrayList<String> deleteOwnedGroup = new ArrayList<String>();
@@ -259,6 +261,11 @@ public class GroupThread extends Thread
 		{
 			return false; //requester does not exist
 		}
+	}
+
+	// TODO: Write method
+	private boolean deleteGroup(String ownedGroup, UserToken token) {
+		return false;
 	}
 	
 }

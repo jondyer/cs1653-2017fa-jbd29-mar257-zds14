@@ -1,9 +1,10 @@
-import java.util.List;
-
 /**
  * This class serves as our Token object, which is acquired
  * to authenticate users both on the group server and file servers.
  */
+
+import java.util.List;
+import java.util.ArrayList;
 
 
 public class Token implements UserToken {
@@ -15,22 +16,28 @@ public class Token implements UserToken {
 		public Token(String issuer, String subject) {
 				this.issuer = issuer;
 				this.subject = subject;
-				this.groups = new List<String>();
+				this.groups = new ArrayList<String>();
 		}
 
+		public Token(String issuer, String subject, ArrayList<String> groups) {
+				this.issuer = issuer;
+				this.subject = subject;
+				this.groups = groups;
+		}
 
 		public String getIssuer() {
-			return funstuff;
+			return null;
 		}
 
 		public String getSubject() {
-			return otherfun;
+			return null;
 		}
 
 		public List<String> getGroups() {
-			return thefunnest;
+			return null;
 		}
 
+		// TODO: Handle duplicate groups
 		public void addGroup(String group) {
 			this.groups.add(group);
 		}

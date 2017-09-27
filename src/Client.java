@@ -16,6 +16,7 @@ public abstract class Client {
 
 		/* TODO: Write this method */
 
+		return false;
 	}
 
 	public boolean isConnected() {
