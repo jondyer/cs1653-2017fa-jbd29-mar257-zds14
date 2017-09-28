@@ -288,30 +288,24 @@ public class GroupThread extends Thread
 	 * @return           Whether or not the operation was successful.
 	 */
 	private boolean addUserToGroup(String user, String group, UserToken token) {
-		String requester = yourToken.getSubject();
+		String requester = token.getSubject();
 
 		//Check if requester exists
 		if(my_gs.userList.checkUser(requester))
 		{
-			//Get the user's groups
-			ArrayList<String> temp = my_gs.userList.getUserGroups(requester);
-			//requester needs to be an administrator
-			if(temp.contains("ADMIN"))
+			//Check if user exists
+			if(my_gs.userList.checkUser(user))
 			{
-				//Does user already exist?
-				if(my_gs.userList.checkUser(username))
-					return false; //User already exists
-				else
+				//Get the requester's groups
+				ArrayList<String> temp = my_gs.userList.getUserOwnership(requester);
+				//requester needs to be group owner
+				if(temp.contains(group))
 				{
-					my_gs.userList.addUser(username);
+					my_gs.userList.addGroup(user, group);
 					return true;
-				}
-			}
-			else
-				return false; //requester not an administrator
-		}
-		else
-			return false; //requester does not exist
+				} else return false; //requester does not own group
+			} else return false; //user does not exist
+		} else return false; //requester does not exist
 	}
 
 	// TODO: Write method
