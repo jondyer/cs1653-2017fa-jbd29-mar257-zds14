@@ -108,10 +108,20 @@ public class GroupThread extends Thread
 					}
 
 					output.writeObject(response);
-				}
-				else if(message.getMessage().equals("CGROUP")) //Client wants to create a group
-				{
-				    /* TODO:  Write this handler */
+				} else if(message.getMessage().equals("CGROUP")) { //Client wants to create a group
+					if(message.getObjContents().size() < 2)
+						response = new Envelope("FAIL");
+					else {
+						if(message.getObjContents().get(0) != null) {
+							if(message.getObjContents().get(1) != null) {
+								UserToken yourToken = (UserToken) message.getObjContents().get(0); //Extract the token
+								String groupName = (String) message.getObjContents().get(1); //Extract the group name
+								if(createGroup(groupName, yourToken))
+									response = new Envelope("OK"); //Success
+							}
+						}
+					}
+					output.writeObject(response);
 				}
 				else if(message.getMessage().equals("DGROUP")) //Client wants to delete a group
 				{
@@ -269,9 +279,11 @@ public class GroupThread extends Thread
 		return false;
 	}
 
-	// TODO: Write method
+	// TODO: Handle check for duplicate groups
 	private boolean createGroup(String groupName, UserToken token) {
-		return false;
+		my_gs.userList.addGroup(token.getSubject(), groupName);
+		my_gs.userList.addOwnership(token.getSubject(), groupName);
+		return true;
 	}
 
 	// TODO: Write method

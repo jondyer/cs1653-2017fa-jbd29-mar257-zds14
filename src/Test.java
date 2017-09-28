@@ -7,6 +7,7 @@ public class Test extends GroupClient implements GroupClientInterface {
 
 		UserToken token = client.getToken("zach");
 		System.out.println(token.getSubject());
+		System.out.println(token.getIssuer());
 		client.disconnect();
 	}
 }
