@@ -9,6 +9,10 @@ import java.util.*;
 		 */
 		private static final long serialVersionUID = 7600343803563417992L;
 		private Hashtable<String, User> list = new Hashtable<String, User>();
+
+		public synchronized String[] getAllUsers() {
+			return list.keySet().toArray(new String[0]);
+		}
 		
 		public synchronized void addUser(String username)
 		{
