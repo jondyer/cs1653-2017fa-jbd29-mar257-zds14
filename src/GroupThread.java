@@ -315,12 +315,36 @@ public class GroupThread extends Thread
 	}
 
 	// TODO: Write method
-	private boolean addUser(String ownedGroup, UserToken token) {
-		return false;
+	/**
+	 * Adds an extant user to the specified group. Owner of token must also be owner of group.
+	 * @param  String    user          The user to add to the group.
+	 * @param  String    group         The group to which the user is added.
+	 * @param  UserToken token         Token belonging to the group owner.
+	 * @return           Whether or not the operation was successful.
+	 */
+	private boolean addUserToGroup(String user, String group, UserToken token) {
+		String requester = token.getSubject();
+
+		//Check if requester exists
+		if(my_gs.userList.checkUser(requester))
+		{
+			//Check if user exists
+			if(my_gs.userList.checkUser(user))
+			{
+				//Get the requester's groups
+				ArrayList<String> temp = my_gs.userList.getUserOwnership(requester);
+				//requester needs to be group owner
+				if(temp.contains(group))
+				{
+					my_gs.userList.addGroup(user, group);
+					return true;
+				} else return false; //requester does not own group
+			} else return false; //user does not exist
+		} else return false; //requester does not exist
 	}
 
 	// TODO: Write method
-	private boolean removeUser(String ownedGroup, UserToken token) {
+	private boolean deleteUserFromGroup(String ownedGroup, UserToken token) {
 		return false;
 	}
 }
