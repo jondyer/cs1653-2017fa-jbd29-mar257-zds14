@@ -4,6 +4,7 @@
 import java.lang.Thread;
 import java.net.Socket;
 import java.io.*;
+import java.util.List;
 import java.util.*;
 
 public class GroupThread extends Thread
@@ -119,7 +120,24 @@ public class GroupThread extends Thread
 				}
 				else if(message.getMessage().equals("LMEMBERS")) //Client wants a list of members in a group
 				{
-				    /* TODO:  Write this handler */
+					response = new Envelope("FAIL");
+
+				    if(message.getObjContents().size() >= 2) {
+						if(message.getObjContents().get(0) != null) {
+							if(message.getObjContents().get(1) != null) {
+								String groupName = (String)message.getObjContents().get(0); //Extract the groupName
+								UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+
+								List<String> members = listMembers(groupName, yourToken);
+								if(members.size() > 0) {
+									response = new Envelope("OK"); //Success
+									response.addObject(members);
+								}
+							}
+						}
+					}
+
+					output.writeObject(response);
 				}
 				else if(message.getMessage().equals("AUSERTOGROUP")) //Client wants to add user to a group
 				{
@@ -274,9 +292,26 @@ public class GroupThread extends Thread
 		return false;
 	}
 
-	// TODO: Write method
-	private boolean listMembers(String listGroup, UserToken token) {
-		return false;
+	private List<String> listMembers(String group, UserToken token) {
+		List<String> members = new ArrayList<String>();
+		String requester = token.getSubject();
+
+		//Does requester exist?
+		if(my_gs.userList.checkUser(requester)) {
+			// Checks to make sure the requester is the owner of the group
+			if (my_gs.userList.getUserOwnership(requester).contains(group)) {
+				
+				String[] users = my_gs.userList.getAllUsers();
+				for(int i = 0; i < users.length; i++) {
+					if (my_gs.userList.getUserGroups(users[i]).contains(group)) {
+						members.add(users[i]);
+					}
+				}
+			}
+			
+		}
+
+		return members;
 	}
 
 	// TODO: Write method
