@@ -91,24 +91,39 @@ public class GroupThread extends Thread {
           }
           output.writeObject(response);
         } else if(message.getMessage().equals("DGROUP")) { //Client wants to delete a group
-            /* TODO:  Write this handler */
-        } else if(message.getMessage().equals("LMEMBERS")) { //Client wants a list of members in a group
-          response = new Envelope("FAIL");
+            response = new Envelope("FAIL");
 
             if(message.getObjContents().size() >= 2) {
-            if(message.getObjContents().get(0) != null) {
-              if(message.getObjContents().get(1) != null) {
-                String groupName = (String)message.getObjContents().get(0); //Extract the groupName
-                UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+              if(message.getObjContents().get(0) != null) {
+                if(message.getObjContents().get(1) != null) {
+                  String groupName = (String)message.getObjContents().get(0); //Extract the groupName
+                  UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
 
-                List<String> members = listMembers(groupName, yourToken);
-                if(members.size() > 0) {
-                  response = new Envelope("OK"); //Success
-                  response.addObject(members);
+                  if(deleteGroup(groupName, yourToken)) {
+                    response = new Envelope("OK"); //Success
+                  }
                 }
               }
             }
-          }
+
+            output.writeObject(response);
+        } else if(message.getMessage().equals("LMEMBERS")) { //Client wants a list of members in a group
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().size() >= 2) {
+              if(message.getObjContents().get(0) != null) {
+                if(message.getObjContents().get(1) != null) {
+                  String groupName = (String)message.getObjContents().get(0); //Extract the groupName
+                  UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+
+                  List<String> members = listMembers(groupName, yourToken);
+                  if(members.size() > 0) {
+                    response = new Envelope("OK"); //Success
+                    response.addObject(members);
+                  }
+                }
+              }
+            }
 
           output.writeObject(response);
         } else if(message.getMessage().equals("AUSERTOGROUP")) {//Client wants to add user to a group
@@ -223,16 +238,48 @@ public class GroupThread extends Thread {
     }else return false; //requester does not exist
   }
 
-  // TODO: Write method
-  private boolean deleteGroup(String ownedGroup, UserToken token) {
+  private boolean createGroup(String groupName, UserToken token) {
+    String requester = token.getSubject();
+
+    //Does requester exist?
+    if(my_gs.userList.checkUser(requester)) {
+      // Does group already exist?
+      if (!my_gs.groupList.checkGroup(groupName)) {
+        my_gs.userList.addGroup(requester, groupName);
+        my_gs.userList.addOwnership(requester, groupName);
+        my_gs.groupList.addGroup(groupName, requester);
+        return true;
+      }
+    }
     return false;
   }
 
-  // TODO: Handle check for duplicate groups
-  private boolean createGroup(String groupName, UserToken token) {
-    my_gs.userList.addGroup(token.getSubject(), groupName);
-    my_gs.userList.addOwnership(token.getSubject(), groupName);
-    return true;
+  private boolean deleteGroup(String ownedGroup, UserToken token) {
+    String requester = token.getSubject();
+    List<String> members = new ArrayList<String>();
+
+    //Does requester exist?
+    if(my_gs.userList.checkUser(requester)) {
+      // Checks to make sure the requester is the owner of the group
+      if (requester.equals(my_gs.groupList.getGroupOwner(ownedGroup))) {
+        members = my_gs.groupList.getGroupUsers(ownedGroup);
+
+        // Removes group affiliation from all previous members
+        for (int i = 0; i < members.size(); i++) {
+          my_gs.userList.removeGroup(members.get(i), ownedGroup);
+        }
+
+        // Removes group from list of groups owner owns
+        my_gs.userList.removeOwnership(requester, ownedGroup);
+
+        // Removes group from list of groups
+        my_gs.groupList.deleteGroup(ownedGroup);
+
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private List<String> listMembers(String group, UserToken token) {
