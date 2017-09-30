@@ -19,6 +19,7 @@ public class GroupServer extends Server {
 
   public static final int SERVER_PORT = 8765;
   public UserList userList;
+  public GroupList groupList;
 
   public GroupServer() {
     super(SERVER_PORT, "ALPHA");
@@ -32,6 +33,7 @@ public class GroupServer extends Server {
     // Overwrote server.start() because if no user file exists, initial admin account needs to be created
 
     String userFile = "UserList.bin";
+    String groupFile = "GroupList.bin";
     Scanner console = new Scanner(System.in);
     ObjectInputStream userStream;
     ObjectInputStream groupStream;
@@ -45,6 +47,10 @@ public class GroupServer extends Server {
       FileInputStream fis = new FileInputStream(userFile);
       userStream = new ObjectInputStream(fis);
       userList = (UserList)userStream.readObject();
+
+      FileInputStream fis1 = new FileInputStream(groupFile);
+      groupStream = new ObjectInputStream(fis1);
+      groupList = (GroupList)groupStream.readObject();
     } catch(FileNotFoundException e) {
       System.out.println("UserList File Does Not Exist. Creating UserList...");
       System.out.println("No users currently exist. Your account will be the administrator.");
@@ -56,6 +62,9 @@ public class GroupServer extends Server {
       userList.addUser(username);
       userList.addGroup(username, "ADMIN");
       userList.addOwnership(username, "ADMIN");
+
+      groupList = new GroupList();
+      groupList.addGroup("ADMIN", username);
     } catch(IOException e) {
       System.out.println("Error reading from UserList file");
       System.exit(-1);

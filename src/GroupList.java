@@ -32,8 +32,8 @@ public class GroupList {
         return list.get(groupName).getOwner();
     }
 
-    public synchronized void removeGroup(String groupName) {
-        list.remove(groupName);
+    public synchronized ArrayList<String> getGroupUsers(String groupName) {
+      return list.get(groupName).getUsers();
     }
 
 

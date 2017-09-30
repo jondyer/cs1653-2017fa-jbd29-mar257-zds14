@@ -242,16 +242,9 @@ public class GroupThread extends Thread {
     //Does requester exist?
     if(my_gs.userList.checkUser(requester)) {
       // Checks to make sure the requester is the owner of the group
-      if (my_gs.userList.getUserOwnership(requester).contains(group)) {
-
-        String[] users = my_gs.userList.getAllUsers();
-        for(int i = 0; i < users.length; i++) {
-          if (my_gs.userList.getUserGroups(users[i]).contains(group)) {
-            members.add(users[i]);
-          }
-        }
+      if (requester.equals(my_gs.groupList.getGroupOwner(group))) {
+      	members = my_gs.groupList.getGroupUsers(group);
       }
-
     }
 
     return members;
