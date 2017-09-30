@@ -137,7 +137,6 @@ public class GroupThread extends Thread {
                 String groupName = (String)message.getObjContents().get(1); //Extract the groupName
                 UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
 
-                List<String> members = listMembers(groupName, yourToken);
                 if(addUserToGroup(userName, groupName, yourToken))
                   response = new Envelope("OK"); //Success
                 } // missing token
@@ -146,7 +145,22 @@ public class GroupThread extends Thread {
           } // missing something!
           output.writeObject(response);
         } else if(message.getMessage().equals("RUSERFROMGROUP")) {//Client wants to remove user from a group
-            /* TODO:  Write this handler */
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().size() >= 3) {
+              if(message.getObjContents().get(0) != null) {
+                if(message.getObjContents().get(1) != null) {
+                  if(message.getObjContents().get(2) != null) {
+                  String userName = (String)message.getObjContents().get(0); //Extract the username
+                  String groupName = (String)message.getObjContents().get(1); //Extract the groupName
+                  UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
+
+                  if(deleteUserFromGroup(userName, groupName, yourToken))
+                    response = new Envelope("OK"); //Success
+                  } // missing token
+                } // missing groupName
+              } // missing userName
+            } // missing something!
         } else if(message.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
           socket.close(); //Close the socket
           proceed = false; //End this communication loop
