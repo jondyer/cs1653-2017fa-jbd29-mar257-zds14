@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 
 public class Token implements UserToken, java.io.Serializable {
+    // TODO: does this really need a serialVersionUID???
+    
     private String issuer;
     private String subject;
     private List<String> groups;
