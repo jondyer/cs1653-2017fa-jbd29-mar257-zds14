@@ -213,7 +213,7 @@ public class GroupThread extends Thread {
             deleteFromGroups.add(my_gs.userList.getUserGroups(username).get(index));
           }
 
-          // TODO: Actually remove user from groups
+          my_gs.groupList.removeFromGroups(deleteFromGroups, username);
 
           //If groups are owned, they must be deleted
           ArrayList<String> deleteOwnedGroup = new ArrayList<String>();
@@ -297,7 +297,6 @@ public class GroupThread extends Thread {
     return members;
   }
 
-  // TODO: Write method
   /**
    * Adds an extant user to the specified group. Owner of token must also be owner of group.
    * @param  String    user          The user to add to the group.
@@ -312,19 +311,31 @@ public class GroupThread extends Thread {
     if(my_gs.userList.checkUser(requester)) {
       //Check if user exists
       if(my_gs.userList.checkUser(user)) {
-        //Get the requester's groups
-        ArrayList<String> temp = my_gs.userList.getUserOwnership(requester);
-        //requester needs to be group owner
-        if(temp.contains(group)) {
+        // If the requester owns the group
+        if (requester.equals(my_gs.groupList.getGroupOwner(group))) {
           my_gs.userList.addGroup(user, group);
+          if (!my_gs.groupList.addToGroup(group, user)) return false;
           return true;
         } else return false; //requester does not own group
       } else return false; //user does not exist
     } else return false; //requester does not exist
   }
 
-  // TODO: Write method
-  private boolean deleteUserFromGroup(String ownedGroup, UserToken token) {
+  private boolean deleteUserFromGroup(String user, String group, UserToken token) {
+    String requester = token.getSubject();
+
+    //Does requester exist?
+    if(my_gs.userList.checkUser(requester)) {
+      // Checks to make sure the requester is the owner of the group
+      if (requester.equals(my_gs.groupList.getGroupOwner(group))) {
+        //Check if user exists
+        if (my_gs.userList.checkUser(user)) {
+          my_gs.userList.removeGroup(user, group);
+          return my_gs.groupList.removeFromGroup(group, user);
+        }
+      }
+    }
+
     return false;
   }
 }

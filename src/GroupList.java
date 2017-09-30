@@ -36,6 +36,27 @@ public class GroupList {
       return list.get(groupName).getUsers();
     }
 
+    public synchronized boolean addToGroup(String group, String user) {
+      if (checkGroup(group)) {
+        list.get(group).addUser(user);
+        return true;
+      }
+      return false;
+    }
+
+    public synchronized boolean removeFromGroup(String group, String user) {
+      return list.get(group).removeUser(user);
+    }
+
+    public synchronized boolean removeFromGroups(ArrayList<String> groups, String user) {
+      for (int i = 0; i < groups.size(); i++) {
+        if (!removeFromGroup(groups.get(i), user)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
 
 
   class Group implements java.io.Serializable {
@@ -65,12 +86,14 @@ public class GroupList {
       users.add(userName);
     }
 
-    public void removeUser(String userName) {
+    public boolean removeUser(String userName) {
       if(!users.isEmpty()) {
         if(users.contains(userName)) {
           users.remove(users.indexOf(userName));
+          return true;
         }
       }
+      return false;
     }
 
   }     // end Group class
