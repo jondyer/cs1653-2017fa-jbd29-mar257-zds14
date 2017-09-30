@@ -1,9 +1,11 @@
 /** Allows easy access and enumeration of groups and their users */
 
+
+
+
 import java.util.*;
 
 public class GroupList {
-
 
     private Hashtable<String, Group> list = new Hashtable<String, Group>();
 
@@ -11,8 +13,8 @@ public class GroupList {
         return list.keySet().toArray(new String[0]);
     }
 
-    public synchronized void addGroup(String groupName) {
-        Group newGroup = new Group();
+    public synchronized void addGroup(String groupName, String owner) {
+        Group newGroup = new Group(owner);
         list.put(groupName, newGroup);
     }
 
@@ -26,28 +28,50 @@ public class GroupList {
         return false;
     }
 
-    //TODO: Finish all below
-    public synchronized ArrayList<String> getUserGroups(String username) {
-        return list.get(username).getGroups();
+    public synchronized String getGroupOwner(String groupName) {
+        return list.get(groupName).getOwner();
     }
 
-    public synchronized ArrayList<String> getUserOwnership(String username) {
-        return list.get(username).getOwnership();
+    public synchronized void removeGroup(String groupName) {
+        list.remove(groupName);
     }
 
-    public synchronized void addGroup(String user, String groupname) {
-        list.get(user).addGroup(groupname);
+
+
+  class Group implements java.io.Serializable {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = -6699986336399821572L;
+    private ArrayList<String> users;
+    private final String owner;
+
+    public Group(String owner) {
+      users = new ArrayList<String>();
+      this.owner = owner;
+      users.add(owner);
     }
 
-    public synchronized void removeGroup(String user, String groupname) {
-        list.get(user).removeGroup(groupname);
+    public ArrayList<String> getUsers() {
+      return users;
     }
 
-    public synchronized void addOwnership(String user, String groupname) {
-        list.get(user).addOwnership(groupname);
+    public String getOwner() {
+      return owner;
     }
 
-    public synchronized void removeOwnership(String user, String groupname) {
-        list.get(user).removeOwnership(groupname);
+    public void addUser(String userName) {
+      users.add(userName);
     }
+
+    public void removeUser(String userName) {
+      if(!users.isEmpty()) {
+        if(users.contains(userName)) {
+          users.remove(users.indexOf(userName));
+        }
+      }
+    }
+
+  }     // end Group class
 }
