@@ -7,14 +7,15 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class ClientApp {
+  static Scanner console = new Scanner(System.in);
+  static GroupClient client = new GroupClient();
+
     public static void main(String [] args){
 
       // Connect to Server
-      GroupClient client = new GroupClient();
       client.connect("localhost", 8765);
 
       // Get Username & Token
-      Scanner console = new Scanner(System.in);
       System.out.print("Welcome! Please login with your username >> ");
       String username = console.next();
       UserToken token = client.getToken(username);
@@ -76,6 +77,7 @@ public class ClientApp {
       userList.add("Upload files");
       userList.add("Download files");
       userList.add("Delete files");
+      userList.add("Create a group");
 
       boolean doAgain = true;
       while(doAgain) {
@@ -89,69 +91,77 @@ public class ClientApp {
         } else {
           System.out.println("Operating as User");
         }
+        System.out.println("\n");
 
         // List options for each privilege level
         if(isAdmin){
           System.out.println("Admin Ops:");
           for(int i = 0; i < adminList.size(); i++)
           System.out.println("a" + i + ") " + adminList.get(i));
-          System.out.println("\n\n");
+          System.out.println("\n");
         }
         if(isOwner){
           System.out.println("Owner Ops:");
           for(int i = 0; i < ownerList.size(); i++)
           System.out.println("o" + i + ") " + ownerList.get(i));
-          System.out.println("\n\n");
+          System.out.println("\n");
         }
         System.out.println("User Ops:");
-        for(int i = 0; i < ownerList.size(); i++)
+        for(int i = 0; i < userList.size(); i++)
         System.out.println(i + ") " + userList.get(i));
-        System.out.println("\n\n");
+        System.out.println("\n");
 
+        System.out.print("Please select an option >> ");
         String response = console.next();
         switch(response){
 
-          case "a1":
+          case "a0":
           // Create user
-
+            if(isAdmin)
+              createUser(token);
             break;
-          case "a2":
+          case "a1":
           // Delete user
-
+            if(isAdmin)
+              deleteUser(token);
             break;
-          case "o1":
+          case "o0":
           // List members of a group
 
             break;
-          case "o2":
+          case "o1":
           // Add user to a group
 
             break;
-          case "o3":
+          case "o2":
           // Remove user from a group
 
             break;
-          case "o4":
+          case "o3":
           // Delete group
 
             break;
-          case "1":
+          case "0":
           // List files
             break;
-          case "2":
+          case "1":
           // Upload files
 
             break;
-          case "3":
+          case "2":
           // Download files
 
             break;
-          case "4":
+          case "3":
           // Delete files
 
             break;
+          case "4":
+          // Create a group
+
+            break;
           default:
-          // Invalid files
+          // Invalid choice
             System.out.println("Not a valid menu choice");
             break;
         }
@@ -161,4 +171,36 @@ public class ClientApp {
 
 
     } //end main
+
+    /**
+     * Creates a user in the system (ADMIN ONLY)
+     * @param  UserToken myToken       Token of the administrator
+     * @return           Status of operation
+     */
+    public static boolean createUser(UserToken myToken) {
+      System.out.print("Username of the person you wish to create? >> ");
+      String username = console.next();
+      boolean status = client.createUser(username, myToken);
+      if(status)
+        System.out.println("Successfully created user '" + username + "'\n");
+      else
+        System.out.println("Failed to create user '" + username + "'\n");
+      return status;
+    }
+
+    /**
+     * Deletes a user from the system (ADMIN ONLY)
+     * @param  UserToken myToken       Token of the administrator
+     * @return           Status of operation
+     */
+    public static boolean deleteUser(UserToken myToken) {
+      System.out.print("Username of the person you wish to delete? >> ");
+      String username = console.next();
+      boolean status = client.deleteUser(username, myToken);
+      if(status)
+        System.out.println("Successfully deleted user '" + username + "'\n");
+      else
+        System.out.println("Failed to delete user '" + username + "'\n");
+      return status;
+    }
 }
