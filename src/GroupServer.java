@@ -3,11 +3,6 @@
  * On exit, the server saves the user list to file.
  */
 
-/*
- * TODO: This file will need to be modified to save state related to
- *       groups that are created in the system
- *
- */
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -109,10 +104,15 @@ class ShutDownListener extends Thread {
 
   public void run() {
     System.out.println("Shutting down server");
-    ObjectOutputStream outStream;
+    ObjectOutputStream userStream;
+    ObjectOutputStream groupStream;
     try {
-      outStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
-      outStream.writeObject(my_gs.userList);
+      userStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
+      groupStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
+
+      userStream.writeObject(my_gs.userList);
+      groupStream.writeObject(my_gs.groupList);
+
     } catch(Exception e) {
       System.err.println("Error: " + e.getMessage());
       e.printStackTrace(System.err);
@@ -132,10 +132,14 @@ class AutoSave extends Thread {
       try {
         Thread.sleep(300000); //Save group and user lists every 5 minutes
         System.out.println("Autosave group and user lists...");
-        ObjectOutputStream outStream;
+        ObjectOutputStream userStream;
+        ObjectOutputStream groupStream;
         try {
-          outStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
-          outStream.writeObject(my_gs.userList);
+          userStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
+          groupStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
+
+          userStream.writeObject(my_gs.userList);
+          groupStream.writeObject(my_gs.groupList);
         }
         catch(Exception e) {
           System.err.println("Error: " + e.getMessage());
