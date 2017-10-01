@@ -126,6 +126,26 @@ public class GroupThread extends Thread {
             }
 
           output.writeObject(response);
+        } else if(message.getMessage().equals("LGROUPS")) { //Client wants a list of members in a group
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().size() >= 2) {
+              if(message.getObjContents().get(0) != null) {
+                if(message.getObjContents().get(1) != null) {
+                  String userName = (String)message.getObjContents().get(0); //Extract the userName
+                  UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+
+                  List<List<String>> resp = listGroups(userName, yourToken);
+
+                  if(resp.get(0).size() > 0) {
+                    response = new Envelope("OK"); //Success
+                    response.addObject(resp);
+                  }
+                }
+              }
+            }
+
+          output.writeObject(response);
         } else if(message.getMessage().equals("AUSERTOGROUP")) {//Client wants to add user to a group
           response = new Envelope("FAIL");
 
@@ -182,6 +202,17 @@ public class GroupThread extends Thread {
     if(my_gs.userList.checkUser(username)) {
       //Issue a new token with server's name, user's name, and user's groups
       UserToken yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
+      return yourToken;
+    }else return null;
+  }
+
+  //Method to create tokens
+  private UserToken createToken(String username, String groupname) {
+    //Check that user exists
+    if(my_gs.userList.checkUser(username)) {
+      if (!my_gs.groupList.checkGroup(groupname)) return null;
+      //Issue a new token with server's name, user's name, and user's groups
+      UserToken yourToken = new Token(my_gs.name, username, new ArrayList<String>(Arrays.asList(groupname)));
       return yourToken;
     }else return null;
   }
@@ -309,6 +340,22 @@ public class GroupThread extends Thread {
     }
 
     return members;
+  }
+
+  private List<List<String>> listGroups(String user, UserToken token) {
+    List<List<String>> groups = new ArrayList<List<String>>();
+    String requester = token.getSubject();
+
+    //Does requester exist?
+    if(my_gs.userList.checkUser(requester)) {
+      // Checks to make sure the requester is the owner of the token
+      if (requester.equals(user)) {
+        groups.add(my_gs.userList.getUserGroups(user));
+        groups.add(my_gs.userList.getUserOwnership(user));
+      }
+    }
+
+    return groups;
   }
 
   /**
