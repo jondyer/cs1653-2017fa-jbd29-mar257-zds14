@@ -211,7 +211,7 @@ public class GroupThread extends Thread {
     //Check that user exists
     if(my_gs.userList.checkUser(username)) {
       if (!my_gs.groupList.checkGroup(groupname)) return null;
-      //Issue a new token with server's name, user's name, and user's groups
+      //Issue a new token with server's name, user's name, and the single specified group
       UserToken yourToken = new Token(my_gs.name, username, new ArrayList<String>(Arrays.asList(groupname)));
       return yourToken;
     }else return null;
