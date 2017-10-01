@@ -6,7 +6,7 @@ import java.io.ObjectInputStream;
 
 public class GroupClient extends Client implements GroupClientInterface {
 
-	 public UserToken getToken(String username)
+	public UserToken getToken(String username)
 	 {
 		try
 		{
@@ -46,13 +46,13 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	 }
 
-     /**
-      * Overloaded method for retrieving partial tokens (for group-specific operations
-      * @param  String username      Owner of the token
-      * @param  String groupname     The group they want to operate in
-      * @return        The newly constructed partial token
-      */
-     public UserToken getToken(String username, String groupname)
+		 /**
+			* Overloaded method for retrieving partial tokens (for group-specific operations
+			* @param  String username      Owner of the token
+			* @param  String groupname     The group they want to operate in
+			* @return        The newly constructed partial token
+			*/
+		 public UserToken getToken(String username, String groupname)
 	 {
 		try
 		{
@@ -62,7 +62,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			//Tell the server to return a token.
 			message = new Envelope("GET");
 			message.addObject(username); //Add user name string
-            message.addObject(groupname); //Add groupname
+						message.addObject(groupname); //Add groupname
 			output.writeObject(message);
 
 			//Get the response from the server
@@ -92,6 +92,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 		}
 
 	 }
+
+  public boolean isAdmin(String username)
+  {
+    return getToken(username, "ADMIN") != null;
+  }
 
 	 public boolean createUser(String username, UserToken token)
 	 {
