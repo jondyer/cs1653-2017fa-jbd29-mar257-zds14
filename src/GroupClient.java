@@ -62,7 +62,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			//Tell the server to return a token.
 			message = new Envelope("GET");
 			message.addObject(username); //Add user name string
-						message.addObject(groupname); //Add groupname
+			message.addObject(groupname); //Add groupname
 			output.writeObject(message);
 
 			//Get the response from the server
@@ -95,7 +95,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
   public boolean isAdmin(String username)
   {
-    return getToken(username, "ADMIN") != null;
+    return (getToken(username, "ADMIN") != null);
   }
 
 	 public boolean createUser(String username, UserToken token)

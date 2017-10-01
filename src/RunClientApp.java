@@ -58,6 +58,7 @@ class ClientApp {
     for(int i=0; i<groupsBelongedTo.size(); i++)
     System.out.println(i + ") " + groupsBelongedTo.get(i));
 
+    // TODO: User should be able to create a group if they don't belong to one
     // Select a group
     System.out.print("Please select a group you wish to access >> ");
     String choice = groupsBelongedTo.get(Integer.parseInt(console.next()));
