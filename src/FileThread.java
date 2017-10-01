@@ -3,6 +3,7 @@
 import java.lang.Thread;
 import java.net.Socket;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,9 +35,32 @@ public class FileThread extends Thread
 				System.out.println("Request received: " + e.getMessage());
 
 				// Handler to list files that this user is allowed to see
-				if(e.getMessage().equals("LFILES"))
-				{
-				    /* TODO: Write this handler */
+				if(e.getMessage().equals("LFILES")) {
+
+				    if (e.getObjContents().size() < 1) {
+						response = new Envelope("FAIL-BADCONTENTS");
+					} else {
+						if (e.getObjContents().get(0) == null) {
+							response = new Envelope("FAIL-BADTOKEN");
+						} else {
+							UserToken yourToken = (UserToken)e.getObjContents().get(0); //Extract token
+							List<ShareFile> fullFileList = FileServer.fileList.getFiles();
+							List<String> userFileList = new ArrayList<String>();
+							List<String> groups = yourToken.getGroups();
+							
+							if (fullFileList != null) {
+								for (ShareFile sf: fullFileList) {
+									if (groups.contains(sf.getGroup())) {
+										userFileList.add(sf.getPath() + "\t(" + sf.getGroup() + ":" + sf.getOwner() + ")");
+									}
+								}
+							}
+
+							response = new Envelope("OK"); //Success
+							response.addObject(userFileList);
+						}
+					}
+					output.writeObject(response);
 				}
 				if(e.getMessage().equals("UPLOADF"))
 				{
