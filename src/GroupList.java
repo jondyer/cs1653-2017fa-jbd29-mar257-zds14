@@ -59,11 +59,11 @@ public class GroupList {
 
 
 
+    /**
+     * Inner class to facilitate GroupList functions and features
+    */
   class Group implements java.io.Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -6699986336399821572L;
     private ArrayList<String> users;
     private final String owner;
