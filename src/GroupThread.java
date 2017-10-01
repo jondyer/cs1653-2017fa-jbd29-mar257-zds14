@@ -28,13 +28,22 @@ public class GroupThread extends Thread {
       do {
         Envelope message = (Envelope)input.readObject();
         System.out.println("Request received: " + message.getMessage());
-        Envelope response;
+        Envelope response = new Envelope("FAIL");
 
         if(message.getMessage().equals("GET")) { //Client wants a token
           String username = (String)message.getObjContents().get(0); //Get the username
           if(username == null) {
             response = new Envelope("FAIL");
             response.addObject(null);
+            output.writeObject(response);
+          } else if(message.getObjContents().size() > 1) {  // this is for partial tokens
+            String groupname = (String)message.getObjContents().get(1);
+            UserToken yourToken = createToken(username, groupname); //Create a token with the specified group
+
+            if(yourToken != null)
+              //Respond to the client. On error, the client will receive a null token
+              response = new Envelope("OK");
+            response.addObject(yourToken);
             output.writeObject(response);
           } else {
             UserToken yourToken = createToken(username); //Create a token
@@ -211,10 +220,13 @@ public class GroupThread extends Thread {
     //Check that user exists
     if(my_gs.userList.checkUser(username)) {
       if (!my_gs.groupList.checkGroup(groupname)) return null;
-      //Issue a new token with server's name, user's name, and the single specified group
-      UserToken yourToken = new Token(my_gs.name, username, new ArrayList<String>(Arrays.asList(groupname)));
-      return yourToken;
-    }else return null;
+      if (my_gs.groupList.getGroupUsers(groupname).contains(username)) { // check if user is in that group
+        //Issue a new token with server's name, user's name, and the single specified group
+        UserToken yourToken = new Token(my_gs.name, username, new ArrayList<String>(Arrays.asList(groupname)));
+        return yourToken;
+      }
+    }
+    return null;
   }
 
 
