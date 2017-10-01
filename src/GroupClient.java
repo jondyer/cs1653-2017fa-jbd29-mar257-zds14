@@ -95,7 +95,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
   public boolean isAdmin(String username)
   {
-    return getToken(username, "ADMIN") != null;
+    return (getToken(username, "ADMIN") != null);
   }
 
 	 public boolean createUser(String username, UserToken token)

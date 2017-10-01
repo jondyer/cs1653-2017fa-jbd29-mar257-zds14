@@ -146,10 +146,8 @@ public class GroupThread extends Thread {
 
                   List<List<String>> resp = listGroups(userName, yourToken);
 
-                  if(resp.get(0).size() > 0) {
-                    response = new Envelope("OK"); //Success
-                    response.addObject(resp);
-                  }
+                  response = new Envelope("OK"); //Success
+                  response.addObject(resp);
                 }
               }
             }
