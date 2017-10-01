@@ -6,7 +6,7 @@ import java.io.ObjectInputStream;
 
 public class GroupClient extends Client implements GroupClientInterface {
 
-	 public UserToken getToken(String username)
+	public UserToken getToken(String username)
 	 {
 		try
 		{
@@ -44,54 +44,59 @@ public class GroupClient extends Client implements GroupClientInterface {
 			return null;
 		}
 
+	}
+
+   /**
+    * Overloaded method for retrieving partial tokens (for group-specific operations)
+    * @param  String username      Owner of the token
+    * @param  String groupname     The group they want to operate in
+    * @return        The newly constructed partial token
+    */
+    public UserToken getToken(String username, String groupname)
+	  {
+    	try
+    	{
+    		UserToken token = null;
+    		Envelope message = null, response = null;
+
+    		//Tell the server to return a token.
+    		message = new Envelope("GET");
+    		message.addObject(username); //Add user name string
+              message.addObject(groupname); //Add groupname
+    		output.writeObject(message);
+
+    		//Get the response from the server
+    		response = (Envelope)input.readObject();
+
+    		//Successful response
+    		if(response.getMessage().equals("OK"))
+    		{
+    			//If there is a token in the Envelope, return it
+    			ArrayList<Object> temp = null;
+    			temp = response.getObjContents();
+
+    			if(temp.size() == 1)
+    			{
+    				token = (UserToken)temp.get(0);
+    				return token;
+    			}
+    		}
+
+    		return null;
+    	}
+    	catch(Exception e)
+    	{
+    		System.err.println("Error: " + e.getMessage());
+    		e.printStackTrace(System.err);
+    		return null;
+    	}
+
 	 }
 
-     /**
-      * Overloaded method for retrieving partial tokens (for group-specific operations
-      * @param  String username      Owner of the token
-      * @param  String groupname     The group they want to operate in
-      * @return        The newly constructed partial token
-      */
-     public UserToken getToken(String username, String groupname)
-	 {
-		try
-		{
-			UserToken token = null;
-			Envelope message = null, response = null;
-
-			//Tell the server to return a token.
-			message = new Envelope("GET");
-			message.addObject(username); //Add user name string
-            message.addObject(groupname); //Add groupname
-			output.writeObject(message);
-
-			//Get the response from the server
-			response = (Envelope)input.readObject();
-
-			//Successful response
-			if(response.getMessage().equals("OK"))
-			{
-				//If there is a token in the Envelope, return it
-				ArrayList<Object> temp = null;
-				temp = response.getObjContents();
-
-				if(temp.size() == 1)
-				{
-					token = (UserToken)temp.get(0);
-					return token;
-				}
-			}
-
-			return null;
-		}
-		catch(Exception e)
-		{
-			System.err.println("Error: " + e.getMessage());
-			e.printStackTrace(System.err);
-			return null;
-		}
-
-	 }
+  public boolean isAdmin(String username)
+  {
+    return getToken(username, "ADMIN");
+  }
 
 	 public boolean createUser(String username, UserToken token)
 	 {
