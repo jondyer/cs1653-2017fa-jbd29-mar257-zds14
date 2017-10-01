@@ -327,6 +327,12 @@ public class GroupThread extends Thread {
     return false;
   }
 
+  /**
+   * Lists all members of specified group
+   * @param  String    group         Group to be listed
+   * @param  UserToken token         Owner of group
+   * @return           List of members
+   */
   private List<String> listMembers(String group, UserToken token) {
     List<String> members = new ArrayList<String>();
     String requester = token.getSubject();
@@ -342,6 +348,12 @@ public class GroupThread extends Thread {
     return members;
   }
 
+  /**
+   * Lists all groups belonged to by specified member, as well as groups owned by member
+   * @param  String    user          User whose groups we're listing
+   * @param  UserToken token         Token of member
+   * @return           List of two lists: 1st has membership, 2nd has ownership
+   */
   private List<List<String>> listGroups(String user, UserToken token) {
     List<List<String>> groups = new ArrayList<List<String>>();
     String requester = token.getSubject();
