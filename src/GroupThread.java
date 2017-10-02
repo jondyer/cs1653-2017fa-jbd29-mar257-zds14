@@ -91,8 +91,8 @@ public class GroupThread extends Thread {
           if(message.getObjContents().size() >= 2) {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
-                UserToken yourToken = (UserToken) message.getObjContents().get(0); //Extract the token
-                String groupName = (String) message.getObjContents().get(1); //Extract the group name
+                String groupName = (String) message.getObjContents().get(0); //Extract the group name
+                UserToken yourToken = (UserToken) message.getObjContents().get(1); //Extract the token
                 if(createGroup(groupName, yourToken))
                   response = new Envelope("OK"); //Success
               }

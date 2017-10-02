@@ -17,6 +17,7 @@ class ClientApp {
 
   Scanner console = new Scanner(System.in);
   GroupClient groupClient = new GroupClient();
+  FileClient fileClient = new FileClient();
 
   public ClientApp(){
     run();
@@ -172,11 +173,13 @@ class ClientApp {
           // Download files
           break;
           case "3":
-          // Delete files
-          break;
+            // Delete files
+            deleteFile(token);
+            break;
           case "4":
-          // Create a group=
-          break;
+            // Create a group
+            createGroup(token);
+            break;
           case "q":
           //quit
           doAgain = false;
@@ -287,5 +290,41 @@ class ClientApp {
       return status;
     }
     return false;
+  }
+
+  /**
+   * Creates a group of the name specified where the owner is the token's subject
+   * @param  group   Group to be created
+   * @param  myToken Token of the user creating the group
+   * @return         Success of operation
+   */
+  public boolean createGroup(UserToken myToken) {
+    System.out.print("Name of the group you wish to create? >> ");
+    String group = console.next();
+    boolean status = groupClient.createGroup(group, myToken);
+    if (status) {
+      System.out.println("Successfully created group '" + group + "'\n");
+    } else {
+        System.out.println("Failed to create group '" + group + "'\n");
+    }
+    return status;
+  }
+
+  /**
+   * Deletes file specified if the token's subject belongs to the group
+   * where the file belongs
+   * @param  myToken Token of the user attempting to delete the file
+   * @return         Success of operation
+   */
+  public boolean deleteFile(UserToken myToken) {
+    System.out.print("Name of the file you wish to delete? >> ");
+    String file = console.next();
+    boolean status = fileClient.delete(file, myToken);
+    if (status) {
+      System.out.println("Successfully deleted file '" + file + "'\n");
+    } else {
+        System.out.println("Failed to delete file '" + file + "'\n");
+    }
+    return status;
   }
 }
