@@ -36,153 +36,160 @@ class ClientApp {
       System.out.println("Account not valid.");
       System.exit(0);
     }
+    boolean selectGroup = true;
+    while(selectGroup){
+      // Check if user has admin privileges
+      boolean isAdmin = false;
+      if(groupClient.isAdmin(username)) {
+        System.out.print("Are you performing administrative operations? (y/n) >> ");
+        String response = console.next();
 
-    // Check if user has admin privileges
-    boolean isAdmin = false;
-    if(groupClient.isAdmin(username)) {
-      System.out.print("Are you performing administrative operations? (y/n) >> ");
-      String response = console.next();
-
-      // Wanna be a BIG boy?
-      if(response.equals("y") || response.equals("Y"))
+        // Wanna be a BIG boy?
+        if(response.equals("y") || response.equals("Y"))
         isAdmin = true;
-    }
-
-    // Get groups belonged to
-    List<List<String>> groupLists = groupClient.listGroups(username, token);
-    ArrayList<String> groupsBelongedTo = (ArrayList<String>) groupLists.get(0);
-    ArrayList<String> groupsOwned = (ArrayList<String>) groupLists.get(1);
-
-    // List groups
-    System.out.println("These are the groups you belong to: ");
-    for(int i=0; i<groupsBelongedTo.size(); i++)
-    System.out.println(i + ") " + groupsBelongedTo.get(i));
-
-    // TODO: User should be able to create a group if they don't belong to one
-    // Select a group
-    System.out.print("Please select a group you wish to access >> ");
-    String choice = groupsBelongedTo.get(Integer.parseInt(console.next()));
-    boolean isOwner = false;
-
-    // Check if owner of selected group
-    if(groupsOwned.contains(choice) && !isAdmin) {
-      System.out.println("Would you to perform owner actions? (y/n) >> ");
-      String response = console.next();
-
-      // Wanna be a big boy?
-      if(response.equals("y") || response.equals("Y"))
-      isOwner = true;
-    }
-
-
-    // Compile List of privileges for each level of usage
-    ArrayList<String> adminList = new ArrayList<String>();
-    adminList.add("Create user");
-    adminList.add("Delete user");
-    ArrayList<String> ownerList = new ArrayList<String>();
-    ownerList.add("List members of a group");
-    ownerList.add("Add user to group");
-    ownerList.add("Remove user from group");
-    ownerList.add("Delete group");
-    ArrayList<String> userList = new ArrayList<String>();
-    userList.add("List files");
-    userList.add("Upload files");
-    userList.add("Download files");
-    userList.add("Delete files");
-    userList.add("Create a group");
-
-    boolean doAgain = true;
-    while(doAgain) {
-      // Menu, show selected group and access level
-      System.out.println("----MENU----");
-      System.out.println("Selected Group: " + choice);
-      if(isAdmin){
-        System.out.println("Operating as Admin");
-      } else if(isOwner){
-        System.out.println("Operating as Owner");
-      } else {
-        System.out.println("Operating as User");
       }
-      System.out.println("\n");
 
-      // List options for each privilege level
-      if(isAdmin){
-        System.out.println("Admin Ops:");
-        for(int i = 0; i < adminList.size(); i++)
-        System.out.println("a" + i + ") " + adminList.get(i));
+      // Get groups belonged to
+      List<List<String>> groupLists = groupClient.listGroups(username, token);
+      ArrayList<String> groupsBelongedTo = (ArrayList<String>) groupLists.get(0);
+      ArrayList<String> groupsOwned = (ArrayList<String>) groupLists.get(1);
+
+      // List groups
+      System.out.println("These are the groups you belong to: ");
+      for(int i=0; i<groupsBelongedTo.size(); i++)
+      System.out.println(i + ") " + groupsBelongedTo.get(i));
+
+      // TODO: User should be able to create a group if they don't belong to one
+      // Select a group
+      System.out.print("Please select a group you wish to access ('q' to quit) >> ");
+      String selection = console.next();
+      if(selection.equals("q")) {
+        selectGroup = false;
+        break;
+      }
+      String choice = groupsBelongedTo.get(Integer.parseInt(selection));
+      boolean isOwner = false;
+
+      // Check if owner of selected group
+      if(groupsOwned.contains(choice) && !isAdmin) {
+        System.out.println("Would you to perform owner actions? (y/n) >> ");
+        String response = console.next();
+
+        // Wanna be a big boy?
+        if(response.equals("y") || response.equals("Y"))
+        isOwner = true;
+      }
+
+
+      // Compile List of privileges for each level of usage
+      ArrayList<String> adminList = new ArrayList<String>();
+      adminList.add("Create user");
+      adminList.add("Delete user");
+      ArrayList<String> ownerList = new ArrayList<String>();
+      ownerList.add("List members of a group");
+      ownerList.add("Add user to group");
+      ownerList.add("Remove user from group");
+      ownerList.add("Delete group");
+      ArrayList<String> userList = new ArrayList<String>();
+      userList.add("List files");
+      userList.add("Upload files");
+      userList.add("Download files");
+      userList.add("Delete files");
+      userList.add("Create a group");
+
+      boolean doAgain = true;
+      while(doAgain) {
+        // Menu, show selected group and access level
+        System.out.println("\n\n----MENU----");
+        System.out.println("Selected Group: " + choice);
+        if(isAdmin){
+          System.out.println("Operating as Admin");
+        } else if(isOwner){
+          System.out.println("Operating as Owner");
+        } else {
+          System.out.println("Operating as User");
+        }
         System.out.println("\n");
-      }
-      if(isOwner){
-        System.out.println("Owner Ops:");
-        for(int i = 0; i < ownerList.size(); i++)
-        System.out.println("o" + i + ") " + ownerList.get(i));
+
+        // List options for each privilege level
+        if(isAdmin){
+          System.out.println("Admin Ops:");
+          for(int i = 0; i < adminList.size(); i++)
+          System.out.println("a" + i + ") " + adminList.get(i));
+          System.out.println("\n");
+        }
+        if(isOwner){
+          System.out.println("Owner Ops:");
+          for(int i = 0; i < ownerList.size(); i++)
+          System.out.println("o" + i + ") " + ownerList.get(i));
+          System.out.println("\n");
+        }
+        System.out.println("User Ops:");
+        for(int i = 0; i < userList.size(); i++)
+        System.out.println(i + ") " + userList.get(i));
         System.out.println("\n");
-      }
-      System.out.println("User Ops:");
-      for(int i = 0; i < userList.size(); i++)
-      System.out.println(i + ") " + userList.get(i));
-      System.out.println("\n");
 
-      System.out.print("Please select an option (q = quit) >> ");
-      String response = console.next();
-      switch(response){
+        System.out.print("Please select an option ('q' to select a different group) >> ");
+        String response = console.next();
+        switch(response){
 
-        // ADMIN ACTIONS -----------------
-        case "a0":
+          // ADMIN ACTIONS -----------------
+          case "a0":
           // Create user
           if(isAdmin) createUser(token);
           break;
-        case "a1":
+          case "a1":
           // Delete user
           if(isAdmin) deleteUser(token);
           break;
 
-        // OWNER ACTIONS -----------------
-        case "o0":
+          // OWNER ACTIONS -----------------
+          case "o0":
           // List members of a group
           if(isOwner) listMembers(choice, token);
           break;
-        case "o1":
+          case "o1":
           // Add user to a group
           if(isOwner) addUserToGroup(choice, token);
           break;
-        case "o2":
+          case "o2":
           // Remove user from a group
           if(isOwner) removeUserFromGroup(choice, token);
           break;
-        case "o3":
+          case "o3":
           // Delete group
           if(isOwner) deleteGroup(choice, token);
           break;
 
-        // USER ACTIONS -----------------
-        case "0":
+          // USER ACTIONS -----------------
+          case "0":
           // List files
           break;
-        case "1":
+          case "1":
           // Upload files
           break;
-        case "2":
+          case "2":
           // Download files
           break;
-        case "3":
+          case "3":
           // Delete files
           break;
-        case "4":
+          case "4":
           // Create a group=
           break;
-        case "q":
+          case "q":
           //quit
           doAgain = false;
           break;
-        default:
+          default:
           // Invalid choice
           System.out.println("Not a valid menu choice");
           break;
-      }
-    }
+        }
+      } // end doAgain
+    } // end selectGroup
     groupClient.disconnect();
-  } //end run()
+  } // end run()
 
   /**
   * Creates a user in the system (ADMIN ONLY)
