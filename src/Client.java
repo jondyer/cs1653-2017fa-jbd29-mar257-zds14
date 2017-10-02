@@ -31,6 +31,23 @@ public abstract class Client {
 		return isConnected();
 	}
 
+	public boolean connect(final String server, final int port, boolean quiet) {
+		try {
+			// Creates a connection to server at the specified port
+			sock = new Socket(server, port);
+
+			// Creates Input / Output streams with the server we connected to
+			output = new ObjectOutputStream(sock.getOutputStream());
+			input = new ObjectInputStream(sock.getInputStream());
+		} catch(Exception e){
+		    System.err.println("Error: " + e.getMessage());
+		    e.printStackTrace(System.err);
+		    return false;
+		}
+
+		return isConnected();
+	}
+
 	public boolean isConnected() {
 		if (sock == null || !sock.isConnected()) {
 			return false;

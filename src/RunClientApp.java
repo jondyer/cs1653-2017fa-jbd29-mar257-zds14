@@ -26,8 +26,10 @@ class ClientApp {
   public void run(){
 
     // Connect to Server
-    groupClient.connect("localhost", 8765);
-    fileClient.connect("localhost", 4321);
+    final int GROUP_PORT = 8765;
+    final int FILE_PORT = 4321;
+    groupClient.connect("localhost", GROUP_PORT);
+    fileClient.connect("localhost", FILE_PORT);
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
@@ -107,7 +109,7 @@ class ClientApp {
       userList.add("Create a group");
 
       boolean doAgain = true;
-      while(doAgain) {
+      groupChoice: while(doAgain) {   // labeled while for convenience later on
         // Menu, show selected group and access level
         System.out.println("\n\n----MENU----");
         System.out.println("Selected Group: " + choice);
@@ -147,12 +149,14 @@ class ClientApp {
           // Create user
           case "a0":
             if(isAdmin) createUser(token);
+            updateConnection(groupClient, GROUP_PORT);
             break;
 
           // TODO: Should auto save after this operation
           // Delete user
           case "a1":
             if(isAdmin) deleteUser(token);
+            updateConnection(groupClient, GROUP_PORT);
             break;
 
           // OWNER ACTIONS -----------------
@@ -166,19 +170,23 @@ class ClientApp {
           // Add user to a group
           case "o1":
             if(isOwner) addUserToGroup(choice, token);
+            updateConnection(groupClient, GROUP_PORT);
             break;
 
           // TODO: Should auto save after this operation
           // Remove user from a group
           case "o2":
             if(isOwner) removeUserFromGroup(choice, token);
+            updateConnection(groupClient, GROUP_PORT);
             break;
 
           // TODO: Should auto save after this operation
+          // TODO: Should kick user out of group after this op
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
-            break;
+            updateConnection(groupClient, GROUP_PORT);
+            break groupChoice;
 
           // USER ACTIONS -----------------
           // List files
@@ -209,6 +217,7 @@ class ClientApp {
             // TODO: Should auto save after this operation
             // Create a group
             createGroup(token);
+            updateConnection(groupClient, GROUP_PORT);
             break;
 
           //quit
@@ -417,5 +426,16 @@ class ClientApp {
         System.out.println("Failed to delete file '" + file + "'\n");
     }
     return status;
+  }
+
+  /**
+   * Resets the connection to the specified client with the given port
+   * @param  Client client        Client object whose connection is to be reset
+   * @param  int    port          Port to reconnect to (quietly)
+   * @return        True on success
+   */
+  private boolean updateConnection(Client client, int port) {
+    client.disconnect();
+    return client.connect("localhost", port, true);
   }
 }

@@ -397,12 +397,16 @@ public class GroupThread extends Thread {
       if(my_gs.userList.checkUser(user)) {
         // If the requester owns the group
         if (requester.equals(my_gs.groupList.getGroupOwner(group))) {
+          // Check if user is already in group
+          if (!my_gs.userList.getUserGroups(user).contains(group)) {
           my_gs.userList.addGroup(user, group);
           if (!my_gs.groupList.addToGroup(group, user)) return false;
           return true;
-        } else return false; //requester does not own group
-      } else return false; //user does not exist
-    } else return false; //requester does not exist
+          }
+        }  //requester does not own group
+      }  //user does not exist
+    }  //requester does not exist
+    return false;
   }
 
   private boolean deleteUserFromGroup(String user, String group, UserToken token) {
