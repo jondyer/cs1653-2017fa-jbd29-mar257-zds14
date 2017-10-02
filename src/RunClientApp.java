@@ -28,6 +28,7 @@ class ClientApp {
     // TODO: Crashes if the group server isn't running
     // Connect to Server
     groupClient.connect("localhost", 8765);
+    fileClient.connect("localhost", 4321);
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");

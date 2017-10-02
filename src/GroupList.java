@@ -5,8 +5,9 @@
 
 import java.util.*;
 
-public class GroupList {
+public class GroupList implements java.io.Serializable {
 
+    private static final long serialVersionUID = 7600343803563416992L;
     private Hashtable<String, Group> list = new Hashtable<String, Group>();
 
     public synchronized String[] getAllGroups() {
