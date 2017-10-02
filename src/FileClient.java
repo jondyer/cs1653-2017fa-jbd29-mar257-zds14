@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 public class FileClient extends Client implements FileClientInterface {
 
@@ -118,14 +119,14 @@ public class FileClient extends Client implements FileClientInterface {
 				return (List<String>)e.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
 			 }
 
-			 return null;
+			 return (new ArrayList<String>());
 
 		 }
 		 catch(Exception e)
 			{
 				System.err.println("Error: " + e.getMessage());
 				e.printStackTrace(System.err);
-				return null;
+				return (new ArrayList<String>());
 			}
 	}
 
