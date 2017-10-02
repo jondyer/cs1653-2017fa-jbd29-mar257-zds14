@@ -188,6 +188,7 @@ public class GroupThread extends Thread {
                 } // missing groupName
               } // missing userName
             } // missing something!
+            output.writeObject(response);
         } else if(message.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
           socket.close(); //Close the socket
           proceed = false; //End this communication loop
@@ -406,7 +407,6 @@ public class GroupThread extends Thread {
 
   private boolean deleteUserFromGroup(String user, String group, UserToken token) {
     String requester = token.getSubject();
-
     //Does requester exist?
     if(my_gs.userList.checkUser(requester)) {
       // Checks to make sure the requester is the owner of the group
