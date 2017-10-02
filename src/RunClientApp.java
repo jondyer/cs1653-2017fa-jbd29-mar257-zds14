@@ -5,6 +5,7 @@
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
 
 // Driver Class
 public class RunClientApp {
@@ -61,7 +62,7 @@ class ClientApp {
       // List groups
       System.out.println("These are the groups you belong to: ");
       for(int i=0; i<groupsBelongedTo.size(); i++)
-        System.out.println(i + ") " + groupsBelongedTo.get(i));
+      System.out.println(i + ") " + groupsBelongedTo.get(i));
 
       // TODO: User should be able to create a group if they don't belong to one
       // Select a group
@@ -135,70 +136,88 @@ class ClientApp {
 
         System.out.print("Please select an option ('q' to select a different group) >> ");
         String response = console.next();
-        switch(response){
+        switch(response) {
 
           // ADMIN ACTIONS -----------------
-          case "a0":
+
           // TODO: Should auto save after this operation
           // Create user
-          if(isAdmin) createUser(token);
-          break;
-          case "a1":
+          case "a0":
+            if(isAdmin) createUser(token);
+            break;
+
           // TODO: Should auto save after this operation
           // Delete user
-          if(isAdmin) deleteUser(token);
-          break;
+          case "a1":
+            if(isAdmin) deleteUser(token);
+            break;
 
           // OWNER ACTIONS -----------------
-          case "o0":
+          
+          // TODO: Should auto save after this operation
           // List members of a group
-          if(isOwner) listMembers(choice, token);
-          break;
-          case "o1":
+          case "o0":
+            if(isOwner) listMembers(choice, token);
+            break;
+
           // TODO: Should auto save after this operation
           // Add user to a group
-          if(isOwner) addUserToGroup(choice, token);
-          break;
-          case "o2":
+          case "o1":
+            if(isOwner) addUserToGroup(choice, token);
+            break;
+
           // TODO: Should auto save after this operation
           // Remove user from a group
-          if(isOwner) removeUserFromGroup(choice, token);
-          break;
-          case "o3":
+          case "o2":
+            if(isOwner) removeUserFromGroup(choice, token);
+            break;
+
           // TODO: Should auto save after this operation
           // Delete group
-          if(isOwner) deleteGroup(choice, token);
-          break;
+          case "o3":
+            if(isOwner) deleteGroup(choice, token);
+            break;
 
           // USER ACTIONS -----------------
-          case "0":
           // List files
-          break;
-          case "1":
+          case "0":
+            listFiles(token);
+            break;
+
           // TODO: Should auto save after this operation
           // Upload files
-          break;
-          case "2":
+          case "1":
+            uploadFile(choice, token);
+            break;
+
           // Download files
-          break;
+          case "2":
+            downloadFile(token);
+            break;
+
+          // Delete files
           case "3":
             // TODO: Should auto save after this operation
             // Delete files
             deleteFile(token);
             break;
+
+          // Create a group=
           case "4":
             // TODO: Should auto save after this operation
             // Create a group
             createGroup(token);
             break;
-          case "q":
+
           //quit
-          doAgain = false;
-          break;
-          default:
+          case "q":
+            doAgain = false;
+            break;
+
           // Invalid choice
-          System.out.println("Not a valid menu choice");
-          break;
+          default:
+            System.out.println("Not a valid menu choice");
+            break;
         }
       } // end doAgain
     } // end selectGroup
@@ -304,6 +323,64 @@ class ClientApp {
   }
 
   /**
+   * Prints out all files available to the user currently logged in
+   * @param UserToken myToken Token of the user whose files are to be printed
+   */
+  public void listFiles(UserToken myToken) {
+    ArrayList<String> userFiles = (ArrayList<String>) fileClient.listFiles(myToken);
+    System.out.println("\nFiles for user '" + myToken.getSubject() + "'");
+    for(String s : userFiles)
+      System.out.println("- " + s);
+  }
+
+  /**
+   * Uploads a new file to the currently selected group.
+   * @param  String    group         Group for file to be uploaded to
+   * @param  UserToken myToken       Token of the user uploading the file
+   * @return           Success of operation.
+   */
+  public boolean uploadFile(String group, UserToken myToken) {
+    // Get file to be uploaded
+    System.out.print("Path of the source file? >> ");
+    String sourceFile = console.next();
+
+    // Check if file exists
+    File test = new File(sourceFile);
+    if(!test.exists()) {
+      System.out.println("Source file could not be found.");
+      return false;
+    }
+
+    // Pick new filename
+    System.out.print("Name of the destination file? >> ");
+    String destinationFilename = console.next();
+    boolean status = fileClient.upload(sourceFile, destinationFilename, group, myToken);
+    if(status)
+      System.out.println("Successfully uploaded file '" + sourceFile + "'\n");
+    else
+      System.out.println("Failed to upload '" + sourceFile + "'\n");
+    return status;
+  }
+
+  /** 
+   * Downloads a specified file to a specified location/name.
+   * @param  UserToken myToken       Token of the user downloading the file
+   * @return           Sucess of operation.
+   */
+  public boolean downloadFile(UserToken myToken){
+    System.out.print("What file do you want to download? >> ");
+    String sourceFile = console.next();
+    System.out.print("What do you want to save it as? >> ");
+    String destFile = console.next();
+    boolean status = fileClient.download(sourceFile, destFile, myToken);
+    if(status)
+      System.out.println("Successfully downloaded file '" + sourceFile + "'\n");
+    else
+      System.out.println("Failed to download '" + sourceFile + "'\n");
+    return status;
+  }
+
+  /** 
    * Creates a group of the name specified where the owner is the token's subject
    * @param  group   Group to be created
    * @param  myToken Token of the user creating the group
