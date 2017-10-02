@@ -43,7 +43,7 @@ class ClientApp {
     while(selectGroup){
       // Check if user has admin privileges
       boolean isAdmin = false;
-      // TODO: If they choose to have admin priveleges they should have the option of 
+      // TODO: If they choose to have admin priveleges they should have the option of
       // performing owner operations as well
       if(groupClient.isAdmin(username)) {
         System.out.print("Are you performing administrative operations? (y/n) >> ");
@@ -66,11 +66,16 @@ class ClientApp {
 
       // TODO: User should be able to create a group if they don't belong to one
       // Select a group
-      System.out.print("Please select a group you wish to access ('q' to quit) >> ");
+      System.out.print("Please select a group you wish to access ('q' to quit, 'c' to create a new group) >> ");
       String selection = console.next();
       if(selection.equals("q")) {
         selectGroup = false;
         break;
+      }
+      //TODO: Make group actually appear after creating it
+      if(selection.equals("c")) {
+        createGroup(token);
+        continue;
       }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
@@ -137,7 +142,6 @@ class ClientApp {
         System.out.print("Please select an option ('q' to select a different group) >> ");
         String response = console.next();
         switch(response) {
-
           // ADMIN ACTIONS -----------------
 
           // TODO: Should auto save after this operation
@@ -153,7 +157,6 @@ class ClientApp {
             break;
 
           // OWNER ACTIONS -----------------
-          
           // TODO: Should auto save after this operation
           // List members of a group
           case "o0":
@@ -362,7 +365,7 @@ class ClientApp {
     return status;
   }
 
-  /** 
+  /**
    * Downloads a specified file to a specified location/name.
    * @param  UserToken myToken       Token of the user downloading the file
    * @return           Sucess of operation.
@@ -380,7 +383,7 @@ class ClientApp {
     return status;
   }
 
-  /** 
+  /**
    * Creates a group of the name specified where the owner is the token's subject
    * @param  group   Group to be created
    * @param  myToken Token of the user creating the group
