@@ -203,7 +203,6 @@ public class FileClient extends Client implements FileClientInterface {
 					System.out.printf("\nFile data upload successful\n");
 				}
 				else {
-					
 					 System.out.printf("\nUpload failed: %s\n", env.getMessage());
 					 return false;
 				 }
