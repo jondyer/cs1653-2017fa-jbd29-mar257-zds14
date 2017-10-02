@@ -12,7 +12,7 @@ public abstract class Client {
 	protected ObjectInputStream input;
 
 	public boolean connect(final String server, final int port) {
-		System.out.println("attempting to connect");
+		System.out.println("Attempting to connect...");
 
 		try {
 			// Creates a connection to server at the specified port
