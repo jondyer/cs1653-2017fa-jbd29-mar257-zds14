@@ -25,7 +25,6 @@ class ClientApp {
   }
   public void run(){
 
-    // TODO: Crashes if the group server isn't running
     // Connect to Server
     groupClient.connect("localhost", 8765);
     fileClient.connect("localhost", 4321);
@@ -44,8 +43,6 @@ class ClientApp {
     while(selectGroup){
       // Check if user has admin privileges
       boolean isAdmin = false;
-      // TODO: If they choose to have admin priveleges they should have the option of
-      // performing owner operations as well
       if(groupClient.isAdmin(username)) {
         System.out.print("Are you performing administrative operations? (y/n) >> ");
         String response = console.next();
@@ -65,7 +62,6 @@ class ClientApp {
       for(int i=0; i<groupsBelongedTo.size(); i++)
       System.out.println(i + ") " + groupsBelongedTo.get(i));
 
-      // TODO: User should be able to create a group if they don't belong to one
       // Select a group
       System.out.print("Please select a group you wish to access ('q' to quit, 'c' to create a new group) >> ");
       String selection = console.next();
@@ -88,6 +84,8 @@ class ClientApp {
 
         // Wanna be a big boy?
         if(response.equals("y") || response.equals("Y"))
+        isOwner = true;
+      } else if (groupsOwned.contains(choice) && isAdmin) {
         isOwner = true;
       }
 
@@ -226,6 +224,7 @@ class ClientApp {
       } // end doAgain
     } // end selectGroup
     groupClient.disconnect();
+    fileClient.disconnect();
   } // end run()
 
   /**
