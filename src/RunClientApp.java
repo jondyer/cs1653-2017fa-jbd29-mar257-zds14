@@ -74,6 +74,7 @@ class ClientApp {
       //TODO: Make group actually appear after creating it
       if(selection.equals("c")) {
         createGroup(token);
+        updateConnection(groupClient, GROUP_PORT);
         continue;
       }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
