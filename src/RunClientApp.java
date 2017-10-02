@@ -24,6 +24,7 @@ class ClientApp {
   }
   public void run(){
 
+    // TODO: Crashes if the group server isn't running
     // Connect to Server
     groupClient.connect("localhost", 8765);
 
@@ -41,6 +42,8 @@ class ClientApp {
     while(selectGroup){
       // Check if user has admin privileges
       boolean isAdmin = false;
+      // TODO: If they choose to have admin priveleges they should have the option of 
+      // performing owner operations as well
       if(groupClient.isAdmin(username)) {
         System.out.print("Are you performing administrative operations? (y/n) >> ");
         String response = console.next();
@@ -58,7 +61,7 @@ class ClientApp {
       // List groups
       System.out.println("These are the groups you belong to: ");
       for(int i=0; i<groupsBelongedTo.size(); i++)
-      System.out.println(i + ") " + groupsBelongedTo.get(i));
+        System.out.println(i + ") " + groupsBelongedTo.get(i));
 
       // TODO: User should be able to create a group if they don't belong to one
       // Select a group
@@ -136,10 +139,12 @@ class ClientApp {
 
           // ADMIN ACTIONS -----------------
           case "a0":
+          // TODO: Should auto save after this operation
           // Create user
           if(isAdmin) createUser(token);
           break;
           case "a1":
+          // TODO: Should auto save after this operation
           // Delete user
           if(isAdmin) deleteUser(token);
           break;
@@ -150,14 +155,17 @@ class ClientApp {
           if(isOwner) listMembers(choice, token);
           break;
           case "o1":
+          // TODO: Should auto save after this operation
           // Add user to a group
           if(isOwner) addUserToGroup(choice, token);
           break;
           case "o2":
+          // TODO: Should auto save after this operation
           // Remove user from a group
           if(isOwner) removeUserFromGroup(choice, token);
           break;
           case "o3":
+          // TODO: Should auto save after this operation
           // Delete group
           if(isOwner) deleteGroup(choice, token);
           break;
@@ -167,16 +175,19 @@ class ClientApp {
           // List files
           break;
           case "1":
+          // TODO: Should auto save after this operation
           // Upload files
           break;
           case "2":
           // Download files
           break;
           case "3":
+            // TODO: Should auto save after this operation
             // Delete files
             deleteFile(token);
             break;
           case "4":
+            // TODO: Should auto save after this operation
             // Create a group
             createGroup(token);
             break;

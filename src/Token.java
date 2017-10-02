@@ -39,7 +39,6 @@ public class Token implements UserToken, java.io.Serializable {
       return groups;
     }
 
-    // TODO: Handle duplicate groups this is the most important -- use a hashmap!
     public void addGroup(String group) {
       this.groups.add(group);
     }

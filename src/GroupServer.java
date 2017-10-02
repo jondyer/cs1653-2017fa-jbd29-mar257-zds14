@@ -92,6 +92,22 @@ public class GroupServer extends Server {
       e.printStackTrace(System.err);
     }
   }
+
+  public void save() {
+    ObjectOutputStream userStream;
+    ObjectOutputStream groupStream;
+    try {
+      userStream = new ObjectOutputStream(new FileOutputStream("UserList.bin"));
+      groupStream = new ObjectOutputStream(new FileOutputStream("GroupList.bin"));
+
+      userStream.writeObject(userList);
+      groupStream.writeObject(groupList);
+    }
+    catch(Exception e) {
+      System.err.println("Error: " + e.getMessage());
+      e.printStackTrace(System.err);
+    }
+  }
 }
 
 //This thread saves the user list
