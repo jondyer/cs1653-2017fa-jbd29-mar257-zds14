@@ -146,14 +146,12 @@ class ClientApp {
         switch(response) {
           // ADMIN ACTIONS -----------------
 
-          // TODO: Should auto save after this operation
           // Create user
           case "a0":
             if(isAdmin) createUser(token);
             updateConnection(groupClient, GROUP_PORT);
             break;
 
-          // TODO: Should auto save after this operation
           // Delete user
           case "a1":
             if(isAdmin) deleteUser(token);
@@ -161,28 +159,23 @@ class ClientApp {
             break;
 
           // OWNER ACTIONS -----------------
-          // TODO: Should auto save after this operation
           // List members of a group
           case "o0":
             if(isOwner) listMembers(choice, token);
             break;
 
-          // TODO: Should auto save after this operation
           // Add user to a group
           case "o1":
             if(isOwner) addUserToGroup(choice, token);
             updateConnection(groupClient, GROUP_PORT);
             break;
 
-          // TODO: Should auto save after this operation
           // Remove user from a group
           case "o2":
             if(isOwner) removeUserFromGroup(choice, token);
             updateConnection(groupClient, GROUP_PORT);
             break;
 
-          // TODO: Should auto save after this operation
-          // TODO: Should kick user out of group after this op
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
@@ -195,7 +188,6 @@ class ClientApp {
             listFiles(token);
             break;
 
-          // TODO: Should auto save after this operation
           // Upload files
           case "1":
             uploadFile(choice, token);
@@ -208,14 +200,12 @@ class ClientApp {
 
           // Delete files
           case "3":
-            // TODO: Should auto save after this operation
             // Delete files
             deleteFile(token);
             break;
 
           // Create a group=
           case "4":
-            // TODO: Should auto save after this operation
             // Create a group
             createGroup(token);
             updateConnection(groupClient, GROUP_PORT);
