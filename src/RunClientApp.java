@@ -305,6 +305,7 @@ class ClientApp {
   }
 
   /**
+<<<<<<< HEAD
    * Prints out all files available to the user currently logged in
    * @param UserToken myToken Token of the user whose files are to be printed
    */
@@ -341,10 +342,27 @@ class ClientApp {
       System.out.println("Successfully uploaded file '" + sourceFile + "'\n");
     else
       System.out.println("Failed to upload '" + sourceFile + "'\n");
+=======
+   * Creates a group of the name specified where the owner is the token's subject
+   * @param  group   Group to be created
+   * @param  myToken Token of the user creating the group
+   * @return         Success of operation
+   */
+  public boolean createGroup(UserToken myToken) {
+    System.out.print("Name of the group you wish to create? >> ");
+    String group = console.next();
+    boolean status = groupClient.createGroup(group, myToken);
+    if (status) {
+      System.out.println("Successfully created group '" + group + "'\n");
+    } else {
+        System.out.println("Failed to create group '" + group + "'\n");
+    }
+>>>>>>> 1b811a5d0de9a4bd8563c4f878e589de0b949a16
     return status;
   }
 
   /**
+<<<<<<< HEAD
    * Downloads a specified file to a specified location/name.
    * @param  UserToken myToken       Token of the user downloading the file
    * @return           Sucess of operation.
@@ -359,6 +377,22 @@ class ClientApp {
       System.out.println("Successfully downloaded file '" + sourceFile + "'\n");
     else
       System.out.println("Failed to download '" + sourceFile + "'\n");
+=======
+   * Deletes file specified if the token's subject belongs to the group
+   * where the file belongs
+   * @param  myToken Token of the user attempting to delete the file
+   * @return         Success of operation
+   */
+  public boolean deleteFile(UserToken myToken) {
+    System.out.print("Name of the file you wish to delete? >> ");
+    String file = console.next();
+    boolean status = fileClient.delete(file, myToken);
+    if (status) {
+      System.out.println("Successfully deleted file '" + file + "'\n");
+    } else {
+        System.out.println("Failed to delete file '" + file + "'\n");
+    }
+>>>>>>> 1b811a5d0de9a4bd8563c4f878e589de0b949a16
     return status;
   }
 }
