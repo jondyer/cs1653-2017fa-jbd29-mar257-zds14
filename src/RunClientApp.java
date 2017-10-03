@@ -120,6 +120,7 @@ class ClientApp {
       adminList.add("Create user");
       adminList.add("Delete user");
       adminList.add("List all groups");
+      adminList.add("List all users");
       ArrayList<String> ownerList = new ArrayList<String>();
       ownerList.add("List members of a group");
       ownerList.add("Add user to group");
@@ -184,6 +185,10 @@ class ClientApp {
 
           case "a2":
             if(isAdmin) listAllGroups(token);
+            break;
+
+          case "a3":
+            if(isAdmin) listAllUsers(token);
             break;
 
 
@@ -291,6 +296,27 @@ class ClientApp {
       System.out.println("Failed to delete user '" + username + "'\n");
     return status;
   }
+
+    /**
+     * Lists all groups on the group server (ADMIN ONLY)
+     * @param UserToken token Requester's token (must be admin)
+     */
+    private void listAllGroups(UserToken token) {
+      List<String> groupList = groupClient.listAllGroups(token);
+      System.out.println("\nAll groups on group server");
+      for(String s : groupList)
+        System.out.println("- " + s);
+    }
+
+
+    private void listAllUsers(UserToken token) {
+      List<String> userList = groupClient.listAllUsers(token);
+      System.out.println("\nAll users on group server");
+      for(String s : userList)
+        System.out.println("- " + s);
+    }
+
+
 
   /**
    * Lists all members of a group.
@@ -467,14 +493,6 @@ class ClientApp {
   private boolean updateConnection(Client client, int port) {
     client.disconnect();
     return client.connect("localhost", port, true);
-  }
-
-
-  private void listAllGroups(UserToken token) {
-    List<String> groupList = groupClient.listAllGroups(token);
-    System.out.println("\nAll groups on group server");
-    for(String s : groupList)
-      System.out.println("- " + s);
   }
 
   /**
