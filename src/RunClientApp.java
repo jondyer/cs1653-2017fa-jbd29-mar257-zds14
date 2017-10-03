@@ -88,15 +88,21 @@ class ClientApp {
       System.out.println(i + ") " + groupsBelongedTo.get(i));
 
       // Select a group
-      System.out.print("Please select a group you wish to access ('q' to quit, 'c' to create a new group) >> ");
+      System.out.print("Please select a group you wish to access ('q' to quit, 'r' to refresh, 'c' to create a new group) >> ");
       String selection = console.next();
       if(selection.equals("q")) {
         selectGroup = false;
         break;
-      }
-      if(selection.equals("c")) {
+      } else if(selection.equals("c")) {
         createGroup(token);
         updateConnection(groupClient, groupHost, GROUP_PORT);
+        continue;
+      } else if(selection.equals("r")) {
+        updateConnection(groupClient, groupHost, GROUP_PORT);
+        updateConnection(fileClient, fileHost, FILE_PORT);
+        continue;
+      } else {
+        System.out.println("Not a valid selection");
         continue;
       }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
@@ -166,7 +172,7 @@ class ClientApp {
           System.out.println(i + ") " + userList.get(i));
         System.out.println("\n");
 
-        System.out.print("Please select an option ('q' to select a different group) >> ");
+        System.out.print("Please select an option ('q' to select a different group, 'r' to refresh) >> ");
         String response = console.next();
         switch(response) {
 
@@ -252,6 +258,12 @@ class ClientApp {
             doAgain = false;
             break;
 
+          //refresh
+          case "r":
+            updateConnection(groupClient, groupHost, GROUP_PORT);
+            updateConnection(fileClient, fileHost, FILE_PORT);
+            break;
+            
           // Invalid choice
           default:
             System.out.println("Not a valid menu choice");
