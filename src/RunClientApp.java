@@ -297,6 +297,10 @@ class ClientApp {
   public boolean removeUserFromGroup(String group, UserToken myToken) {
     System.out.print("Username of the person you wish to remove from '" + group +  "'? >> ");
     String username = console.next();
+    if(username.equals(myToken.getSubject())) {
+      System.out.println("You can't remove yourself from the group!");
+      return false;
+    }
     boolean status = groupClient.deleteUserFromGroup(username, group, myToken);
     if(status)
       System.out.println("Successfully removed user '" + username + "' from '"+ group + "'\n");
