@@ -175,12 +175,14 @@ class ClientApp {
           case "a0":
             if(isAdmin) createUser(token);
             updateConnection(groupClient, groupHost, GROUP_PORT);
+            updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           // Delete user
           case "a1":
             if(isAdmin) deleteUser(token);
             updateConnection(groupClient, groupHost, GROUP_PORT);
+            updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           case "a2":
@@ -214,6 +216,7 @@ class ClientApp {
           case "o3":
             if(isOwner) deleteGroup(choice, token);
             updateConnection(groupClient, groupHost, GROUP_PORT);
+            updateConnection(fileClient, fileHost, FILE_PORT);
             doAgain = false;
             break;
 
@@ -245,6 +248,7 @@ class ClientApp {
             // Create a group
             createGroup(token);
             updateConnection(groupClient, groupHost, GROUP_PORT);
+            updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           //quit
