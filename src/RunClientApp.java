@@ -71,7 +71,6 @@ class ClientApp {
         selectGroup = false;
         break;
       }
-      //TODO: Make group actually appear after creating it
       if(selection.equals("c")) {
         createGroup(token);
         updateConnection(groupClient, GROUP_PORT);
@@ -251,7 +250,9 @@ class ClientApp {
   public boolean deleteUser(UserToken myToken) {
     System.out.print("Username of the person you wish to delete? >> ");
     String username = console.next();
-    boolean status = groupClient.deleteUser(username, myToken);
+    boolean status = false;
+    if(!username.equals(myToken.getSubject()))
+      status = groupClient.deleteUser(username, myToken);
     if(status)
       System.out.println("Successfully deleted user '" + username + "'\n");
     else
