@@ -51,8 +51,8 @@ class ClientApp {
   public void run() {
 
     // Connect to Server
-    groupClient.connect("localhost", GROUP_PORT);
-    fileClient.connect("localhost", FILE_PORT);
+    groupClient.connect(groupHost, GROUP_PORT);
+    fileClient.connect(fileHost, FILE_PORT);
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
@@ -96,7 +96,7 @@ class ClientApp {
       }
       if(selection.equals("c")) {
         createGroup(token);
-        updateConnection(groupClient, GROUP_PORT);
+        updateConnection(groupClient, groupHost, GROUP_PORT);
         continue;
       }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
@@ -172,13 +172,13 @@ class ClientApp {
           // Create user
           case "a0":
             if(isAdmin) createUser(token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Delete user
           case "a1":
             if(isAdmin) deleteUser(token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // OWNER ACTIONS -----------------
@@ -190,19 +190,19 @@ class ClientApp {
           // Add user to a group
           case "o1":
             if(isOwner) addUserToGroup(choice, token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Remove user from a group
           case "o2":
             if(isOwner) removeUserFromGroup(choice, token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break groupChoice;
 
           // USER ACTIONS -----------------
@@ -231,7 +231,7 @@ class ClientApp {
           case "4":
             // Create a group
             createGroup(token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           //quit
@@ -457,5 +457,17 @@ class ClientApp {
   private boolean updateConnection(Client client, int port) {
     client.disconnect();
     return client.connect("localhost", port, true);
+  }
+
+  /**
+   * Resets the connection to the specified client with the given host and port
+   * @param  client   Client object whose connection is to be reset
+   * @param  hostName Host to reconnect to
+   * @param  port     Port to reconnect to
+   * @return          True on success
+   */
+  private boolean updateConnection(Client client, String hostName, int port) {
+    client.disconnect();
+    return client.connect(hostName, port, true);
   }
 }
