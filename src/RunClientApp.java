@@ -343,8 +343,10 @@ class ClientApp {
   public boolean deleteGroup(String group, UserToken myToken) {
     System.out.print("Are you sure you wish to delete group '" + group + "' and remove all users from it? (y/n) >> ");
     String choice = console.next();
+    boolean status = false;
     if(choice.equals("Y") || choice.equals("y")) {
-      boolean status = groupClient.deleteGroup(group, myToken);
+      if(!group.equals("ADMIN"))
+        status = groupClient.deleteGroup(group, myToken);
       if(status)
         System.out.println("Successfully deleted group '" + group + "'\n");
       else
