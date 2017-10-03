@@ -10,76 +10,65 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class FileThread extends Thread
-{
+public class FileThread extends Thread {
 	private final Socket socket;
 
-	public FileThread(Socket _socket)
-	{
+	public FileThread(Socket _socket) {
 		socket = _socket;
 	}
 
-	public void run()
-	{
+	public void run() {
 		boolean proceed = true;
-		try
-		{
+		try {
 			System.out.println("*** New connection from " + socket.getInetAddress() + ":" + socket.getPort() + "***");
 			final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 			final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
 			Envelope response;
 
-			do
-			{
+			do {
 				Envelope e = (Envelope)input.readObject();
 				System.out.println("Request received: " + e.getMessage());
 
 				// Handler to list files that this user is allowed to see
 				if(e.getMessage().equals("LFILES")) {
 
-				    if (e.getObjContents().size() < 1) {
+					if (e.getObjContents().size() < 1)
 						response = new Envelope("FAIL-BADCONTENTS");
-					} else {
-						if (e.getObjContents().get(0) == null) {
-							response = new Envelope("FAIL-BADTOKEN");
-						} else {
+					else {
+							if (e.getObjContents().get(0) == null)
+								response = new Envelope("FAIL-BADTOKEN");
+							else {
 							UserToken yourToken = (UserToken)e.getObjContents().get(0); //Extract token
 							List<ShareFile> fullFileList = FileServer.fileList.getFiles();
 							List<String> userFileList = new ArrayList<String>();
 							List<String> groups = yourToken.getGroups();
-							
+
 							if (fullFileList != null) {
 								for (ShareFile sf: fullFileList) {
-									if (groups.contains(sf.getGroup())) {
+									if (groups.contains(sf.getGroup()))
 										userFileList.add(sf.getPath() + "\t(" + sf.getGroup() + ":" + sf.getOwner() + ")");
-									}
 								}
 							}
 
 							response = new Envelope("OK"); //Success
 							response.addObject(userFileList);
-						}
+							}
 					}
 					output.writeObject(response);
 				}
-				if(e.getMessage().equals("UPLOADF"))
-				{
+				if(e.getMessage().equals("UPLOADF")) {
 
 					if(e.getObjContents().size() < 3)
-					{
 						response = new Envelope("FAIL-BADCONTENTS");
-					}
-					else
-					{
-						if(e.getObjContents().get(0) == null) {
+					else {
+						if(e.getObjContents().get(0) == null)
 							response = new Envelope("FAIL-BADPATH");
-						}
-						if(e.getObjContents().get(1) == null) {
+
+						if(e.getObjContents().get(1) == null)
 							response = new Envelope("FAIL-BADGROUP");
-						}
-						if(e.getObjContents().get(2) == null) {
+
+						if(e.getObjContents().get(2) == null)
 							response = new Envelope("FAIL-BADTOKEN");
-						}
 						else {
 							String remotePath = (String)e.getObjContents().get(0);
 							String group = (String)e.getObjContents().get(1);

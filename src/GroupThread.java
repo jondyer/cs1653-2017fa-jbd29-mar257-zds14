@@ -55,9 +55,9 @@ public class GroupThread extends Thread {
           }
         }
         else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
-          if(message.getObjContents().size() < 2) {
+          if(message.getObjContents().size() < 2)
             response = new Envelope("FAIL");
-          }else {
+          else {
             response = new Envelope("FAIL");
 
             if(message.getObjContents().get(0) != null) {
@@ -196,7 +196,7 @@ public class GroupThread extends Thread {
           response = new Envelope("FAIL"); //Server does not understand client request
           output.writeObject(response);
         }
-      }while(proceed);
+      } while(proceed);
     }
     catch(Exception e) {
       System.err.println("Error: " + e.getMessage());
@@ -211,7 +211,7 @@ public class GroupThread extends Thread {
       //Issue a new token with server's name, user's name, and user's groups
       UserToken yourToken = new Token(my_gs.name, username, my_gs.userList.getUserGroups(username));
       return yourToken;
-    }else return null;
+    } else return null;
   }
 
   //Method to create tokens
@@ -240,9 +240,9 @@ public class GroupThread extends Thread {
       //requester needs to be an administrator
       if(temp.contains("ADMIN")) {
         //Does user already exist?
-        if(my_gs.userList.checkUser(username)) {
+        if(my_gs.userList.checkUser(username))
           return false; //User already exists
-        }else {
+        else {
           my_gs.userList.addUser(username);
           return true;
         }
@@ -265,9 +265,9 @@ public class GroupThread extends Thread {
           ArrayList<String> deleteFromGroups = new ArrayList<String>();
 
           //This will produce a hard copy of the list of groups this user belongs
-          for(int index = 0; index < my_gs.userList.getUserGroups(username).size(); index++) {
+          for(int index = 0; index < my_gs.userList.getUserGroups(username).size(); index++)
             deleteFromGroups.add(my_gs.userList.getUserGroups(username).get(index));
-          }
+
 
           my_gs.groupList.removeFromGroups(deleteFromGroups, username);
 
@@ -321,9 +321,8 @@ public class GroupThread extends Thread {
         members = my_gs.groupList.getGroupUsers(ownedGroup);
 
         // Removes group affiliation from all previous members
-        for (int i = 0; i < members.size(); i++) {
+        for (int i = 0; i < members.size(); i++)
           my_gs.userList.removeGroup(members.get(i), ownedGroup);
-        }
 
         // Removes group from list of groups owner owns
         my_gs.userList.removeOwnership(requester, ownedGroup);
@@ -351,9 +350,8 @@ public class GroupThread extends Thread {
     //Does requester exist?
     if(my_gs.userList.checkUser(requester)) {
       // Checks to make sure the requester is the owner of the group
-      if (requester.equals(my_gs.groupList.getGroupOwner(group))) {
+      if (requester.equals(my_gs.groupList.getGroupOwner(group)))
       	members = my_gs.groupList.getGroupUsers(group);
-      }
     }
 
     return members;
@@ -399,8 +397,8 @@ public class GroupThread extends Thread {
         if (requester.equals(my_gs.groupList.getGroupOwner(group))) {
           // Check if user is already in group
           if (!my_gs.userList.getUserGroups(user).contains(group)) {
-          my_gs.userList.addGroup(user, group);
-          if (!my_gs.groupList.addToGroup(group, user)) return false;
+            my_gs.userList.addGroup(user, group);
+            if (!my_gs.groupList.addToGroup(group, user)) return false;
           return true;
           }
         }  //requester does not own group

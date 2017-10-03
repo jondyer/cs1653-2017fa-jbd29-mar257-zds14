@@ -27,7 +27,7 @@ class ClientApp {
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
 
-  public ClientApp(){
+  public ClientApp() {
     run();
   }
 
@@ -40,7 +40,7 @@ class ClientApp {
     run();
   }
 
-  public void run(){
+  public void run() {
 
     // Connect to Server
     groupClient.connect("localhost", GROUP_PORT);
@@ -66,7 +66,7 @@ class ClientApp {
 
         // Wanna be a BIG boy?
         if(response.equals("y") || response.equals("Y"))
-        isAdmin = true;
+          isAdmin = true;
       }
 
       // Get groups belonged to
@@ -101,10 +101,10 @@ class ClientApp {
 
         // Wanna be a big boy?
         if(response.equals("y") || response.equals("Y"))
-        isOwner = true;
-      } else if (groupsOwned.contains(choice) && isAdmin) {
-        isOwner = true;
-      }
+          isOwner = true;
+      } else if (groupsOwned.contains(choice) && isAdmin)
+          isOwner = true;
+
 
 
       // Compile List of privileges for each level of usage
@@ -128,28 +128,29 @@ class ClientApp {
         // Menu, show selected group and access level
         System.out.println("\n\n----MENU----");
         System.out.println("Selected Group: " + choice);
-        if(isAdmin){
-          System.out.println("Operating as Admin");
-        } else if(isOwner){
-          System.out.println("Operating as Owner");
-        } else {
-          System.out.println("Operating as User");
-        }
+
+        if(isAdmin) System.out.println("Operating as Admin");
+        else if(isOwner) System.out.println("Operating as Owner");
+        else System.out.println("Operating as User");
+
         System.out.println("\n");
 
         // List options for each privilege level
+        // ADMIN
         if(isAdmin){
           System.out.println("Admin Ops:");
           for(int i = 0; i < adminList.size(); i++)
           System.out.println("a" + i + ") " + adminList.get(i));
           System.out.println("\n");
         }
+        //OWNER
         if(isOwner){
           System.out.println("Owner Ops:");
           for(int i = 0; i < ownerList.size(); i++)
           System.out.println("o" + i + ") " + ownerList.get(i));
           System.out.println("\n");
         }
+        //USER (options are always there for user level)
         System.out.println("User Ops:");
         for(int i = 0; i < userList.size(); i++)
         System.out.println(i + ") " + userList.get(i));
@@ -234,7 +235,7 @@ class ClientApp {
           default:
             System.out.println("Not a valid menu choice");
             break;
-        }
+        } // switch response
       } // end doAgain
     } // end selectGroup
     groupClient.disconnect();

@@ -22,7 +22,7 @@ public abstract class Client {
 			// Creates Input / Output streams with the server we connected to
 			output = new ObjectOutputStream(sock.getOutputStream());
 			input = new ObjectInputStream(sock.getInputStream());
-		} catch(Exception e){
+		} catch(Exception e) {
 		    System.err.println("Error: " + e.getMessage());
 		    e.printStackTrace(System.err);
 		    return false;
@@ -39,7 +39,7 @@ public abstract class Client {
 			// Creates Input / Output streams with the server we connected to
 			output = new ObjectOutputStream(sock.getOutputStream());
 			input = new ObjectInputStream(sock.getInputStream());
-		} catch(Exception e){
+		} catch(Exception e) {
 		    System.err.println("Error: " + e.getMessage());
 		    e.printStackTrace(System.err);
 		    return false;
@@ -49,23 +49,19 @@ public abstract class Client {
 	}
 
 	public boolean isConnected() {
-		if (sock == null || !sock.isConnected()) {
+		if (sock == null || !sock.isConnected())
 			return false;
-		}
-		else {
+		else
 			return true;
-		}
 	}
 
 	public void disconnect()	 {
 		if (isConnected()) {
-			try
-			{
+			try {
 				Envelope message = new Envelope("DISCONNECT");
 				output.writeObject(message);
 			}
-			catch(Exception e)
-			{
+			catch(Exception e) {
 				System.err.println("Error: " + e.getMessage());
 				e.printStackTrace(System.err);
 			}

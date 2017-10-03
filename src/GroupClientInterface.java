@@ -6,8 +6,7 @@ import java.util.List;
  * must be implemented!
  *
  */
-public interface GroupClientInterface
-{
+public interface GroupClientInterface {
     /**
      * Connect to the specified group server.  No other methods should
      * work until the client is connected to a group server.
