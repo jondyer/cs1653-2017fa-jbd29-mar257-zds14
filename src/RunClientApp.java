@@ -10,11 +10,18 @@ import java.io.File;
 // Driver Class
 public class RunClientApp {
   public static void main(String [] args) {
-    ClientApp newApp = new ClientApp();
+    ClientApp newApp;
+    if (args.length == 0)
+      newApp = new ClientApp();
+    else
+      newApp = new ClientApp(args);
   }
 }
 
 class ClientApp {
+
+  private int GROUP_PORT = 8765;
+  private int FILE_PORT = 4321;
 
   Scanner console = new Scanner(System.in);
   GroupClient groupClient = new GroupClient();
@@ -23,11 +30,19 @@ class ClientApp {
   public ClientApp(){
     run();
   }
+
+  public ClientApp(String [] args){
+    FILE_PORT = Integer.parseInt(args[0]);
+    if (args.length >= 2)
+      GROUP_PORT = Integer.parseInt(args[1]);
+
+    System.out.println(FILE_PORT + "\t" + GROUP_PORT);
+    run();
+  }
+
   public void run(){
 
     // Connect to Server
-    final int GROUP_PORT = 8765;
-    final int FILE_PORT = 4321;
     groupClient.connect("localhost", GROUP_PORT);
     fileClient.connect("localhost", FILE_PORT);
 
