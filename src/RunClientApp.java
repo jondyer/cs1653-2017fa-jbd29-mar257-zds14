@@ -21,7 +21,9 @@ public class RunClientApp {
 class ClientApp {
 
   private int GROUP_PORT = 8765;
+  private String groupHost = "localhost";
   private int FILE_PORT = 4321;
+  private String fileHost = "localhost";
 
   Scanner console = new Scanner(System.in);
   GroupClient groupClient = new GroupClient();
@@ -32,19 +34,25 @@ class ClientApp {
   }
 
   public ClientApp(String [] args){
-    FILE_PORT = Integer.parseInt(args[0]);
-    if (args.length >= 2)
+    if (args.length == 1)
+      FILE_PORT = Integer.parseInt(args[0]);
+    else if (args.length == 2) {
+      FILE_PORT = Integer.parseInt(args[0]);
       GROUP_PORT = Integer.parseInt(args[1]);
-
-    System.out.println(FILE_PORT + "\t" + GROUP_PORT);
+    } else if (args.length == 4) {
+      fileHost = args[0];
+      FILE_PORT = Integer.parseInt(args[1]);
+      groupHost = args[2];
+      GROUP_PORT = Integer.parseInt(args[3]);
+    }
     run();
   }
 
   public void run() {
 
     // Connect to Server
-    groupClient.connect("localhost", GROUP_PORT);
-    fileClient.connect("localhost", FILE_PORT);
+    groupClient.connect(groupHost, GROUP_PORT);
+    fileClient.connect(fileHost, FILE_PORT);
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
@@ -88,7 +96,7 @@ class ClientApp {
       }
       if(selection.equals("c")) {
         createGroup(token);
-        updateConnection(groupClient, GROUP_PORT);
+        updateConnection(groupClient, groupHost, GROUP_PORT);
         continue;
       }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
@@ -165,13 +173,13 @@ class ClientApp {
           // Create user
           case "a0":
             if(isAdmin) createUser(token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Delete user
           case "a1":
             if(isAdmin) deleteUser(token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           case "a2":
@@ -188,19 +196,19 @@ class ClientApp {
           // Add user to a group
           case "o1":
             if(isOwner) addUserToGroup(choice, token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Remove user from a group
           case "o2":
             if(isOwner) removeUserFromGroup(choice, token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             doAgain = false;
             break;
 
@@ -231,7 +239,7 @@ class ClientApp {
           case "4":
             // Create a group
             createGroup(token);
-            updateConnection(groupClient, GROUP_PORT);
+            updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           //quit
@@ -343,8 +351,10 @@ class ClientApp {
   private boolean deleteGroup(String group, UserToken myToken) {
     System.out.print("Are you sure you wish to delete group '" + group + "' and remove all users from it? (y/n) >> ");
     String choice = console.next();
+    boolean status = false;
     if(choice.equals("Y") || choice.equals("y")) {
-      boolean status = groupClient.deleteGroup(group, myToken);
+      if(!group.equals("ADMIN"))
+        status = groupClient.deleteGroup(group, myToken);
       if(status)
         System.out.println("Successfully deleted group '" + group + "'\n");
       else
@@ -459,10 +469,23 @@ class ClientApp {
     return client.connect("localhost", port, true);
   }
 
+
   private void listAllGroups(UserToken token) {
     List<String> groupList = groupClient.listAllGroups(token);
     System.out.println("\nAll groups on group server");
     for(String s : groupList)
       System.out.println("- " + s);
+  }
+
+  /**
+   * Resets the connection to the specified client with the given host and port
+   * @param  client   Client object whose connection is to be reset
+   * @param  hostName Host to reconnect to
+   * @param  port     Port to reconnect to
+   * @return          True on success
+   */
+  private boolean updateConnection(Client client, String hostName, int port) {
+    client.disconnect();
+    return client.connect(hostName, port, true);
   }
 }
