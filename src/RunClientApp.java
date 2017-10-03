@@ -21,7 +21,9 @@ public class RunClientApp {
 class ClientApp {
 
   private int GROUP_PORT = 8765;
+  private String groupHost = "localhost";
   private int FILE_PORT = 4321;
+  private String fileHost = "localhost";
 
   Scanner console = new Scanner(System.in);
   GroupClient groupClient = new GroupClient();
@@ -32,11 +34,17 @@ class ClientApp {
   }
 
   public ClientApp(String [] args){
-    FILE_PORT = Integer.parseInt(args[0]);
-    if (args.length >= 2)
+    if (args.length == 1)
+      FILE_PORT = Integer.parseInt(args[0]);
+    else if (args.length == 2) {
+      FILE_PORT = Integer.parseInt(args[0]);
       GROUP_PORT = Integer.parseInt(args[1]);
-
-    System.out.println(FILE_PORT + "\t" + GROUP_PORT);
+    } else if (args.length == 4) {
+      fileHost = args[0];
+      FILE_PORT = Integer.parseInt(args[1]);
+      groupHost = args[2];
+      GROUP_PORT = Integer.parseInt(args[3]);
+    }
     run();
   }
 
