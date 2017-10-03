@@ -3,8 +3,8 @@
 ## Running the Group Server
 
 To start the Group Server:
- - Enter the `src` directory containing `RunGroupServer.class`
- - Type `java RunGroupServer [port number]`
+-   Enter the `src` directory containing `RunGroupServer.class`
+-   Type `java RunGroupServer [port number]`
 
 Note that the port number argument to `RunGroupServer` is optional.  This argument specifies the port that the Group Server will listen to.  If unspecified, it defaults to port 8765.
 
@@ -13,8 +13,8 @@ When the group server is first started, there are no users or groups. Since ther
 ## Running the File Server
 
 To start the File Server:
- - Enter the `src` directory containing `RunFileServer.class`
- - Type `java RunFileServer [port number]`
+-   Enter the `src` directory containing `RunFileServer.class`
+-   Type `java RunFileServer [port number]`
 
 Note that the port number argument to `RunFileServer` is optional.  This argument specifies the port that the File Server will list to. If unspecified, it defaults to port 4321.
 
@@ -23,8 +23,8 @@ The file server will create a shared_files inside the working directory if one d
 ## Running the Client Application
 
 To start the Client Application:
- - Enter the `src` directory containing `RunClientApp.class`
- - Type `java RunClientApp [port number]`
+-   Enter the `src` directory containing `RunClientApp.class`
+-   Type `java RunClientApp [port number]`
 
 
 ## Resetting the Group or File Server
