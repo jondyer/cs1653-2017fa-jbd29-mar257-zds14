@@ -153,6 +153,21 @@ public class GroupThread extends Thread {
             }
 
           output.writeObject(response);
+        } else if(message.getMessage().equals("LAGROUPS")) { //Client wants a list of all groups
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().size() >= 1) {
+              if(message.getObjContents().get(0) != null) {
+                UserToken yourToken = (UserToken)message.getObjContents().get(0); //Extract the token
+
+                List<String> groups = listAllGroups(yourToken);
+                if (groups != null)
+                  response = new Envelope("OK"); //Success
+                response.addObject(groups);
+              }
+            }
+
+          output.writeObject(response);
         } else if(message.getMessage().equals("AUSERTOGROUP")) {//Client wants to add user to a group
           response = new Envelope("FAIL");
 
@@ -377,6 +392,27 @@ public class GroupThread extends Thread {
     }
 
     return groups;
+  }
+
+  /**
+   * Returns a list of all groups on the GroupServer (only works for ADMIN)
+   * @param  UserToken token         The token of the requester, who must be admin
+   * @return           A list of strings which are names of the groups
+   */
+  private List<String> listAllGroups(UserToken token) {
+    String requester = token.getSubject();
+    List<String> allGroups = new ArrayList<String>();
+
+    //Does requester exist?
+    if(my_gs.userList.checkUser(requester)) {
+      List<String> checkGroups = my_gs.userList.getUserGroups(requester);
+      // Checks to make sure the requester is an admin
+      if (checkGroups.contains("ADMIN")) {
+        Collections.addAll(allGroups, my_gs.groupList.getAllGroups());
+      } else return null;
+    }
+
+    return allGroups;
   }
 
   /**

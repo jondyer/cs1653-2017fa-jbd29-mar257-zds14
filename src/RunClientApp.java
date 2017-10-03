@@ -111,6 +111,7 @@ class ClientApp {
       ArrayList<String> adminList = new ArrayList<String>();
       adminList.add("Create user");
       adminList.add("Delete user");
+      adminList.add("List all groups");
       ArrayList<String> ownerList = new ArrayList<String>();
       ownerList.add("List members of a group");
       ownerList.add("Add user to group");
@@ -124,7 +125,7 @@ class ClientApp {
       userList.add("Create a group");
 
       boolean doAgain = true;
-      groupChoice: while(doAgain) {   // labeled while for convenience later on
+      while(doAgain) {   // main menu while loop
         // Menu, show selected group and access level
         System.out.println("\n\n----MENU----");
         System.out.println("Selected Group: " + choice);
@@ -140,27 +141,27 @@ class ClientApp {
         if(isAdmin){
           System.out.println("Admin Ops:");
           for(int i = 0; i < adminList.size(); i++)
-          System.out.println("a" + i + ") " + adminList.get(i));
+            System.out.println("a" + i + ") " + adminList.get(i));
           System.out.println("\n");
         }
         //OWNER
         if(isOwner){
           System.out.println("Owner Ops:");
           for(int i = 0; i < ownerList.size(); i++)
-          System.out.println("o" + i + ") " + ownerList.get(i));
+            System.out.println("o" + i + ") " + ownerList.get(i));
           System.out.println("\n");
         }
         //USER (options are always there for user level)
         System.out.println("User Ops:");
         for(int i = 0; i < userList.size(); i++)
-        System.out.println(i + ") " + userList.get(i));
+          System.out.println(i + ") " + userList.get(i));
         System.out.println("\n");
 
         System.out.print("Please select an option ('q' to select a different group) >> ");
         String response = console.next();
         switch(response) {
-          // ADMIN ACTIONS -----------------
 
+          // ADMIN ACTIONS -----------------
           // Create user
           case "a0":
             if(isAdmin) createUser(token);
@@ -172,6 +173,11 @@ class ClientApp {
             if(isAdmin) deleteUser(token);
             updateConnection(groupClient, GROUP_PORT);
             break;
+
+          case "a2":
+            if(isAdmin) listAllGroups(token);
+            break;
+
 
           // OWNER ACTIONS -----------------
           // List members of a group
@@ -195,7 +201,9 @@ class ClientApp {
           case "o3":
             if(isOwner) deleteGroup(choice, token);
             updateConnection(groupClient, GROUP_PORT);
-            break groupChoice;
+            doAgain = false;
+            break;
+
 
           // USER ACTIONS -----------------
           // List files
@@ -247,7 +255,7 @@ class ClientApp {
   * @param  UserToken myToken       Token of the administrator
   * @return           Success of operation
   */
-  public boolean createUser(UserToken myToken) {
+  private boolean createUser(UserToken myToken) {
     System.out.print("Username of the person you wish to create? >> ");
     String username = console.next();
     boolean status = groupClient.createUser(username, myToken);
@@ -263,7 +271,7 @@ class ClientApp {
   * @param  UserToken myToken       Token of the administrator
   * @return           Success of operation
   */
-  public boolean deleteUser(UserToken myToken) {
+  private boolean deleteUser(UserToken myToken) {
     System.out.print("Username of the person you wish to delete? >> ");
     String username = console.next();
     boolean status = false;
@@ -281,7 +289,7 @@ class ClientApp {
    * @param  String    group         Name of the group to list members for
    * @param  UserToken myToken       Token of the owner of the group
    */
-  public void listMembers(String group, UserToken myToken) {
+  private void listMembers(String group, UserToken myToken) {
     ArrayList<String> members = (ArrayList<String>) groupClient.listMembers(group, myToken);
     System.out.println("Members of '" + group + "'");
     for(String member : members)
@@ -294,7 +302,7 @@ class ClientApp {
    * @param  UserToken myToken       Token of the owner of the group
    * @return           Success of operation
    */
-  public boolean addUserToGroup(String group, UserToken myToken) {
+  private boolean addUserToGroup(String group, UserToken myToken) {
     System.out.print("Username of the person you wish to add to '" + group +  "'? >> ");
     String username = console.next();
     boolean status = groupClient.addUserToGroup(username, group, myToken);
@@ -311,7 +319,7 @@ class ClientApp {
    * @param  UserToken myToken       Token of the owner of the group
    * @return           Success of operation
    */
-  public boolean removeUserFromGroup(String group, UserToken myToken) {
+  private boolean removeUserFromGroup(String group, UserToken myToken) {
     System.out.print("Username of the person you wish to remove from '" + group +  "'? >> ");
     String username = console.next();
     if(username.equals(myToken.getSubject())) {
@@ -332,7 +340,7 @@ class ClientApp {
    * @param  UserToken myToken       Token of the owner of the group to be deleted
    * @return           Success of operation
    */
-  public boolean deleteGroup(String group, UserToken myToken) {
+  private boolean deleteGroup(String group, UserToken myToken) {
     System.out.print("Are you sure you wish to delete group '" + group + "' and remove all users from it? (y/n) >> ");
     String choice = console.next();
     if(choice.equals("Y") || choice.equals("y")) {
@@ -350,7 +358,7 @@ class ClientApp {
    * Prints out all files available to the user currently logged in
    * @param UserToken myToken Token of the user whose files are to be printed
    */
-  public void listFiles(UserToken myToken) {
+  private void listFiles(UserToken myToken) {
     ArrayList<String> userFiles = (ArrayList<String>) fileClient.listFiles(myToken);
     System.out.println("\nFiles for user '" + myToken.getSubject() + "'");
     for(String s : userFiles)
@@ -363,7 +371,7 @@ class ClientApp {
    * @param  UserToken myToken       Token of the user uploading the file
    * @return           Success of operation.
    */
-  public boolean uploadFile(String group, UserToken myToken) {
+  private boolean uploadFile(String group, UserToken myToken) {
     // Get file to be uploaded
     System.out.print("Path of the source file? >> ");
     String sourceFile = console.next();
@@ -391,7 +399,7 @@ class ClientApp {
    * @param  UserToken myToken       Token of the user downloading the file
    * @return           Sucess of operation.
    */
-  public boolean downloadFile(UserToken myToken){
+  private boolean downloadFile(UserToken myToken){
     System.out.print("What file do you want to download? >> ");
     String sourceFile = console.next();
     System.out.print("What do you want to save it as? >> ");
@@ -410,7 +418,7 @@ class ClientApp {
    * @param  myToken Token of the user creating the group
    * @return         Success of operation
    */
-  public boolean createGroup(UserToken myToken) {
+  private boolean createGroup(UserToken myToken) {
     System.out.print("Name of the group you wish to create? >> ");
     String group = console.next();
     boolean status = groupClient.createGroup(group, myToken);
@@ -428,7 +436,7 @@ class ClientApp {
    * @param  myToken Token of the user attempting to delete the file
    * @return         Success of operation
    */
-  public boolean deleteFile(UserToken myToken) {
+  private boolean deleteFile(UserToken myToken) {
     System.out.print("Name of the file you wish to delete? >> ");
     String file = console.next();
     boolean status = fileClient.delete(file, myToken);
@@ -449,5 +457,12 @@ class ClientApp {
   private boolean updateConnection(Client client, int port) {
     client.disconnect();
     return client.connect("localhost", port, true);
+  }
+
+  private void listAllGroups(UserToken token) {
+    List<String> groupList = groupClient.listAllGroups(token);
+    System.out.println("\nAll groups on group server");
+    for(String s : groupList)
+      System.out.println("- " + s);
   }
 }

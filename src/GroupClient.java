@@ -226,6 +226,32 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 
+	 @SuppressWarnings("unchecked")
+	public List<String> listAllGroups(UserToken token) {
+		 try {
+			 Envelope message = null, response = null;
+			 //Tell the server to return the group list
+			 message = new Envelope("LAGROUPS");
+			 message.addObject(token); //Add requester's token
+			 output.writeObject(message);
+
+			 response = (Envelope)input.readObject();
+
+			 //If server indicates success, return the group list
+			 if(response.getMessage().equals("OK"))
+			 {
+				return (List<String>)response.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
+			 }
+
+			 return null;
+
+		 } catch(Exception e) {
+				System.err.println("Error: " + e.getMessage());
+				e.printStackTrace(System.err);
+				return null;
+			}
+	 }
+
 	 public boolean addUserToGroup(String username, String groupname, UserToken token) {
 		 try {
 				Envelope message = null, response = null;
