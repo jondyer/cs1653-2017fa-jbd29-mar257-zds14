@@ -7,8 +7,7 @@ import java.util.List;
  * must be implemented!
  *
  */
-public interface FileClientInterface
-{
+public interface FileClientInterface {
     /**
      * Connect to the specified file server.  No other methods should
      * work until the client is connected to a file server.

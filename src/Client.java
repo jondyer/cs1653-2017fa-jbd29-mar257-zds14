@@ -12,30 +12,56 @@ public abstract class Client {
 	protected ObjectInputStream input;
 
 	public boolean connect(final String server, final int port) {
-		System.out.println("attempting to connect");
+		System.out.println("Attempting to connect...");
 
-		/* TODO: Write this method */
+		try {
+			// Creates a connection to server at the specified port
+			sock = new Socket(server, port);
+			System.out.println("Connected to " + server + " on port " + port);
 
+			// Creates Input / Output streams with the server we connected to
+			output = new ObjectOutputStream(sock.getOutputStream());
+			input = new ObjectInputStream(sock.getInputStream());
+		} catch(Exception e) {
+		    System.err.println("Error: " + e.getMessage());
+		    e.printStackTrace(System.err);
+		    return false;
+		}
+
+		return isConnected();
+	}
+
+	public boolean connect(final String server, final int port, boolean quiet) {
+		try {
+			// Creates a connection to server at the specified port
+			sock = new Socket(server, port);
+
+			// Creates Input / Output streams with the server we connected to
+			output = new ObjectOutputStream(sock.getOutputStream());
+			input = new ObjectInputStream(sock.getInputStream());
+		} catch(Exception e) {
+		    System.err.println("Error: " + e.getMessage());
+		    e.printStackTrace(System.err);
+		    return false;
+		}
+
+		return isConnected();
 	}
 
 	public boolean isConnected() {
-		if (sock == null || !sock.isConnected()) {
+		if (sock == null || !sock.isConnected())
 			return false;
-		}
-		else {
+		else
 			return true;
-		}
 	}
 
 	public void disconnect()	 {
 		if (isConnected()) {
-			try
-			{
+			try {
 				Envelope message = new Envelope("DISCONNECT");
 				output.writeObject(message);
 			}
-			catch(Exception e)
-			{
+			catch(Exception e) {
 				System.err.println("Error: " + e.getMessage());
 				e.printStackTrace(System.err);
 			}
