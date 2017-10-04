@@ -33,7 +33,35 @@ Any arguments used are optional. If run with no arguments the client will defaul
 
 Once started, the client will attempt to connect to the servers specified earlier. If successful, the user will be prompted to enter their username. Our implementation puts the least privilege principal into practice, so users will be asked about what types of operations they would like to perform during their session.
 
-If that user is an administrator, they will be asked if they want to perform administrative operations during this session. Next, the user will either create a new group or select a group they want from the list of groups that they belong to.
+If that user is an administrator, they will be asked if they want to perform administrative operations during this session. Next, the user will either create a new group or select a group they want from the list of groups that they belong to. If they enter 'c' to create a group, the group will be created with the user as the owner if the group name is not taken. Once the user selects a group, if they are the owner, they will be asked if they would like to perform owner operations.
+
+The complete list of options is broken up into several groups. Each only displaying if their current token has the required permissions. The options follow:
+
+Admin Ops:
+a0) Create user
+a1) Delete user
+a2) List all groups
+a3) List all users
+
+
+Owner Ops:
+o0) List members of a group
+o1) Add user to group
+o2) Remove user from group
+o3) Delete group
+
+
+User Ops:
+0) List files
+1) Upload files
+2) Download files
+3) Delete files
+4) Create a group
+
+
+The user is able to select an option by entering the code preceding the parentheses. For example, if the user belongs to the administrator group they can enter 'a0' to begin the process of creating a new user. Each option will display a user-friendly guided approach that anyone can understand. Once the operation has been completed, they will be returned to the main menu shown above where they can make another choice.
+
+If the user would like to switch to operate on a different group they can enter 'q' while at the main menu. They can exit the program by entering 'q' while at the group select menu. To login as another user you must quit the program and start it again.
 
 
 ## Resetting the Group or File Server
