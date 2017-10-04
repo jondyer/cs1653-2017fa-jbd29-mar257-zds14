@@ -101,10 +101,7 @@ class ClientApp {
         updateConnection(groupClient, groupHost, GROUP_PORT);
         updateConnection(fileClient, fileHost, FILE_PORT);
         continue;
-      } else {
-        System.out.println("Not a valid selection");
-        continue;
-      }
+      } 
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
 
@@ -267,7 +264,7 @@ class ClientApp {
             updateConnection(groupClient, groupHost, GROUP_PORT);
             updateConnection(fileClient, fileHost, FILE_PORT);
             break;
-            
+
           // Invalid choice
           default:
             System.out.println("Not a valid menu choice");
