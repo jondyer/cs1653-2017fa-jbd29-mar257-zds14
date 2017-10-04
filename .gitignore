@@ -1,2 +1,7 @@
 *.html
 *flymd*
+*.class
+*.bin
+*.pdf
+testfiles/*
+src/shared_files/*
