@@ -1,6 +1,7 @@
 *.html
 *flymd*
 *.class
+*.jar
 *.bin
 *.pdf
 testfiles/*
