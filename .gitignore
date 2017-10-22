@@ -6,3 +6,4 @@
 *.pdf
 testfiles/*
 src/shared_files/*
+.DS_STORE
