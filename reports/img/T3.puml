@@ -1,0 +1,21 @@
+@startuml
+title __T3: Unauthorized File Servers__
+actor Bob
+participant FS
+participant Trent
+participant GroupServer
+
+GroupServer <--> Trent: Share strong symmetric secret K<sub>TG</sub>
+Bob -> Trent: Bob || {[pToken]k<sub>G</sub><sup>-1</sup> || FileServer_X}K<sub>GB</sub>
+Trent -> GroupServer: {Bob}K<sub>TG</sub>
+GroupServer -> Trent: {Bob || K<sub>GB</sub>}K<sub>TG</sub>
+Trent -> Bob: {k<sub>FSX</sub> || k<sub>B</sub><sup>-1</sup>}K<sub>GB</sub>
+
+create FS
+Bob -> FS: Bob || [g<sup>b</sup> mod q]k<sub>B</sub><sup>-1</sup>
+FS -> Trent: Bob
+Trent -> FS: k<sub>B</sub>
+FS -> Bob: FS<sub>X</sub> || [g<sup>f</sup> mod q]k<sub>FSX</sub><sup>-1</sup>
+
+Bob <--> FS: Share K<sub>BF</sub>
+@enduml
