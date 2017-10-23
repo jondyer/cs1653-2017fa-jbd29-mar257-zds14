@@ -23,7 +23,7 @@ This threat has to do with users- whom may or may not have malicious intent, but
 
 To address this threat, we chose to use RSA signatures to guarantee the validity a token. The groupserver is the only place that makes/grants tokens, so each token that is issued by it will be signed using the groupserver's private key. With that in place, any attempted modifications to a groupserver-signed token will void it, rendering it useless. Additionally, a user cannot forge a new token with the groupserver's signature, because only the groupserver knows its own private key. Only tokens signed by the groupserver will be accepted in the system, and any party can verify token validity with the groupserver's public key- which is publicly available.
 
-![Image of Token Signature](./img/T1.png)  
+![Image of Token Signature](./img/T2.png)  
 
 To address this threat, we chose to use RSA signatures to guarantee the validity a token.
 
