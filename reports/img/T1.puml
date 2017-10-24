@@ -5,8 +5,8 @@ actor Bob
 Bob <--> GroupServer: Setup: Share weak secret W = f(password)
 note right: Store〈 Bob, g<sup>W</sup> mod p 〉
 |||
-note left: Choose random b
 Bob -> GroupServer: Bob, g<sup>b</sup> mod p 
+note left: Choose random b
 note right
 	Choose random s
 	Choose challenge C<sub>1</sub>

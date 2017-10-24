@@ -11,11 +11,13 @@ Trent -> GroupServer: {Bob}K<sub>TG</sub>
 GroupServer -> Trent: {Bob || K<sub>GB</sub>}K<sub>TG</sub>
 Trent -> Bob: {k<sub>FSX</sub> || k<sub>B</sub><sup>-1</sup>}K<sub>GB</sub>
 
+Bob -> Bob: Generate K<sub>BF</sub>
 create FS
-Bob -> FS: Bob || [g<sup>b</sup> mod q]k<sub>B</sub><sup>-1</sup>
+Bob -> FS: Bob || [{K<sub>BF</sub>}k<sub>FSX</sub>]k<sub>B</sub><sup>-1</sup>
 FS -> Trent: Bob
 Trent -> FS: k<sub>B</sub>
-FS -> Bob: FS<sub>X</sub> || [g<sup>f</sup> mod q]k<sub>FSX</sub><sup>-1</sup>
+FS -> Bob: FS<sub>X</sub> || {K<sub>BF</sub>}k<sub>B</sub>
+Bob -> Bob: Verify that received K<sub>BF</sub> is \nthe same as the one sent
 
 Bob <--> FS: Share K<sub>BF</sub>
 @enduml
