@@ -15,16 +15,16 @@ note right: Trent requests Bob's session key
 GroupServer -> Trent: {Bob || K<sub>GB</sub>}K<sub>TG</sub>
 Trent -> Bob: {k<sub>FSX</sub> || k<sub>B</sub><sup>-1</sup> || C}K<sub>GB</sub>
 
-Bob -> Bob: Generate K<sub>BF</sub>
 create FS
-Bob -> FS: Bob || [FileServer_X || {K<sub>BF</sub>}k<sub>FSX</sub>]k<sub>B</sub><sup>-1</sup>
+Bob -> FS: Bob || [FileServer_X || g<sup>b</sup> mod q]k<sub>B</sub><sup>-1</sup>
+note left: Choose random b
 FS -> Trent: Bob
 note right: FS requests Bob's public key
 Trent -> FS: k<sub>B</sub>
 
 FS -> FS: Verify Bob through k<sub>B</sub>
-FS -> Bob: FS<sub>X</sub> || {K<sub>BF</sub>}k<sub>B</sub>
-Bob -> Bob: Verify that received K<sub>BF</sub> is \nthe same as the one sent
+FS -> Bob: FS<sub>X</sub> || [Bob || g<sup>f</sup> mod q]k<sub>FSX</sub><sup>-1</sup>
+Bob -> Bob: Verify FileServer_X through k<sub>FSX</sub>
 
 Bob <--> FS: Share K<sub>BF</sub>
 @enduml
