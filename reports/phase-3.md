@@ -16,10 +16,15 @@ To address this threat, we chose to implement a Secure Remote Password (SRP) pro
 
 ![Image of SRP](./img/T1.png)  
 
-To address this threat, we chose to implement a Secure Remote Password (SRP) protocol.
+We can see that this process ensures that at the end of the exchange:
+-   Bob and the groupserver have authenticated each other.
+-   Bob and the groupserver have correctly agreed on the same session key.
+-   This session key is known only to Bob and the groupserver.
 
-### T2: Token Modification/Forgery  ###
-This threat has to do with users- whom may or may not have malicious intent, but may want to further their access privileges. They theoretically could do so through modification of a token, which specifies the user's access to groups. If a user could edit a token, he/she could give oneself access to every group in the system- enabling him/her to manage files in the group. Essentially, that user could get into a group and add or delete files without permission (someone adding them to the group). Currently, our system works such that a user obtains a token from the groupserver that authorizes him/her to only operate on groups they want to (selecting from the ones they have access to) for that session, following the principle of least privilege. Although it may be challenging, once a user has that groupsever token, there aren't any measures in place to stop them from editing its contents.
+These are true because the SRP exchange relies on prior knowledge of the secret W, which is never transmitted (and thus not able to be intercepted), and which is used in the (large and unfactorable) calculation of the session key K<sub>GB</sub>. This means that the only parties who will be able to correctly calculate K<sub>GB</sub> are Bob and the groupserver. Thus, at the point of Bob's response to challenge C<sub>1</sub>, he is authenticated to the groupserver, and vice versa with C<sub>2</sub>.
+
+### T2: Token Modification/Forgery ###
+This threat has to do with users--who may or may not have malicious intent, but may want to further their access privileges. They theoretically could do so through modification of a token, which specifies the user's access to groups. If a user could edit a token, he/she could give oneself access to every group in the system- enabling him/her to manage files in the group. Essentially, that user could get into a group and add or delete files without permission (someone adding them to the group). Currently, our system works such that a user obtains a token from the groupserver that authorizes him/her to only operate on groups they want to (selecting from the ones they have access to) for that session, following the principle of least privilege. Although it may be challenging, once a user has that groupsever token, there aren't any measures in place to stop them from editing its contents.
 
 To address this threat, we chose to use RSA signatures to guarantee the validity a token. The groupserver is the only place that makes/grants tokens, so each token that is issued by it will be signed using the groupserver's private key. With that in place, any attempted modifications to a groupserver-signed token will void it, rendering it useless. Additionally, a user cannot forge a new token with the groupserver's signature, because only the groupserver knows its own private key. Only tokens signed by the groupserver will be accepted in the system, and any party can verify token validity with the groupserver's public key- which is publicly available.
 
