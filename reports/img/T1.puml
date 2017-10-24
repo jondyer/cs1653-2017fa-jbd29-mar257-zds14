@@ -3,7 +3,7 @@ title __T1: Unauthorized Token Issuance__
 actor Bob
 
 Bob <--> GroupServer: Setup: Share weak secret W = f(password)
-note right: Store〈 Bob, g<sup>W</sup> mod p 〉
+note right: Store〈 Bob, W 〉
 |||
 Bob -> GroupServer: Bob, g<sup>b</sup> mod p 
 note left: Choose random b
