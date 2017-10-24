@@ -26,14 +26,18 @@ These are true because the SRP exchange relies on prior knowledge of the secret 
 
 
 ### T2: Token Modification/Forgery ###
-This threat has to do with users--who may or may not have malicious intent, but may want to further their access privileges. They theoretically could do so through modification of a token, which specifies the user's access to groups. If a user could edit a token, he/she could give oneself access to every group in the system- enabling him/her to manage files in the group. Essentially, that user could get into a group and add or delete files without permission (someone adding them to the group). Currently, our system works such that a user obtains a token from the groupserver that authorizes him/her to only operate on groups they want to (selecting from the ones they have access to) for that session, following the principle of least privilege. Although it may be challenging, once a user has that groupsever token, there aren't any measures in place to stop them from editing its contents.
+This threat has to do with users--who may or may not have malicious intent--desiring to further their access privileges or impersonate another user. They theoretically could do so through modification of a token, which specifies the user's access to groups. If users could edit a token, they could give themselves access to every group in the system--enabling him/her to manage files in the group. Essentially, that user could get into a group and add or delete files without permission (someone adding them to the group). Currently, our system works such that a user obtains a token from the groupserver that authorizes him/her to only operate on groups they want to (selecting from the ones they have access to) for that session, following the principle of least privilege. Once a user has that groupserver token, there aren't any measures in place to stop them from editing its contents.
 
-To address this threat, we chose to use RSA signatures to guarantee the validity a token. The groupserver is the only place that makes/grants tokens, so each token that is issued by it will be signed using the groupserver's private key. With that in place, any attempted modifications to a groupserver-signed token will void it, rendering it useless. Additionally, a user cannot forge a new token with the groupserver's signature, because only the groupserver knows its own private key. Only tokens signed by the groupserver will be accepted in the system, and any party can verify token validity with the groupserver's public key- which is publicly available.
+To address this threat, we chose to use RSA signatures to guarantee the validity of a token. The groupserver is the only place that makes/grants tokens, so each token that is issued by it will be signed using the groupserver's private key. With that in place, any attempted modifications to a groupserver-signed token will void it, rendering it useless. Additionally, a user cannot forge a new token with the groupserver's signature, because only the groupserver knows its own private key. Only tokens signed by the groupserver will be accepted in the system, and any party can verify token validity with the groupserver's public key--which is publicly available.
 
 ![Image of Token Signature](./img/T2.png)  
 
-To address this threat, we chose to use RSA signatures to guarantee the validity a token.
+This diagram shows the process undergone any time Bob needs to acquire a new token. The groupserver will only issue a (signed) token to the person requesting it if they have the appropriate a priori key K. Here, Bob uses his password (set up at the time of account creation) to authenticate himself to the groupserver. Then the groupserver can send back a likewise encrypted token that it has signed, giving Bob access to all the groups he requested. If Bob or anyone else modifies his token, then it will be verified as rubbish by any fileserver/other parties seeking to authenticate Bob.
+
 
 ### T3: Unauthorized File Servers ###
+
+![Image of File Server Authentication](./img/T3.png)
+
 
 ### T4: Information Leakage via Passive Monitoring ###
