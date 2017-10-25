@@ -7,13 +7,14 @@ participant GroupServer
 
 Bob <--> GroupServer: Share session secret K<sub>GB</sub>
 GroupServer <--> Trent: Share strong symmetric secret K<sub>TG</sub>
-Bob -> Trent: Bob || {[pToken]k<sub>G</sub><sup>-1</sup> || FileServer_X || C}K<sub>GB</sub>
-note left: Challenge C sent to verify Trent
+Bob -> Trent: Bob || {[pToken]k<sub>G</sub><sup>-1</sup> || FileServer_X || C<sub>1</sub>}K<sub>GB</sub>
+note left: Challenge C<sub>1</sub> sent to verify Trent
 
-Trent -> GroupServer: {Bob}K<sub>TG</sub>
-note right: Trent requests Bob's session key
+Trent -> GroupServer: Requesting session key
+GroupServer -> Trent: C<sub>2</sub>
+Trent -> GroupServer: {C<sub>2</sub> || Bob}K<sub>TG</sub>
 GroupServer -> Trent: {Bob || K<sub>GB</sub>}K<sub>TG</sub>
-Trent -> Bob: {k<sub>FSX</sub> || k<sub>B</sub><sup>-1</sup> || C}K<sub>GB</sub>
+Trent -> Bob: {k<sub>FSX</sub> || k<sub>B</sub><sup>-1</sup> || C<sub>1</sub>}K<sub>GB</sub>
 
 create FS
 Bob -> FS: Bob || [FileServer_X || g<sup>b</sup> mod q]k<sub>B</sub><sup>-1</sup>
