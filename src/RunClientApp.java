@@ -509,6 +509,7 @@ class ClientApp {
     return client.connect("localhost", port, true);
   }
 
+  // TODO: Fix reconnecting issue with deep copy
   /**
    * Resets the connection to the specified client with the given host and port
    * @param  client   Client object whose connection is to be reset

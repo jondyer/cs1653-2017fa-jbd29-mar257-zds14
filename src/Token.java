@@ -14,6 +14,8 @@ public class Token implements UserToken, java.io.Serializable {
     private String subject;
     private List<String> groups;
 
+    // TODO: Be able to create unique identifier of token that can be hashed and signed (i.e. concat issuer, subject, groups fields)
+    // TODO: Sort groups when token is created for identifier to be consistent
 
     public Token(String issuer, String subject) {
         this.issuer = issuer;
