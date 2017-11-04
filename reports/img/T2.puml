@@ -5,6 +5,6 @@ participant GroupServer
 
 Bob <--> GroupServer: Share K<sub>GB</sub>
 Bob -> GroupServer: Bob || {Request Token || GroupList[]}K<sub>GB</sub>
-GroupServer -> Bob: {[pToken]k<sub>G</sub><sup>-1</sup>}K<sub>GB</sub>
+GroupServer -> Bob: {pToken || [H(pToken)]k<sub>G</sub><sup>-1</sup>}K<sub>GB</sub>
 
 @enduml

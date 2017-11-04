@@ -2,7 +2,7 @@
 title __T1: Unauthorized Token Issuance__
 actor Bob
 
-Bob <--> GroupServer: Setup: Share weak secret W = f(password)
+Bob <--> GroupServer: Setup: Share weak secret W = H(password || salt)
 note right: Store〈 Bob, g<sup>W</sup> mod p 〉
 |||
 Bob -> GroupServer: Bob, g<sup>b</sup> mod p 
@@ -14,7 +14,7 @@ note right
 	K<sub>GB</sub> = g<sup>s(b + uW)</sup> mod p
 end note
 
-GroupServer -> Bob: (g<sup>s</sup> + g<sup>W</sup>) mod p, u, C<sub>1</sub>
+GroupServer -> Bob: (g<sup>s</sup> + g<sup>W</sup>) mod p, u, C<sub>1</sub>, salt
 note left
 	Choose challenge C<sub>2</sub>
 	K<sub>GB</sub> = g<sup>s(b + uW)</sup> mod p
@@ -23,5 +23,4 @@ Bob -> GroupServer: {C<sub>1</sub>}K<sub>GB</sub>, C<sub>2</sub>
 note right: Bob is authenticated to the server
 GroupServer -> Bob: {C<sub>2</sub>}K<sub>GB</sub>
 note left: The group server is authenticated to Bob
-Bob <--> GroupServer: Share K<sub>GB</sub>
 @enduml

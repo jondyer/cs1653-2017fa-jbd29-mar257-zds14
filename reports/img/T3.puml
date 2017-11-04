@@ -3,29 +3,28 @@ title __T3: Unauthorized File Servers__
 actor Bob
 participant FS
 participant Trent
-participant GroupServer
 
-Bob <--> GroupServer: Share session secret K<sub>GB</sub>
-GroupServer <--> Trent: Share strong symmetric secret K<sub>TG</sub>
-Bob -> Trent: Bob || {[pToken]k<sub>G</sub><sup>-1</sup> || FileServer_X || C<sub>1</sub>}K<sub>GB</sub>
-note left: Challenge C<sub>1</sub> sent to verify Trent
+alt K<sub>BT</sub> not established
+	Bob -> Trent: Bob || g<sup>u</sup> mod q
+	note left: Choose random u
+	Trent -> Bob: Trent || [Bob || g<sup>t</sup> mod q]k<sub>T</sub><sup>-1</sup>
+	Bob -> Bob: Verify Trent through k<sub>T</sub>
+	note left: K<sub>BT</sub> = g<sup>ut</sup> mod p
+end
 
-Trent -> GroupServer: Requesting session key
-GroupServer -> Trent: C<sub>2</sub>
-Trent -> GroupServer: {C<sub>2</sub> || Bob}K<sub>TG</sub>
-GroupServer -> Trent: {Bob || K<sub>GB</sub>}K<sub>TG</sub>
-Trent -> Bob: {k<sub>FSX</sub> || k<sub>B</sub><sup>-1</sup> || C<sub>1</sub>}K<sub>GB</sub>
+|||
+
+Bob -> Trent: Bob || {FileServer_X}K<sub>BT</sub>
+Trent -> Bob: {FileServer_X || k<sub>FSX</sub>}K<sub>BT</sub>
+
+|||
 
 create FS
-Bob -> FS: Bob || [FileServer_X || g<sup>b</sup> mod q]k<sub>B</sub><sup>-1</sup>
+Bob -> FS: Bob || FileServer_X || g<sup>b</sup> mod q
 note left: Choose random b
-FS -> Trent: Bob
-note right: FS requests Bob's public key
-Trent -> FS: k<sub>B</sub>
 
-FS -> FS: Verify Bob through k<sub>B</sub>
 FS -> Bob: FS<sub>X</sub> || [Bob || g<sup>f</sup> mod q]k<sub>FSX</sub><sup>-1</sup>
 Bob -> Bob: Verify FileServer_X through k<sub>FSX</sub>
+note left: K<sub>BF</sub> = g<sup>bf</sup> mod p
 
-Bob <--> FS: Share K<sub>BF</sub>
 @enduml

@@ -1,0 +1,17 @@
+@startuml
+title __Register a File Server with Trent__
+participant FS
+participant Trent
+
+FS -> Trent: FileServer_X || g<sup>f</sup> mod q
+note left: Choose random f
+note right: Record source IP
+Trent -> FS: Trent || [FileServer_X || g<sup>t</sup> mod q]k<sub>T</sub><sup>-1</sup>
+FS -> FS: Verify Trent through k<sub>T</sub>
+note left: K<sub>FT</sub> = g<sup>ft</sup> mod p
+FS -> FS: Generate public, private \nkey pair k<sub>FSX</sub>, k<sub>FSX</sub><sup>-1</sup>
+
+FS -> Trent: {Register || <IP, port, k<sub>FSX</sub>>}K<sub>FT</sub>
+Trent -> Trent: Verify IP\nStore if a match
+Trent -> FS: {ACK}K<sub>FT</sub>
+@enduml
