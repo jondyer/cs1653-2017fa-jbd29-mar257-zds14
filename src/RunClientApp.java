@@ -87,6 +87,7 @@ class ClientApp {
       for(int i=0; i<groupsBelongedTo.size(); i++)
       System.out.println(i + ") " + groupsBelongedTo.get(i));
 
+      // TODO: Support selection of multiple groups at once for operation
       // Select a group
       System.out.print("Please select a group you wish to access ('q' to quit, 'r' to refresh, 'c' to create a new group) >> ");
       String selection = console.next();
@@ -101,7 +102,7 @@ class ClientApp {
         updateConnection(groupClient, groupHost, GROUP_PORT);
         updateConnection(fileClient, fileHost, FILE_PORT);
         continue;
-      } 
+      }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
 
@@ -156,14 +157,14 @@ class ClientApp {
             System.out.println("a" + i + ") " + adminList.get(i));
           System.out.println("\n");
         }
-        //OWNER
+        // OWNER
         if(isOwner){
           System.out.println("Owner Ops:");
           for(int i = 0; i < ownerList.size(); i++)
             System.out.println("o" + i + ") " + ownerList.get(i));
           System.out.println("\n");
         }
-        //USER (options are always there for user level)
+        // USER (options are always there for user level)
         System.out.println("User Ops:");
         for(int i = 0; i < userList.size(); i++)
           System.out.println(i + ") " + userList.get(i));
@@ -508,6 +509,7 @@ class ClientApp {
     return client.connect("localhost", port, true);
   }
 
+  // TODO: Fix reconnecting issue with deep copy
   /**
    * Resets the connection to the specified client with the given host and port
    * @param  client   Client object whose connection is to be reset
