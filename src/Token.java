@@ -5,7 +5,7 @@
 
 import java.util.List;
 import java.util.ArrayList;
-
+import java.util.Collections;
 
 public class Token implements UserToken, java.io.Serializable {
 
@@ -27,6 +27,7 @@ public class Token implements UserToken, java.io.Serializable {
         this.issuer = issuer;
         this.subject = subject;
         this.groups = groups;
+        Collections.sort(groups, String.CASE_INSENSITIVE_ORDER);
     }
 
     public String getIssuer() {
@@ -43,6 +44,16 @@ public class Token implements UserToken, java.io.Serializable {
 
     public void addGroup(String group) {
       this.groups.add(group);
+      Collections.sort(groups, String.CASE_INSENSITIVE_ORDER);
+    }
+
+    public String getIdentifier() {
+      StringBuilder b = new StringBuilder();
+      b.append(issuer);
+      b.append(subject);
+      for(String s : groups)
+        b.append(s);
+      return b.toString();
     }
 
 }
