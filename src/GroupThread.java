@@ -30,6 +30,7 @@ public class GroupThread extends Thread {
         System.out.println("Request received: " + message.getMessage());
         Envelope response = new Envelope("FAIL");
 
+        // TODO: Encrypt with Key Kgb (Bob-Group Server) and sign with group servers private key
         if(message.getMessage().equals("GET")) { //Client wants a token
           String username = (String)message.getObjContents().get(0); //Get the username
           if(username == null) {

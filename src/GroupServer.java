@@ -24,6 +24,7 @@ public class GroupServer extends Server {
     super(_port, "ALPHA");
   }
 
+  // TODO: Establish group server keypair on startup
   public void start() {
     // Overwrote server.start() because if no user file exists, initial admin account needs to be created
 
