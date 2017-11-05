@@ -32,15 +32,16 @@ public class TrentThread extends Thread {
         Envelope response = new Envelope("FAIL");
 
         if(e.getMessage().equals("CSERV")) {//Client wants to create a server
-          if (e.getObjContents().size() < 1)
+          if (e.getObjContents().size() < 2)
             response = new Envelope("FAIL-BADCONTENTS");
           else {
               if (e.getObjContents().get(0) == null)
                 response = new Envelope("FAIL-BADKEY");
               else {
                 PublicKey pub = (PublicKey)e.getObjContents().get(0); //Extract public key
+                int port = (int)e.getObjContents().get(1);
 
-                if(registerServer(pub))
+                if(registerServer(pub, port))
                   response = new Envelope("OK"); //Success
               }
           }
@@ -78,9 +79,9 @@ public class TrentThread extends Thread {
     }
   }
 
-  private boolean registerServer(PublicKey pub) {
+  private boolean registerServer(PublicKey pub, int port) {
     if(my_ts.serverList == null) return false;
-    String address = socket.getInetAddress() + ":" + socket.getPort();
+    String address = socket.getInetAddress() + ":" + port;
     if (my_ts.serverList.checkServer(address)) return false;
     my_ts.serverList.addServer(address, pub);
     return true;

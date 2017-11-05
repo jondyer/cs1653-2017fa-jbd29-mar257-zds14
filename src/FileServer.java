@@ -16,6 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
+	private int myPort = SERVER_PORT;
 	public static FileList fileList;
 
 	private KeyPairGenerator keyGenRSA;
@@ -34,6 +35,7 @@ public class FileServer extends Server {
 
 	public FileServer(int _port) {
 		super(_port, "FilePile");
+		myPort = _port;
 		registerServer();
 	}
 
@@ -106,6 +108,7 @@ public class FileServer extends Server {
 
         Envelope env = new Envelope("CSERV");
         env.addObject(pub);
+        env.addObject(myPort);
 
         try {
 			output.writeObject(env);
