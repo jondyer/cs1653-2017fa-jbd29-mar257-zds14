@@ -52,7 +52,7 @@ public class FileClient extends Client implements FileClientInterface {
 		Envelope env = new Envelope("KEYX");
 
 		// Generate User's Keypair using Elliptic Curve D-H
-		ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("brainpoolp256r1");
+		ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("secp521r1");
 		KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("ECDH", "BC");
 		keyPairGen.initialize(paramSpec);
 		KeyPair clientKeyPair = keyPairGen.generateKeyPair();

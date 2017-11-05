@@ -72,7 +72,7 @@ public class FileThread extends Thread {
 						IvParameterSpec ivSpec = new IvParameterSpec((byte[]) e.getObjContents().get(1));
 
 						// Generate Keypair for Server
-						ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("brainpoolp256r1");
+						ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("secp521r1");
 						KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("ECDH", "BC");
 						keyPairGen.initialize(paramSpec);
 						KeyPair serverKeyPair = keyPairGen.generateKeyPair();
