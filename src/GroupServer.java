@@ -8,7 +8,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
 import java.util.*;
-
+import javax.crypto.*;
+import java.security.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class GroupServer extends Server {
 
@@ -28,6 +30,8 @@ public class GroupServer extends Server {
   // TODO: Establish group server keypair on startup
   public void start() {
     // Overwrote server.start() because if no user file exists, initial admin account needs to be created
+
+    getKeyPair();
 
     String userFile = "UserList.bin";
     String groupFile = "GroupList.bin";
@@ -109,6 +113,36 @@ public class GroupServer extends Server {
       System.err.println("Error: " + e.getMessage());
       e.printStackTrace(System.err);
     }
+  }
+
+  protected byte[] signHash(String hash) {
+    Security.addProvider(new BouncyCastleProvider());
+    Cipher cipherRSA;
+    Signature sig;
+    byte [] signed = null;
+
+    try{
+      cipherRSA = Cipher.getInstance("RSA", "BC");
+      cipherRSA.init(Cipher.ENCRYPT_MODE, priv);
+
+      sig = Signature.getInstance("SHA256withRSA", "BC");
+      sig.initSign(priv, new SecureRandom());
+
+      sig.update(hash.getBytes());
+      signed = sig.sign();
+    } catch(NoSuchAlgorithmException alg) {
+      System.out.println(alg.getMessage());
+    } catch(NoSuchProviderException prov) {
+      System.out.println(prov.getMessage());
+    } catch(NoSuchPaddingException pad) {
+      System.out.println(pad.getMessage());
+    } catch(InvalidKeyException key) {
+      System.out.println(key.getMessage());
+    } catch(SignatureException sign) {
+      System.out.println(sign.getMessage());
+    } 
+
+    return signed;
   }
 
   public void save() {

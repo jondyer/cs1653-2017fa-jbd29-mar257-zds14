@@ -302,7 +302,7 @@ class ClientApp {
     String pw2;
 
     while(!match) {
-      System.out.print("Passward for this account? >> ");
+      System.out.print("Password for this account? >> ");
       pw1 = console.next();
       System.out.print("Please enter the password again to confirm >> ");
       pw2 = console.next();
