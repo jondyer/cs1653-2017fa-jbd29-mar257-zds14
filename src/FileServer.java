@@ -16,13 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
-	private int myPort = SERVER_PORT;
 	public static FileList fileList;
-
-	private KeyPairGenerator keyGenRSA;
-	private KeyPair keyPairRSA;
-	private PublicKey pub;
-	private PrivateKey priv;
 
 	private Socket sock;
 	private ObjectOutputStream output;
@@ -35,7 +29,6 @@ public class FileServer extends Server {
 
 	public FileServer(int _port) {
 		super(_port, "FilePile");
-		myPort = _port;
 		registerServer();
 	}
 
@@ -77,38 +70,14 @@ public class FileServer extends Server {
 	}
 
 	private boolean registerServer() {
-		Security.addProvider(new BouncyCastleProvider());
-
-		try{
-			keyGenRSA = KeyPairGenerator.getInstance("RSA", "BC");
-		} catch(NoSuchAlgorithmException alg) {
-			System.out.println(alg.getMessage());
-		} catch(NoSuchProviderException prov) {
-			System.out.println(prov.getMessage());
-		}
-        keyGenRSA.initialize(2048);
-        keyPairRSA = keyGenRSA.generateKeyPair();
-
-        ObjectOutputStream outStream;
-
-		try {
-			outStream = new ObjectOutputStream(new FileOutputStream("KeyList.bin"));
-			outStream.writeObject(keyPairRSA);
-		}
-		catch(Exception e) {
-			System.err.println("Error: " + e.getMessage());
-			e.printStackTrace(System.err);
-		}
-
-        pub = keyPairRSA.getPublic();
-        priv = keyPairRSA.getPrivate();
+		getKeyPair();
 
         // TODO: Connect to Trent
         if (!connect("127.0.0.1", 4444, true)) return false;
 
         Envelope env = new Envelope("CSERV");
         env.addObject(pub);
-        env.addObject(myPort);
+        env.addObject(getPort());
 
         try {
 			output.writeObject(env);
@@ -133,9 +102,6 @@ public class FileServer extends Server {
 		String fileFile = "FileList.bin";
 		ObjectInputStream fileStream;
 
-		String keyFile = "KeyList.bin";
-		ObjectInputStream keyStream;
-
 		//This runs a thread that saves the lists on program exit
 		Runtime runtime = Runtime.getRuntime();
 		Thread catchExit = new Thread(new ShutDownListenerFS());
@@ -155,25 +121,6 @@ public class FileServer extends Server {
 		}
 		catch(ClassNotFoundException e) {
 			System.out.println("Error reading from FileList file");
-			System.exit(-1);
-		}
-
-		// Open key file to get key pair
-		try {
-			FileInputStream fis = new FileInputStream(keyFile);
-			keyStream = new ObjectInputStream(fis);
-			keyPairRSA = (KeyPair)keyStream.readObject();
-			pub = keyPairRSA.getPublic();
-        	priv = keyPairRSA.getPrivate();
-		} catch(FileNotFoundException e) {
-			System.out.println("KeyList Does Not Exist. Creating KeyList...");
-			registerServer();
-		} catch(IOException e) {
-			System.out.println("Error reading from KeyList file");
-			System.exit(-1);
-		}
-		catch(ClassNotFoundException e) {
-			System.out.println("Error reading from KeyList file");
 			System.exit(-1);
 		}
 
