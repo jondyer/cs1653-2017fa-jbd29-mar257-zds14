@@ -1,8 +1,5 @@
 /** Allows easy access and enumeration of groups and their users */
 
-
-
-
 import java.util.*;
 
 public class GroupList implements java.io.Serializable {
