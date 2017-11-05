@@ -2,4 +2,5 @@
 
 To compile the client and server code:
 -   Enter the `src/` directory of the repository
--   Type `javac *.java` to compile all files
+-   Ensure that bcprov-jdk15on-158.jar is located in the same directory
+-   Type `javac -cp .:bcprov-jdk15on-158.jar *.java` to compile all files
