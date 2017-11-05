@@ -5,7 +5,7 @@
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.File; 
+import java.io.File;
 
 // Driver Class
 public class RunClientApp {
@@ -130,12 +130,12 @@ class ClientApp {
       ownerList.add("Add user to group");
       ownerList.add("Remove user from group");
       ownerList.add("Delete group");
-      ArrayList<String> userList = new ArrayList<String>();
-      userList.add("List files");
-      userList.add("Upload files");
-      userList.add("Download files");
-      userList.add("Delete files");
-      userList.add("Create a group");
+      ArrayList<String> memberList = new ArrayList<String>();
+      memberList.add("List files");
+      memberList.add("Upload files");
+      memberList.add("Download files");
+      memberList.add("Delete files");
+      memberList.add("Create a group");
 
       boolean doAgain = true;
       while(doAgain) {   // main menu while loop
@@ -166,8 +166,8 @@ class ClientApp {
         }
         // USER (options are always there for user level)
         System.out.println("User Ops:");
-        for(int i = 0; i < userList.size(); i++)
-          System.out.println(i + ") " + userList.get(i));
+        for(int i = 0; i < memberList.size(); i++)
+          System.out.println(i + ") " + memberList.get(i));
         System.out.println("\n");
 
         System.out.print("Please select an option ('q' to select a different group, 'r' to refresh) >> ");

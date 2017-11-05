@@ -69,6 +69,7 @@ import java.util.*;
     public User() {
       groups = new ArrayList<String>();
       ownership = new ArrayList<String>();
+      pw = new String;
     }
 
     public ArrayList<String> getGroups() {

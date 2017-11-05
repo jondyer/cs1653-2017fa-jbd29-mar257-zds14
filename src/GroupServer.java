@@ -54,9 +54,18 @@ public class GroupServer extends Server {
       System.out.print("Enter your username: ");
       String username = console.next();
 
-      // TODO: Setup admin password
-      // TODO: Setup W-storage -- calculate W = g^W (mod p) -- for all passwords
+      boolean match = false;
+      while(!match) {
+        System.out.print("Enter a password for this account: ");
+        String pw1 = console.next();
+        System.out.print("Please enter the password again to confirm: ");
+        String pw2 = console.next();
+        if(pw1.equals(pw2)) match = true;
+      }
 
+
+      // TODO: Setup W-storage -- calculate W = g^W (mod p) -- for all passwords
+      
 
       //Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
       userList = new UserList();
