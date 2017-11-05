@@ -38,15 +38,32 @@ public class TrentThread extends Thread {
               if (e.getObjContents().get(0) == null)
                 response = new Envelope("FAIL-BADKEY");
               else {
-              PublicKey pub = (PublicKey)e.getObjContents().get(0); //Extract public key
+                PublicKey pub = (PublicKey)e.getObjContents().get(0); //Extract public key
 
-              if(registerServer(pub))
-                response = new Envelope("OK"); //Success
+                if(registerServer(pub))
+                  response = new Envelope("OK"); //Success
               }
           }
           output.writeObject(response);
         } else if(e.getMessage().equals("DSERV")) {
           // TODO: Delete File Server Control          
+        } else if(e.getMessage().equals("GET")) {
+          // TODO: Encrypt both ways
+          if (e.getObjContents().size() < 2)
+            response = new Envelope("FAIL-BADCONTENTS");
+          else {
+              if(my_ts.serverList == null)
+                response = new Envelope("FAIL-BADKEY");
+              else {
+                String address = (String)e.getObjContents().get(0); //Extract address
+
+                if(my_ts.serverList.checkServer(address)) {
+                  response = new Envelope("OK"); //Success
+                  response.addObject(my_ts.serverList.getPubKey(address));
+                }
+              }
+          }
+          output.writeObject(response);
         } else if(e.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
           socket.close(); //Close the socket
           proceed = false; //End this communication loop
