@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import java.security.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -31,13 +32,14 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 
 public class FileClient extends Client implements FileClientInterface {
 
 	private SecretKey sessionKey;
-	public static byte[] iv = new SecureRandom().generateSeed(16);
+	public byte[] iv = new SecureRandom().generateSeed(16);
 
 	// TODO: Move D-H tools to static class
 	// TODO: Share initialization vector in Envelope for encrypt/decrypt
@@ -46,6 +48,7 @@ public class FileClient extends Client implements FileClientInterface {
 	 * MUST MUST MUST be run before any other method
 	 */
 	public void keyExchange() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+		Security.addProvider(new BouncyCastleProvider());
 		Envelope env = new Envelope("KEYX");
 
 		// Generate User's Keypair using Elliptic Curve D-H
@@ -59,16 +62,18 @@ public class FileClient extends Client implements FileClientInterface {
 			output.writeObject(env);
 			env = (Envelope)input.readObject();
 			PublicKey serverPubKey = (PublicKey) env.getObjContents().get(0);
-			byte [] cipherText = (byte []) env.getObjContents().get(0);
-
+			byte [] cipherText = (byte []) env.getObjContents().get(1);
+			System.out.println(new String(cipherText));
 			// Generate Symmetric key from Server Private Key and Client Public Key
 			KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
 			keyAgreement.init(clientKeyPair.getPrivate());
 			keyAgreement.doPhase(serverPubKey, true);
 			SecretKey sessionKey = keyAgreement.generateSecret("AES");
 
+			// Decrypt
 			Cipher deCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-			deCipher.init(Cipher.DECRYPT_MODE, sessionKey);
+			IvParameterSpec ivSpec = new IvParameterSpec(iv);
+			deCipher.init(Cipher.DECRYPT_MODE, sessionKey, ivSpec);
 			byte[] plainText = deCipher.doFinal(cipherText);
 			System.out.println(new String(plainText));
 
