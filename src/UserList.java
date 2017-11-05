@@ -17,6 +17,14 @@ import java.util.*;
     public synchronized void addUser(String username) {
       User newUser = new User();
       list.put(username, newUser);
+      list.get(username).setPass("");     // initialize to empty password
+    }
+
+    // overload addUser
+    public synchronized void addUser(String username, String password) {
+      User newUser = new User();
+      list.put(username, newUser);
+      list.get(username).setPass(password);
     }
 
     public synchronized void deleteUser(String username) {
@@ -56,6 +64,11 @@ import java.util.*;
       list.get(user).removeOwnership(groupname);
     }
 
+    public synchronized void setPass(String user, String password) {
+      list.get(user).setPass(password);
+    }
+
+
 
   class User implements java.io.Serializable {
 
@@ -65,11 +78,13 @@ import java.util.*;
     private static final long serialVersionUID = -6699986336399821598L;
     private ArrayList<String> groups;
     private ArrayList<String> ownership;
+    // TODO: don't store password here, store g^W(mod p)
+    private String pw;
 
     public User() {
       groups = new ArrayList<String>();
       ownership = new ArrayList<String>();
-      pw = new String;
+      pw = "";
     }
 
     public ArrayList<String> getGroups() {
@@ -103,5 +118,10 @@ import java.util.*;
         }
       }
     }
+
+    public void setPass(String password) {
+      pw = password;
+    }
+
   }
 }

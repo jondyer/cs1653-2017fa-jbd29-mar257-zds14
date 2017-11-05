@@ -88,7 +88,7 @@ public class FileServer extends Server {
         keyPairRSA = keyGenRSA.generateKeyPair();
 
         ObjectOutputStream outStream;
-        
+
 		try {
 			outStream = new ObjectOutputStream(new FileOutputStream("KeyList.bin"));
 			outStream.writeObject(keyPairRSA);

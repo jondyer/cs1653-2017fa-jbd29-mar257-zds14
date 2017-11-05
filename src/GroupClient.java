@@ -3,41 +3,41 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.io.ObjectInputStream;
-import java.math.BigInteger; 
+import java.math.BigInteger;
 import java.security.SecureRandom;
 import javax.crypto.*;
 import java.security.*;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider; 
-import org.bouncycastle.crypto.digests.SHA256Digest; 
-import org.bouncycastle.crypto.generators.DHParametersGenerator; 
-import org.bouncycastle.crypto.params.DHParameters; 
-import org.bouncycastle.util.encoders.Hex; 
-import org.bouncycastle.crypto.CryptoException; 
-import org.bouncycastle.crypto.agreement.srp.SRP6Client; 
-import org.bouncycastle.crypto.agreement.srp.SRP6Server; 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.DHParametersGenerator;
+import org.bouncycastle.crypto.params.DHParameters;
+import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.agreement.srp.SRP6Client;
+import org.bouncycastle.crypto.agreement.srp.SRP6Server;
 import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 
 public class GroupClient extends Client implements GroupClientInterface {
 
 	// TODO: Replace N and g with more secure values (Group 19?)
-	private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C" 
-	      + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4" 
-	      + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29" 
-	      + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A" 
-	      + "FD5138FE8376435B9FC61D2FC0EB06E3")); 
+	private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
+	      + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
+	      + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
+	      + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A"
+	      + "FD5138FE8376435B9FC61D2FC0EB06E3"));
 	private static final BigInteger g_1024 = BigInteger.valueOf(2);
 	private final SecureRandom random = new SecureRandom();
 
 	// TODO: Get SRP to work
 	public boolean loginSRP() {
 		Security.addProvider(new BouncyCastleProvider());
-		byte[] I = "username".getBytes(); 
-        byte[] P = "password".getBytes(); 
-        byte[] s = new byte[32]; 
+		byte[] I = "username".getBytes();
+        byte[] P = "password".getBytes();
+        byte[] s = new byte[32];
         random.nextBytes(s);
 
-        SRP6Client client = new SRP6Client(); 
+        SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
         BigInteger A = client.generateClientCredentials(s, I, P);
 
@@ -127,8 +127,37 @@ public class GroupClient extends Client implements GroupClientInterface {
 		 try {
 				Envelope message = null, response = null;
 				//Tell the server to create a user
+				//If no password is given, initialize to empty
+				String pw = "";
 				message = new Envelope("CUSER");
 				message.addObject(username); //Add user name string
+				message.addObject(pw); //Add user password
+				message.addObject(token); //Add the requester's token
+				output.writeObject(message);
+
+				response = (Envelope)input.readObject();
+
+				//If server indicates success, return true
+				if(response.getMessage().equals("OK"))
+					return true;
+
+				return false;
+			} catch(Exception e) {
+				System.err.println("Error: " + e.getMessage());
+				e.printStackTrace(System.err);
+				return false;
+			}
+	 }
+
+	 // Overload for password
+	 public boolean createUser(String username, String pw, UserToken token) {
+		 try {
+				Envelope message = null, response = null;
+				//Tell the server to create a user
+				//If no password is given, initialize to empty
+				message = new Envelope("CUSER");
+				message.addObject(username); //Add user name string
+				message.addObject(pw); //Add user password
 				message.addObject(token); //Add the requester's token
 				output.writeObject(message);
 

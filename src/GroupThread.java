@@ -16,6 +16,9 @@ public class GroupThread extends Thread {
     my_gs = _gs;
   }
 
+
+  // TODO: Encrypt/Decrypt EVERYTHING (AES/GCM/NoPadding)
+
   public void run() {
     boolean proceed = true;
 
@@ -64,9 +67,10 @@ public class GroupThread extends Thread {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
                 String username = (String)message.getObjContents().get(0); //Extract the username
-                UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+                String password = (String)message.getObjContents().get(1); //Extract the password
+                UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
 
-                if(createUser(username, yourToken)){
+                if(createUser(username, password, yourToken)){
                   response = new Envelope("OK"); //Success
                 }
               }
@@ -261,7 +265,7 @@ public class GroupThread extends Thread {
 
 
   //Method to create a user
-  private boolean createUser(String username, UserToken yourToken) {
+  private boolean createUser(String username, String password, UserToken yourToken) {
     String requester = yourToken.getSubject();
 
     //Check if requester exists
@@ -275,6 +279,7 @@ public class GroupThread extends Thread {
           return false; //User already exists
         else {
           my_gs.userList.addUser(username);
+          my_gs.userList.setPass(username, password);
           return true;
         }
       }else return false; //requester not an administrator
