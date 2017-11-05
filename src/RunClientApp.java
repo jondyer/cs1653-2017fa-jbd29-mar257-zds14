@@ -56,9 +56,16 @@ class ClientApp {
     groupClient.connect(groupHost, GROUP_PORT);
     fileClient.connect(fileHost, FILE_PORT);
 
+
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
     String username = console.next();
+    System.out.print("Please enter your password >> ");
+    String pw = console.next();
+
+    // TODO: Authenticate with GroupServer first -- loginSRP() and such
+
+
     UserToken token = groupClient.getToken(username);
 
     // Check to make sure token exists
@@ -287,7 +294,21 @@ class ClientApp {
   private boolean createUser(UserToken myToken) {
     System.out.print("Username of the person you wish to create? >> ");
     String username = console.next();
-    boolean status = groupClient.createUser(username, myToken);
+
+    boolean match = false;
+    String pw1 = "";
+    String pw2;
+
+    while(!match) {
+      System.out.print("Passward for this account? >> ");
+      pw1 = console.next();
+      System.out.print("Please enter the password again to confirm >> ");
+      pw2 = console.next();
+      if(pw1.equals(pw2)) match = true;
+    }
+
+
+    boolean status = groupClient.createUser(username, pw1, myToken);
     if(status)
       System.out.println("Successfully created user '" + username + "'\n");
     else

@@ -123,7 +123,9 @@ public class GroupClient extends Client implements GroupClientInterface {
     return (getToken(username, "ADMIN") != null);
   }
 
-	 public boolean createUser(String username, UserToken token) {
+
+	// Deprecated I think?
+	public boolean createUser(String username, UserToken token) {
 		 try {
 				Envelope message = null, response = null;
 				//Tell the server to create a user
@@ -147,7 +149,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				e.printStackTrace(System.err);
 				return false;
 			}
-	 }
+	}
 
 	 // Overload for password
 	 public boolean createUser(String username, String pw, UserToken token) {
