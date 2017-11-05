@@ -33,7 +33,6 @@ class ClientApp {
 
   public ClientApp() throws Exception {
     run();
-    fileClient.keyExchange();
   }
 
   public ClientApp(String [] args) throws Exception {
@@ -48,15 +47,15 @@ class ClientApp {
       groupHost = args[2];
       GROUP_PORT = Integer.parseInt(args[3]);
     }
-    fileClient.keyExchange();
     run();
   }
 
-  public void run() {
+  public void run() throws Exception {
 
     // Connect to Server
     groupClient.connect(groupHost, GROUP_PORT);
     fileClient.connect(fileHost, FILE_PORT);
+    fileClient.keyExchange();
 
 
     // Get Username & Token

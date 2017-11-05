@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.Thread;
 import java.net.Socket;
 
+import java.security.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -35,6 +36,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 
@@ -45,6 +47,7 @@ public class FileThread extends Thread {
 
 	public FileThread(Socket _socket) {
 		socket = _socket;
+		Security.addProvider(new BouncyCastleProvider());
 	}
 
 	public void run() {
@@ -81,7 +84,7 @@ public class FileThread extends Thread {
 						SecretKey sessionKey = keyAgreement.generateSecret("AES");
 
 						Cipher enCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-						enCipher.init(Cipher.ENCRYPT_MODE, sessionKey);
+						enCipher.init(Cipher.ENCRYPT_MODE, sessionKey, ivSpec);
 						byte[] cipherText = enCipher.doFinal("I AM A TEST FROM THE SERVER".getBytes());
 
 						response = new Envelope("OK");
