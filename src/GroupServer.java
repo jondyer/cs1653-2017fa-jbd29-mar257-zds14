@@ -12,6 +12,7 @@ import java.util.*;
 
 public class GroupServer extends Server {
 
+
   public static final int SERVER_PORT = 8765;
   public UserList userList;
   public GroupList groupList;
@@ -52,6 +53,10 @@ public class GroupServer extends Server {
       System.out.println("No users currently exist. Your account will be the administrator.");
       System.out.print("Enter your username: ");
       String username = console.next();
+
+      // TODO: Setup admin password
+      // TODO: Setup W-storage -- calculate W = g^W (mod p) -- for all passwords
+
 
       //Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
       userList = new UserList();
