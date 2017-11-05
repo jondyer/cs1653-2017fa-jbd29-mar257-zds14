@@ -51,14 +51,14 @@ public abstract class Server {
 			pub = keyPairRSA.getPublic();
         	priv = keyPairRSA.getPrivate();
 		} catch(FileNotFoundException e) {
-			System.out.println("KeyList Does Not Exist. Creating KeyList...");
+			System.out.println("KeyPair Does Not Exist. Creating KeyPair...");
 			genKeyPair();
 		} catch(IOException e) {
-			System.out.println("Error reading from KeyList file");
+			System.out.println("Error reading from KeyPair file");
 			System.exit(-1);
 		}
 		catch(ClassNotFoundException e) {
-			System.out.println("Error reading from KeyList file");
+			System.out.println("Error reading from KeyPair file");
 			System.exit(-1);
 		}
 	}

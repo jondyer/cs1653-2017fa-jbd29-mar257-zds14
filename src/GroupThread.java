@@ -44,10 +44,13 @@ public class GroupThread extends Thread {
             String groupname = (String)message.getObjContents().get(1);
             UserToken yourToken = createToken(username, groupname); //Create a token with the specified group
 
-            if(yourToken != null)
+            if(yourToken != null) {
               //Respond to the client. On error, the client will receive a null token
               response = new Envelope("OK");
-            response.addObject(yourToken);
+              response.addObject(yourToken);
+              response.addObject(my_gs.signHash(((Token)yourToken).getIdentifier()));
+            }
+            
             output.writeObject(response);
           } else {
             UserToken yourToken = createToken(username); //Create a token
