@@ -24,6 +24,8 @@ class ClientApp {
   private String groupHost = "localhost";
   private int FILE_PORT = 4321;
   private String fileHost = "localhost";
+  private int TRENT_PORT = 4444;
+  private String trentHost = "localhost";
 
   Scanner console = new Scanner(System.in);
   GroupClient groupClient = new GroupClient();
