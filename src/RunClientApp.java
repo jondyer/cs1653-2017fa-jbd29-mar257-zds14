@@ -9,7 +9,7 @@ import java.io.File;
 
 // Driver Class
 public class RunClientApp {
-  public static void main(String [] args) {
+  public static void main(String [] args) throws Exception {
     ClientApp newApp;
     if (args.length == 0)
       newApp = new ClientApp();
@@ -31,11 +31,12 @@ class ClientApp {
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
 
-  public ClientApp() {
+  public ClientApp() throws Exception {
     run();
+    fileClient.keyExchange();
   }
 
-  public ClientApp(String [] args){
+  public ClientApp(String [] args) throws Exception {
     if (args.length == 1)
       FILE_PORT = Integer.parseInt(args[0]);
     else if (args.length == 2) {
@@ -47,6 +48,7 @@ class ClientApp {
       groupHost = args[2];
       GROUP_PORT = Integer.parseInt(args[3]);
     }
+    fileClient.keyExchange();
     run();
   }
 

@@ -1,14 +1,44 @@
 /* File worker thread handles the business of uploading, downloading, and removing files for clients with valid tokens */
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyAgreement;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.ShortBufferException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
-import java.lang.Thread;
-import java.net.Socket;
-import java.util.List;
-import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
+
+import java.lang.Thread;
+import java.net.Socket;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+
+import java.util.Enumeration;
+import java.util.List;
+import java.util.ArrayList;
+
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+
+
 
 public class FileThread extends Thread {
 	private final Socket socket;
@@ -28,6 +58,39 @@ public class FileThread extends Thread {
 			do {
 				Envelope e = (Envelope)input.readObject();
 				System.out.println("Request received: " + e.getMessage());
+
+				//Handler to establish session key between Client and FileServer
+				if(e.getMessage().equals("KEYX")) {
+					if(e.getObjContents().size() < 1)
+						response = new Envelope("FAIL-BADCONTENTS");
+					else {
+						// Get client's Public Key & Initialization vector
+						PublicKey clientPubKey = (PublicKey) e.getObjContents().get(0);
+						IvParameterSpec ivSpec = new IvParameterSpec((byte[]) e.getObjContents().get(1));
+
+						// Generate Keypair for Server
+						ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("brainpoolp256r1");
+						KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("ECDH", "BC");
+						keyPairGen.initialize(paramSpec);
+						KeyPair serverKeyPair = keyPairGen.generateKeyPair();
+
+						// Generate Symmetric key from Server Private Key and Client Public Key
+						KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
+						keyAgreement.init(serverKeyPair.getPrivate());
+						keyAgreement.doPhase(clientPubKey, true);
+						SecretKey sessionKey = keyAgreement.generateSecret("AES");
+
+						Cipher enCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+						enCipher.init(Cipher.ENCRYPT_MODE, sessionKey);
+						byte[] cipherText = enCipher.doFinal("I AM A TEST FROM THE SERVER".getBytes());
+
+						response = new Envelope("OK");
+						response.addObject(serverKeyPair.getPublic());
+						response.addObject(cipherText);
+						output.writeObject(response);
+
+					}
+				}
 
 				// Handler to list files that this user is allowed to see
 				if(e.getMessage().equals("LFILES")) {

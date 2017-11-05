@@ -1,13 +1,85 @@
 /* FileClient provides all the client functionality regarding the file server */
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyAgreement;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.ShortBufferException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+
 public class FileClient extends Client implements FileClientInterface {
+
+	private SecretKey sessionKey;
+	public static byte[] iv = new SecureRandom().generateSeed(16);
+
+	// TODO: Move D-H tools to static class
+	// TODO: Share initialization vector in Envelope for encrypt/decrypt
+
+	/**
+	 * MUST MUST MUST be run before any other method
+	 */
+	public void keyExchange() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+		Envelope env = new Envelope("KEYX");
+
+		// Generate User's Keypair using Elliptic Curve D-H
+		ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("brainpoolp256r1");
+		KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("ECDH", "BC");
+		keyPairGen.initialize(paramSpec);
+		KeyPair clientKeyPair = keyPairGen.generateKeyPair();
+		env.addObject(clientKeyPair.getPublic());
+		env.addObject(iv);
+		try {
+			output.writeObject(env);
+			env = (Envelope)input.readObject();
+			PublicKey serverPubKey = (PublicKey) env.getObjContents().get(0);
+			byte [] cipherText = (byte []) env.getObjContents().get(0);
+
+			// Generate Symmetric key from Server Private Key and Client Public Key
+			KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
+			keyAgreement.init(clientKeyPair.getPrivate());
+			keyAgreement.doPhase(serverPubKey, true);
+			SecretKey sessionKey = keyAgreement.generateSecret("AES");
+
+			Cipher deCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+			deCipher.init(Cipher.DECRYPT_MODE, sessionKey);
+			byte[] plainText = deCipher.doFinal(cipherText);
+			System.out.println(new String(plainText));
+
+
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+	}
 
 	public boolean delete(String filename, UserToken token) {
 		String remotePath;
@@ -20,8 +92,8 @@ public class FileClient extends Client implements FileClientInterface {
 	    env.addObject(remotePath);
 	    env.addObject(token);
 	    try {
-			output.writeObject(env);
-		    env = (Envelope)input.readObject();
+				output.writeObject(env);
+				env = (Envelope)input.readObject();
 
 			if (env.getMessage().compareTo("OK")==0) {
 				System.out.printf("File %s deleted successfully\n", filename);
