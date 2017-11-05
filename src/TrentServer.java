@@ -19,6 +19,8 @@ public class TrentServer extends Server {
 
   public void start() {
 
+    getKeyPair();
+
     String serverFile = "ServerList.bin";
     Scanner console = new Scanner(System.in);
     ObjectInputStream serverStream;

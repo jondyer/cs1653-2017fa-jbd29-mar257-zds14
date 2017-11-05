@@ -29,6 +29,8 @@ public class GroupServer extends Server {
   public void start() {
     // Overwrote server.start() because if no user file exists, initial admin account needs to be created
 
+    getKeyPair();
+
     String userFile = "UserList.bin";
     String groupFile = "GroupList.bin";
     Scanner console = new Scanner(System.in);
