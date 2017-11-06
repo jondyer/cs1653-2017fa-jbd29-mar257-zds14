@@ -14,13 +14,58 @@ public class SymmetricKeyOps {
   public static final int GCM_IV = 12;    //byte-length of IV
   public static final int GCM_TAG = 128;     //bit-length of verification tag
 
-  public static byte[] encrypt(byte[] plainText, SecretKey agreedKey, GCMParameterSpec spec) {
+  public static Envelope encrypt(byte[] plainText, SecretKey agreedKey) {
     try {
       Security.addProvider(new BouncyCastleProvider());
+      Envelope env = new Envelope();
+
+      // generate the IV
+      SecureRandom rand = new SecureRandom();
+      final byte[] iv = new byte[GCM_IV];
+      rand.nextBytes(iv);
+      GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
+
+      // actually encrypt
       Cipher symCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
       symCipher.init(Cipher.ENCRYPT_MODE, agreedKey, spec);
       byte[] cipherText = symCipher.doFinal(plainText);
-      return cipherText;
+
+      // build the envelope
+      env.addObject(iv);
+      env.addObject(cipherText);
+      return env;
+
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+
+  // TODO: Make this work for envelopes with more than one encrypted object, OR just return the cipherText
+  public static byte[] encrypt(byte[] plainText, SecretKey agreedKey) {
+    try {
+      Security.addProvider(new BouncyCastleProvider());
+
+
+
+
+      // generate the IV
+      SecureRandom rand = new SecureRandom();
+      final byte[] iv = new byte[GCM_IV];
+      rand.nextBytes(iv);
+      GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
+
+      // actually encrypt
+      Cipher symCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+      symCipher.init(Cipher.ENCRYPT_MODE, agreedKey, spec);
+      byte[] cipherText = symCipher.doFinal(plainText);
+
+      // build the envelope
+      env.addObject(iv);
+      env.addObject(cipherText);
+      return env;
+
     } catch(NoSuchAlgorithmException ex1) {
       ex1.printStackTrace();
     }
