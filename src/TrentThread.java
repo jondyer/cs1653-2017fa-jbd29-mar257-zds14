@@ -53,21 +53,17 @@ public class TrentThread extends Thread {
         } else if(e.getMessage().equals("DSERV")) {
           // TODO: Delete File Server Control
         } else if(e.getMessage().equals("GET")) {
-          System.out.println("In GET ");
           if (e.getObjContents().size() < 1)
             response = new Envelope("FAIL-BADCONTENTS");
           else {
               if(my_ts.serverList == null)
                 response = new Envelope("FAIL-BADKEY");
               else {
-                System.out.println("Extracting address");
                 String address = (String) e.getObjContents().get(0); //Extract address
-                System.out.println("Extracted");
 
                 if(my_ts.serverList.checkServer(address)) {
                   response = new Envelope("OK"); // Success
                   response.addObject(my_ts.serverList.getPubKey(address));
-                  System.out.println("Did we get here?");
                 }
               }
           }
@@ -89,6 +85,7 @@ public class TrentThread extends Thread {
   private boolean registerServer(PublicKey pub, int port) {
     if(my_ts.serverList == null) return false;
     String address = socket.getInetAddress() + ":" + port;
+    address = address.replace("/", "");
     if (my_ts.serverList.checkServer(address)) return false;
 
     Security.addProvider(new BouncyCastleProvider());

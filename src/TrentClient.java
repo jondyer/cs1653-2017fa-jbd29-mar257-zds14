@@ -23,20 +23,18 @@ public class TrentClient extends Client {
   public byte[] iv = new SecureRandom().generateSeed(16);
 
 
-  public PublicKey getPublicKey(String address) throws Exception {
+  public PublicKey getPublicKey(String ipaddress, int port) throws Exception {
     Security.addProvider(new BouncyCastleProvider());
 
     // Pass Trent address of file server we want to connect to
     Envelope env = new Envelope("GET");
+    String address = ipaddress + ":" + port;
     env.addObject(address);
     output.writeObject(env);
 
     // Recover FSx's Public Key from returned bytes
     env = (Envelope)input.readObject();
     PublicKey fileServerPublicKey = (PublicKey) env.getObjContents().get(0);
-    // byte [] pubKeyBytes = (byte []) env.getObjContents().get(0);
-    // KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
-    // PublicKey fileServerPublicKey = keyFact.generatePublic(new X509EncodedKeySpec(pubKeyBytes));
     return fileServerPublicKey;
   }
 }
