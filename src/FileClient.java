@@ -42,7 +42,19 @@ public class FileClient extends Client implements FileClientInterface {
 	public byte[] iv = new SecureRandom().generateSeed(16);
 
 	// TODO: Move D-H tools to static class
-	// TODO: Share initialization vector in Envelope for encrypt/decrypt
+
+	/**
+	 * Default constructor for FileClient class. Runs super's constructor then establishes key with file (thread) server.
+	 * @return [description]
+	 */
+	public FileClient(){
+		super();
+		try{
+			keyExchange();
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * MUST MUST MUST be run before any other method
