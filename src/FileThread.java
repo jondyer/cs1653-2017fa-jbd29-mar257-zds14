@@ -1,36 +1,12 @@
 /* File worker thread handles the business of uploading, downloading, and removing files for clients with valid tokens */
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyAgreement;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.ShortBufferException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.UnsupportedEncodingException;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.io.*;
 
 import java.lang.Thread;
 import java.net.Socket;
 
 import java.security.*;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
 
 import java.util.Enumeration;
 import java.util.List;
@@ -64,28 +40,21 @@ public class FileThread extends Thread {
 
 				//Handler to establish session key between Client and FileServer
 				if(e.getMessage().equals("KEYX")) {
-					if(e.getObjContents().size() < 1)
-						response = new Envelope("FAIL-BADCONTENTS");
+					if(e.getObjContents().size() < 1) response = new Envelope("FAIL-BADCONTENTS");
 					else {
 						// Get client's Public Key & Initialization vector
 						PublicKey clientPubKey = (PublicKey) e.getObjContents().get(0);
 						IvParameterSpec ivSpec = new IvParameterSpec((byte[]) e.getObjContents().get(1));
 
 						// Generate Keypair for Server
-						ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("secp521r1");
-						KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("ECDH", "BC");
-						keyPairGen.initialize(paramSpec);
-						KeyPair serverKeyPair = keyPairGen.generateKeyPair();
+						KeyPair serverKeyPair = ECDH.generateKeyPair();
 
 						// Generate Symmetric key from Server Private Key and Client Public Key
-						KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
-						keyAgreement.init(serverKeyPair.getPrivate());
-						keyAgreement.doPhase(clientPubKey, true);
-						SecretKey sessionKey = keyAgreement.generateSecret("AES");
+						this.sessionKey = ECDH.calculateKey(clientPubKey, serverKeyPair.getPrivate());
 
 						Cipher enCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
 						enCipher.init(Cipher.ENCRYPT_MODE, sessionKey, ivSpec);
-						byte[] cipherText = enCipher.doFinal("I AM A TEST FROM THE SERVER".getBytes());
+						byte[] cipherText = enCipher.doFinal("I AM A TEST FROM THE FILE SERVER".getBytes());
 
 						response = new Envelope("OK");
 						response.addObject(serverKeyPair.getPublic());
