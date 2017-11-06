@@ -14,8 +14,16 @@ public class Envelope implements java.io.Serializable {
     msg = text;
   }
 
+  public Envelope() {
+    msg = "";
+  }
+
   public String getMessage() {
     return msg;
+  }
+
+  public void setMessage(String text) {
+    msg = text;
   }
 
   public ArrayList<Object> getObjContents() {
