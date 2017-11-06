@@ -69,8 +69,10 @@ public class GroupClient extends Client implements GroupClientInterface {
         K = new SecretKeySpec(S.toByteArray(), "AES128");
 
         byte[] cypherText = (byte[])((Envelope)response.getObjContents().get(1)).getObjContents().get(0);
-        SymmetricKeyOps.decrypt();
+        byte[] plain = SymmetricKeyOps.decrypt(cypherText, K, SymmetricKeyOps.getGCMParameterSpec());
 		
+		System.out.println(plain.toString());
+
         return true;
 	}
 
