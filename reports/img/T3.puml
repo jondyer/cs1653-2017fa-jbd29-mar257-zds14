@@ -4,18 +4,9 @@ actor Bob
 participant FS
 participant Trent
 
-alt K<sub>BT</sub> not established
-	Bob -> Trent: Bob || g<sup>u</sup> mod q
-	note left: Choose random u
-	Trent -> Bob: Trent || [Bob || g<sup>t</sup> mod q]k<sub>T</sub><sup>-1</sup>
-	Bob -> Bob: Verify Trent through k<sub>T</sub>
-	note left: K<sub>BT</sub> = g<sup>ut</sup> mod p
-end
-
-|||
-
-Bob -> Trent: Bob || {FileServer_X}K<sub>BT</sub>
-Trent -> Bob: {FileServer_X || k<sub>FSX</sub>}K<sub>BT</sub>
+Bob -> Trent: Bob || FileServer_X
+Trent -> Bob: FileServer_X || [IP || port || k<sub>FSX</sub>]k<sub>T</sub><sup>-1</sup>
+note left: Verify Trent as the source
 
 |||
 
