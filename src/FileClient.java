@@ -30,6 +30,11 @@ public class FileClient extends Client implements FileClientInterface {
 		Security.addProvider(new BouncyCastleProvider());
 		Envelope env = new Envelope("KEYX");
 
+
+		SecureRandom rand = new SecureRandom();
+		byte[] iv = new byte[16];
+		rand.nextBytes(iv);
+
 		// Generate User's Keypair using Elliptic Curve D-H
 		KeyPair clientKeyPair = ECDH.generateKeyPair();
 

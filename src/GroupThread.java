@@ -6,10 +6,28 @@ import java.net.Socket;
 import java.io.*;
 import java.util.List;
 import java.util.*;
+import java.math.BigInteger;
+import javax.crypto.*;
+import java.security.*;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.agreement.srp.SRP6Server;
+import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 
 public class GroupThread extends Thread {
   private final Socket socket;
   private GroupServer my_gs;
+
+  // TODO: Replace N and g with more secure values (Group 19?)
+  private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
+        + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
+        + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
+        + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A"
+        + "FD5138FE8376435B9FC61D2FC0EB06E3"));
+  private static final BigInteger g_1024 = BigInteger.valueOf(2);
 
   public GroupThread(Socket _socket, GroupServer _gs) {
     socket = _socket;
@@ -60,8 +78,27 @@ public class GroupThread extends Thread {
             response.addObject(yourToken);
             output.writeObject(response);
           }
-        }
-        else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
+        } else if (message.getMessage().equals("SRP")) {
+          if(message.getObjContents().size() < 2)
+            response = new Envelope("FAIL");
+          else {
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().get(0) != null) {
+              if(message.getObjContents().get(1) != null) {
+                String username = (String)message.getObjContents().get(0); //Extract the username
+                BigInteger A = (BigInteger)message.getObjContents().get(1); //Extract the public key from the client
+                BigInteger B = genSessionKey(A);
+
+                if (B != null) {
+                  response = new Envelope("OK");
+                  response.addObject(B);
+                }
+              }
+            }
+          }
+          output.writeObject(response);
+        } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
           if(message.getObjContents().size() < 2)
             response = new Envelope("FAIL");
           else {
@@ -264,6 +301,30 @@ public class GroupThread extends Thread {
       }
     }
     return null;
+  }
+
+  private BigInteger genSessionKey(BigInteger A) {
+    Security.addProvider(new BouncyCastleProvider());
+    BigInteger B = null;
+    BigInteger S = null;
+    BigInteger v = null;
+
+    SRP6Server server = new SRP6Server();
+    // TODO: Figure out what v is
+    server.init(N_1024, g_1024, v, new SHA256Digest(), new SecureRandom());
+    B = server.generateServerCredentials();
+
+    try {
+      S = server.calculateSecret(A);
+    } catch (CryptoException cry) {
+      System.out.println(cry.getMessage());
+    }
+
+    // TODO: Fix to use AES
+    //MessageDigest sessionDigest = MessageDigest.getInstance();
+    //byte[] K = sessionDigest.digest(S.toByteArray());
+
+    return B;
   }
 
 

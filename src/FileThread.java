@@ -20,10 +20,12 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 
 public class FileThread extends Thread {
 	private final Socket socket;
-	SecretKey sessionKey;
+	private FileServer my_fs;
+	private SecretKey sessionKey;
 
-	public FileThread(Socket _socket) {
-		socket = _socket;
+	public FileThread(Socket _socket, FileServer _fs) {
+		this.socket = _socket;
+		this.my_fs = _fs;
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
@@ -53,13 +55,21 @@ public class FileThread extends Thread {
 						// Generate Symmetric key from Server Private Key and Client Public Key
 						this.sessionKey = ECDH.calculateKey(clientPubKey, serverKeyPair.getPrivate());
 
-						Cipher enCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-						enCipher.init(Cipher.ENCRYPT_MODE, sessionKey, ivSpec);
-						byte[] cipherText = enCipher.doFinal("I AM A TEST FROM THE FILE SERVER".getBytes());
+						// Hash FS's D-H public key (to reduce size for signing)
+						MessageDigest hashedDHPubKey = MessageDigest.getInstance("SHA-256", "BC");
+						hashedDHPubKey.update(serverKeyPair.getPublic().getEncoded()); // Change this to "UTF-16" if needed
+						byte[] digest = hashedDHPubKey.digest();
 
+						// Sign D-H public key hash using RSA private key
+						Signature privSig = Signature.getInstance("SHA256withRSA");
+						privSig.initSign(my_fs.priv);
+						privSig.update(digest);
+						byte [] signedDHPubKey = privSig.sign(); // Generate updated signature
+
+						// Send Response
 						response = new Envelope("OK");
-						response.addObject(serverKeyPair.getPublic());
-						response.addObject(cipherText);
+						response.addObject(signedDHPubKey);	// Send Hashed D-H public key signed by RSA private key
+						response.addObject(serverKeyPair.getPublic()); // Send plaintext D-H public key
 						output.writeObject(response);
 
 					}

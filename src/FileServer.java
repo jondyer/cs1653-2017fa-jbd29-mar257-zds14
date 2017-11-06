@@ -18,10 +18,6 @@ public class FileServer extends Server {
 	public static final int SERVER_PORT = 4321;
 	public static FileList fileList;
 
-	private Socket sock;
-	private ObjectOutputStream output;
-	private ObjectInputStream input;
-
 	public FileServer() {
 		super(SERVER_PORT, "FilePile");
 		registerServer();
@@ -30,72 +26,6 @@ public class FileServer extends Server {
 	public FileServer(int _port) {
 		super(_port, "FilePile");
 		registerServer();
-	}
-
-	public boolean connect(final String server, final int port, boolean quiet) {
-		try {
-			// Creates a connection to server at the specified port
-			sock = new Socket(server, port);
-
-			// Creates Input / Output streams with the server we connected to
-			output = new ObjectOutputStream(sock.getOutputStream());
-			input = new ObjectInputStream(sock.getInputStream());
-		} catch(Exception e) {
-		    System.err.println("Error: " + e.getMessage());
-		    e.printStackTrace(System.err);
-		    return false;
-		}
-
-		return isConnected();
-	}
-
-	public boolean isConnected() {
-		if (sock == null || !sock.isConnected())
-			return false;
-		else
-			return true;
-	}
-
-	public void disconnect()	 {
-		if (isConnected()) {
-			try {
-				Envelope message = new Envelope("DISCONNECT");
-				output.writeObject(message);
-			}
-			catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-			}
-		}
-	}
-
-	private boolean registerServer() {
-		getKeyPair();
-
-        // TODO: Connect to Trent
-        if (!connect("127.0.0.1", 4444, true)) return false;
-
-        Envelope env = new Envelope("CSERV");
-        env.addObject(pub);
-        env.addObject(getPort());
-
-        try {
-			output.writeObject(env);
-		    env = (Envelope)input.readObject();
-
-			if (env.getMessage().compareTo("OK")==0) {
-				System.out.printf("File Server created successfully\n");
-			}
-			else {
-				System.out.printf("Error creating File Server\n");
-				return false;
-			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} catch (ClassNotFoundException e1) {
-			e1.printStackTrace();
-		}
-		return true;
 	}
 
 	public void start() {
