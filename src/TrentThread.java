@@ -123,7 +123,7 @@ public class TrentThread extends Thread {
       Signature sig = Signature.getInstance("SHA256withRSA", "BC");
       sig.initSign(my_ts.priv, new SecureRandom());
 
-      String toSign = address + pub;
+      String toSign = address + ":" + pub;
       sig.update(toSign.getBytes());
       sigBytes = sig.sign();
     } catch(NoSuchAlgorithmException alg) {
