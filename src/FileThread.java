@@ -20,6 +20,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 
 public class FileThread extends Thread {
 	private final Socket socket;
+	SecretKey sessionKey;
 
 	public FileThread(Socket _socket) {
 		socket = _socket;
