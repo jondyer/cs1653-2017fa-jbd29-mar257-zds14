@@ -5,6 +5,7 @@ import java.util.List;
 import java.io.ObjectInputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.io.IOException;
 import javax.crypto.*;
 import java.security.*;
 
@@ -15,7 +16,6 @@ import org.bouncycastle.crypto.params.DHParameters;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.agreement.srp.SRP6Client;
-import org.bouncycastle.crypto.agreement.srp.SRP6Server;
 import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 
 public class GroupClient extends Client implements GroupClientInterface {
@@ -30,8 +30,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private final SecureRandom random = new SecureRandom();
 
 	// TODO: Get SRP to work
-	public boolean loginSRP() {
+	public boolean clientSRP() {
 		Security.addProvider(new BouncyCastleProvider());
+		BigInteger A = null;
+		BigInteger S = null;
+
 		byte[] I = "username".getBytes();
         byte[] P = "password".getBytes();
         byte[] s = new byte[32];
@@ -39,11 +42,32 @@ public class GroupClient extends Client implements GroupClientInterface {
 
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
-        BigInteger A = client.generateClientCredentials(s, I, P);
+        A = client.generateClientCredentials(s, I, P);
 
+        Envelope response = null;
         Envelope message = new Envelope("SRP");
         message.addObject("username");
+        message.addObject(A);
 
+        try {
+	        output.writeObject(message);
+	        response = (Envelope)input.readObject();
+        } catch (IOException io) {
+        	System.out.println(io.getMessage());
+        } catch (ClassNotFoundException cl) {
+        	System.out.println(cl.getMessage());
+        }
+
+        try {
+        	S = client.calculateSecret((BigInteger)response.getObjContents().get(0));
+        } catch (CryptoException cry) {
+        	System.out.println(cry.getMessage());
+        }
+
+        // TODO: Fix to use AES
+        //MessageDigest sessionDigest = MessageDigest.getInstance();
+        //byte[] K = sessionDigest.digest(S.toByteArray());
+		
         return false;
 	}
 
