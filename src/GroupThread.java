@@ -9,10 +9,12 @@ import java.util.*;
 import java.math.BigInteger;
 import javax.crypto.*;
 import java.security.*;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.agreement.srp.SRP6Server;
 import org.bouncycastle.crypto.agreement.srp.SRP6Util;
@@ -20,6 +22,7 @@ import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 public class GroupThread extends Thread {
   private final Socket socket;
   private GroupServer my_gs;
+  private SecretKey K;
 
   // TODO: Replace N and g with more secure values (Group 19?)
   private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
@@ -93,6 +96,7 @@ public class GroupThread extends Thread {
                 if (B != null) {
                   response = new Envelope("OK");
                   response.addObject(B);
+                  response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K));
                 }
               }
             }
@@ -305,11 +309,21 @@ public class GroupThread extends Thread {
 
   private BigInteger genSessionKey(BigInteger A) {
     Security.addProvider(new BouncyCastleProvider());
+
+    SecureRandom random = new SecureRandom();
     BigInteger B = null;
     BigInteger S = null;
     BigInteger v = null;
 
+    byte[] I = "username".getBytes();
+    byte[] P = "password".getBytes();
+    byte[] s = new byte[32];
+    //random.nextBytes(s);
+
     SRP6Server server = new SRP6Server();
+    BigInteger x = SRP6Util.calculateX(new SHA256Digest(), N_1024, s, I, P);
+    v = g_1024.modPow(x, N_1024);
+
     // TODO: Figure out what v is
     server.init(N_1024, g_1024, v, new SHA256Digest(), new SecureRandom());
     B = server.generateServerCredentials();
@@ -320,13 +334,10 @@ public class GroupThread extends Thread {
       System.out.println(cry.getMessage());
     }
 
-    // TODO: Fix to use AES
-    //MessageDigest sessionDigest = MessageDigest.getInstance();
-    //byte[] K = sessionDigest.digest(S.toByteArray());
+    K = new SecretKeySpec(S.toByteArray(), "AES128");
 
     return B;
   }
-
 
   //Method to create a user
   private boolean createUser(String username, String password, UserToken yourToken) {

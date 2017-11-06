@@ -70,6 +70,7 @@ class ClientApp {
     String pw = console.next();
 
     // TODO: Authenticate with GroupServer first -- loginSRP() and such
+    groupClient.clientSRP();
 
 
     UserToken token = groupClient.getToken(username);

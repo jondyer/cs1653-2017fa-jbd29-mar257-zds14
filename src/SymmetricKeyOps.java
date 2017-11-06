@@ -4,6 +4,11 @@ import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -83,4 +88,46 @@ public class SymmetricKeyOps {
     return spec;
   }
 
+
+
+  /**
+   * Util for converting arbitrary serializable object to byte[]
+   * Outline for code from Max @ http://tinyurl.com/69h8l7x
+   */
+  public static byte[] obj2byte(Object obj) {
+    byte[] bytes = null;
+    try {
+      ByteArrayOutputStream b = new ByteArrayOutputStream();
+      ObjectOutputStream o = new ObjectOutputStream(b);
+      o.writeObject(obj);
+      o.flush();
+      o.close();
+      b.close();
+      bytes = b.toByteArray();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      return bytes;
+    }
+
+  /**
+   * Util for converting arbitrary byte[] to object
+   * Outline for code from Max @ http://tinyurl.com/69h8l7x
+   */
+  public static Object byte2obj(byte[] bytes) {
+    Object obj = null;
+
+    try {
+      ByteArrayInputStream b = new ByteArrayInputStream(bytes);
+      ObjectInputStream o = new ObjectInputStream(b);
+      obj = o.readObject();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return obj;
+  }
 }

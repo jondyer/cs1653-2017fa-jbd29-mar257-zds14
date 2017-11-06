@@ -122,7 +122,7 @@ public abstract class Server {
 			keyStream = new ObjectInputStream(fis);
 			keyPairRSA = (KeyPair)keyStream.readObject();
 			pub = keyPairRSA.getPublic();
-        	priv = keyPairRSA.getPrivate();
+      priv = keyPairRSA.getPrivate();
 		} catch(FileNotFoundException e) {
 			System.out.println("KeyPair Does Not Exist. Creating KeyPair...");
 			genKeyPair();
