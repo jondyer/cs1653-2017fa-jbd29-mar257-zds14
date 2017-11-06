@@ -151,7 +151,7 @@ public class FileServer extends Server {
 
 			while(running) {
 				sock = serverSock.accept();
-				thread = new FileThread(sock);
+				thread = new FileThread(sock, this);
 				thread.start();
 			}
 
