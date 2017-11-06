@@ -46,10 +46,10 @@ public class Token implements UserToken, java.io.Serializable {
 
     public String getIdentifier() {
       StringBuilder b = new StringBuilder();
-      b.append(issuer);
-      b.append(subject);
+      b.append(issuer + ":");
+      b.append(subject + ":");
       for(String s : groups)
-        b.append(s);
+        b.append(s + ":");
       return b.toString();
     }
 
