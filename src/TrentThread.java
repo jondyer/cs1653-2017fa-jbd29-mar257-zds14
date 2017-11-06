@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.*;
 
@@ -111,7 +112,33 @@ public class TrentThread extends Thread {
     if(my_ts.serverList == null) return false;
     String address = socket.getInetAddress() + ":" + port;
     if (my_ts.serverList.checkServer(address)) return false;
-    my_ts.serverList.addServer(address, pub);
+
+    Security.addProvider(new BouncyCastleProvider());
+    Cipher cipherRSA;
+    byte[] sigBytes = null;
+    
+    try {
+      cipherRSA = Cipher.getInstance("RSA", "BC");
+      cipherRSA.init(Cipher.ENCRYPT_MODE, my_ts.priv);
+      Signature sig = Signature.getInstance("SHA256withRSA", "BC");
+      sig.initSign(my_ts.priv, new SecureRandom());
+
+      String toSign = address + pub;
+      sig.update(toSign.getBytes());
+      sigBytes = sig.sign();
+    } catch(NoSuchAlgorithmException alg) {
+      System.out.println(alg.getMessage());
+    } catch(NoSuchProviderException prov) {
+      System.out.println(prov.getMessage());
+    } catch(NoSuchPaddingException pad) {
+      System.out.println(pad.getMessage());
+    } catch(InvalidKeyException key) {
+      System.out.println(key.getMessage());
+    } catch(SignatureException sign) {
+      System.out.println(sign.getMessage());
+    } 
+
+    my_ts.serverList.addServer(address, pub, sigBytes);
     return true;
   }
 
