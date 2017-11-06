@@ -9,6 +9,7 @@ import java.io.IOException;
 import javax.crypto.*;
 import java.security.*;
 
+import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.DHParametersGenerator;
@@ -28,6 +29,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	      + "FD5138FE8376435B9FC61D2FC0EB06E3"));
 	private static final BigInteger g_1024 = BigInteger.valueOf(2);
 	private final SecureRandom random = new SecureRandom();
+	private SecretKey K;
 
 	// TODO: Get SRP to work
 	public boolean clientSRP() {
@@ -38,7 +40,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		byte[] I = "username".getBytes();
         byte[] P = "password".getBytes();
         byte[] s = new byte[32];
-        random.nextBytes(s);
+        //random.nextBytes(s);
 
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
@@ -64,11 +66,12 @@ public class GroupClient extends Client implements GroupClientInterface {
         	System.out.println(cry.getMessage());
         }
 
-        // TODO: Fix to use AES
-        //MessageDigest sessionDigest = MessageDigest.getInstance();
-        //byte[] K = sessionDigest.digest(S.toByteArray());
+        K = new SecretKeySpec(S.toByteArray(), "AES128");
+
+        byte[] cypherText = (byte[])((Envelope)response.getObjContents().get(1)).getObjContents().get(0);
+        SymmetricKeyOps.decrypt();
 		
-        return false;
+        return true;
 	}
 
 	public UserToken getToken(String username) {
