@@ -1,5 +1,8 @@
-public final int GCM_IV = 96;    //bit-length of IV
+public final int GCM_IV = 12;    //byte-length of IV
 public final int GCM_TAG = 128;     //bit-length of verification tag
+
+Security.addProvider(new BouncyCastleProvider());
+
 
 /*
  * Given plaintext as `plain`, the session key as `agreedKey`, this encrypts

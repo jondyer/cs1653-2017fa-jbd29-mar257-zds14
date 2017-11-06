@@ -11,7 +11,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 
 public class SymmetricKeyOps {
 
-  public static final int GCM_IV = 96;    //bit-length of IV
+  public static final int GCM_IV = 12;    //byte-length of IV
   public static final int GCM_TAG = 128;     //bit-length of verification tag
 
   public static byte[] encrypt(byte[] plainText, SecretKey agreedKey, GCMParameterSpec spec) {
@@ -83,7 +83,7 @@ public class SymmetricKeyOps {
     // final byte[] iv = new byte[GCM_IV];
     // r.nextBytes(iv);
     // ^^^ TODO: This may be the way to do it but it's not correct/IDK
-    byte[] iv = new SecureRandom().generateSeed(12); //12 bytes = 96 bits
+    byte[] iv = new SecureRandom().generateSeed(GCM_IV);
     GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
     return spec;
   }
