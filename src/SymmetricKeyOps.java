@@ -42,54 +42,23 @@ public class SymmetricKeyOps {
   }
 
 
-  // TODO: Make this work for envelopes with more than one encrypted object, OR just return the cipherText
-  /*public static byte[] encrypt(byte[] plainText, SecretKey agreedKey) {
+  public static byte[] encrypt(byte[] plainText, SecretKey agreedKey, GCMParameterSpec spec) {
     try {
       Security.addProvider(new BouncyCastleProvider());
-
-
-
-
-      // generate the IV
-      SecureRandom rand = new SecureRandom();
-      final byte[] iv = new byte[GCM_IV];
-      rand.nextBytes(iv);
-      GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
 
       // actually encrypt
       Cipher symCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
       symCipher.init(Cipher.ENCRYPT_MODE, agreedKey, spec);
       byte[] cipherText = symCipher.doFinal(plainText);
 
-      // build the envelope
-      env.addObject(iv);
-      env.addObject(cipherText);
-      return env;
+      return cipherText;
 
-    } catch(NoSuchAlgorithmException ex1) {
-      ex1.printStackTrace();
-    }
-    catch(InvalidKeyException ex2) {
-      ex2.printStackTrace();
-    }
-    catch(InvalidAlgorithmParameterException ex3) {
-      ex3.printStackTrace();
-    }
-    catch(NoSuchProviderException ex4) {
-      ex4.printStackTrace();
-    }
-    catch(NoSuchPaddingException ex5) {
-      ex5.printStackTrace();
-    }
-    catch(IllegalBlockSizeException ex6) {
-      ex6.printStackTrace();
-    }
-    catch(BadPaddingException ex7) {
-      ex7.printStackTrace();
+    } catch(Exception e) {
+      e.printStackTrace();
     }
     return null;
   }
-  */
+
 
   public static byte[] decrypt(byte[] cipherText, SecretKey agreedKey, GCMParameterSpec spec) {
     try {
@@ -98,38 +67,18 @@ public class SymmetricKeyOps {
       symCipher.init(Cipher.DECRYPT_MODE, agreedKey, spec);
       byte[] plainText = symCipher.doFinal(cipherText);
       return plainText;
-    } catch(NoSuchAlgorithmException ex1) {
-      ex1.printStackTrace();
-    }
-    catch(InvalidKeyException ex2) {
-      ex2.printStackTrace();
-    }
-    catch(InvalidAlgorithmParameterException ex3) {
-      ex3.printStackTrace();
-    }
-    catch(NoSuchProviderException ex4) {
-      ex4.printStackTrace();
-    }
-    catch(NoSuchPaddingException ex5) {
-      ex5.printStackTrace();
-    }
-    catch(IllegalBlockSizeException ex6) {
-      ex6.printStackTrace();
-    }
-    catch(BadPaddingException ex7) {
-      ex7.printStackTrace();
+    } catch(Exception e) {
+      e.printStackTrace();
     }
     return null;
   }
 
-  // TODO: May want to consider just trading IV between user/server and not GCMParameterSpec...
-  public static GCMParameterSpec geneatGCMParameterSpec() {
+
+  public static GCMParameterSpec getGCMParameterSpec() {
     Security.addProvider(new BouncyCastleProvider());
-    // SecureRandom r = SecureRandom.getInstance()
-    // final byte[] iv = new byte[GCM_IV];
-    // r.nextBytes(iv);
-    // ^^^ TODO: This may be the way to do it but it's not correct/IDK
-    byte[] iv = new SecureRandom().generateSeed(GCM_IV);
+    SecureRandom r = new SecureRandom();
+    byte[] iv = new byte[GCM_IV];
+    r.nextBytes(iv);
     GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
     return spec;
   }

@@ -21,15 +21,13 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 public class FileClient extends Client implements FileClientInterface {
 
 	private SecretKey sessionKey;
-	public byte[] iv = new SecureRandom().generateSeed(16);
-
-	// TODO: Move D-H tools to static class
 
 	/**
 	 * Default constructor for FileClient class. Runs super's constructor then establishes key with file (thread) server.
 	 * @return [description]
 	 */
 	public FileClient(){
+		// TODO: Fix constructor and stuff???
 		super();
 		try{
 			keyExchange();
@@ -44,6 +42,11 @@ public class FileClient extends Client implements FileClientInterface {
 	public void keyExchange() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
 		Security.addProvider(new BouncyCastleProvider());
 		Envelope env = new Envelope("KEYX");
+
+
+		SecureRandom rand = new SecureRandom();
+		byte[] iv = new byte[16];
+		rand.nextBytes(iv);
 
 		// Generate User's Keypair using Elliptic Curve D-H
 		KeyPair clientKeyPair = ECDH.generateKeyPair();
