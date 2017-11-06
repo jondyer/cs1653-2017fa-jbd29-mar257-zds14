@@ -17,6 +17,7 @@ public class ServerList implements java.io.Serializable {
 
       FServ newServer = new FServ(parts[0], Integer.parseInt(parts[1]), pub, signed);
       list.put(address, newServer);
+      System.out.println(list.keySet());
     }
 
     public synchronized void deleteServer(String groupName) {
@@ -30,6 +31,7 @@ public class ServerList implements java.io.Serializable {
     }
 
     public synchronized PublicKey getPubKey(String address) {
+      System.out.println("Returning key at address " + address);
       return list.get(address).getPubKey();
     }
 

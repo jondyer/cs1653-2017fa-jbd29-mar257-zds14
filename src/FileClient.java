@@ -23,27 +23,17 @@ public class FileClient extends Client implements FileClientInterface {
 	private SecretKey sessionKey;
 	public byte[] iv = new SecureRandom().generateSeed(16);
 
-	// TODO: Move D-H tools to static class
-
-	/**
-	 * Default constructor for FileClient class. Runs super's constructor then establishes key with file (thread) server.
-	 * @return [description]
-	 */
-	public FileClient(){
-		super();
-		try{
-			keyExchange();
-		} catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-
 	/**
 	 * MUST MUST MUST be run before any other method
 	 */
-	public void keyExchange() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
+	public void keyExchange(PublicKey fileServerPublicKey) {
 		Security.addProvider(new BouncyCastleProvider());
 		Envelope env = new Envelope("KEYX");
+
+
+		SecureRandom rand = new SecureRandom();
+		byte[] iv = new byte[16];
+		rand.nextBytes(iv);
 
 		// Generate User's Keypair using Elliptic Curve D-H
 		KeyPair clientKeyPair = ECDH.generateKeyPair();
@@ -53,29 +43,28 @@ public class FileClient extends Client implements FileClientInterface {
 		try {
 			output.writeObject(env);
 
-			// Get Server's public key and ciphertext
-			env = (Envelope)input.readObject();
-			PublicKey serverPubKey = (PublicKey) env.getObjContents().get(0);
-			byte [] cipherText = (byte []) env.getObjContents().get(1);
-			System.out.println(new String(cipherText));
+			// Get Server's D-H public key signed by its RSA private key and get plaintext D-H public key
+			byte [] serverSignedPubKey = (byte []) env.getObjContents().get(0);
+			PublicKey serverPubKey = (PublicKey) env.getObjContents().get(1);
 
-			// Generate Symmetric key from Server Private Key and Client Public Key
+			// Hash plainKey to update signature object to verify File Server
+			MessageDigest hashedDHPubKey = MessageDigest.getInstance("SHA-256", "BC");
+			hashedDHPubKey.update(serverPubKey.getEncoded()); // Change this to "UTF-16" if needed
+			byte[] digest = hashedDHPubKey.digest();
+
+			// Verify match using Server's RSA public key (from Trent)
+			Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
+			pubSig.initVerify(fileServerPublicKey);
+			pubSig.update(digest);
+			boolean match = pubSig.verify(serverSignedPubKey);
+			System.out.println(match);
+
+			// Generate Symmetric key from Server Public Key and Client Private Key
 			SecretKey sessionKey = ECDH.calculateKey(serverPubKey, clientKeyPair.getPrivate());
 
-			// Decrypt
-			Cipher deCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-			IvParameterSpec ivSpec = new IvParameterSpec(iv);
-			deCipher.init(Cipher.DECRYPT_MODE, sessionKey, ivSpec);
-			byte[] plainText = deCipher.doFinal(cipherText);
-			System.out.println(new String(plainText));
-
-
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} catch (ClassNotFoundException e1) {
+		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-
 	}
 
 	public boolean delete(String filename, UserToken token) {

@@ -35,31 +35,6 @@ public class TrentThread extends Thread {
         System.out.println("Request received: " + e.getMessage());
         Envelope response = new Envelope("FAIL");
 
-        if(e.getMessage().equals("KEYX")) {
-          if (e.getObjContents().size() < 1) response = new Envelope("FAIL-BADCONTENTS");
-          else {
-            // Get client's Public Key & Initialization vector
-						PublicKey clientPubKey = (PublicKey) e.getObjContents().get(0);
-						IvParameterSpec ivSpec = new IvParameterSpec((byte[]) e.getObjContents().get(1));
-
-						// Generate Keypair for Server
-						KeyPair serverKeyPair = ECDH.generateKeyPair();
-
-						// Generate Symmetric key from Server Private Key and Client Public Key
-						this.sessionKey = ECDH.calculateKey(clientPubKey, serverKeyPair.getPrivate());
-
-						Cipher enCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-						enCipher.init(Cipher.ENCRYPT_MODE, sessionKey, ivSpec);
-						byte[] cipherText = enCipher.doFinal("I AM A TEST FROM THE TRENT SERVER".getBytes());
-
-						response = new Envelope("OK");
-						response.addObject(serverKeyPair.getPublic());
-						response.addObject(cipherText);
-						output.writeObject(response);
-          }
-          output.writeObject(response);
-        }
-
         if(e.getMessage().equals("CSERV")) { //Client wants to create a server
           if (e.getObjContents().size() < 2)
             response = new Envelope("FAIL-BADCONTENTS");
@@ -78,18 +53,21 @@ public class TrentThread extends Thread {
         } else if(e.getMessage().equals("DSERV")) {
           // TODO: Delete File Server Control
         } else if(e.getMessage().equals("GET")) {
-          // TODO: Encrypt both ways
-          if (e.getObjContents().size() < 2)
+          System.out.println("In GET ");
+          if (e.getObjContents().size() < 1)
             response = new Envelope("FAIL-BADCONTENTS");
           else {
               if(my_ts.serverList == null)
                 response = new Envelope("FAIL-BADKEY");
               else {
-                String address = (String)e.getObjContents().get(0); //Extract address
+                System.out.println("Extracting address");
+                String address = (String) e.getObjContents().get(0); //Extract address
+                System.out.println("Extracted");
 
                 if(my_ts.serverList.checkServer(address)) {
-                  response = new Envelope("OK"); //Success
+                  response = new Envelope("OK"); // Success
                   response.addObject(my_ts.serverList.getPubKey(address));
+                  System.out.println("Did we get here?");
                 }
               }
           }
@@ -116,7 +94,7 @@ public class TrentThread extends Thread {
     Security.addProvider(new BouncyCastleProvider());
     Cipher cipherRSA;
     byte[] sigBytes = null;
-    
+
     try {
       cipherRSA = Cipher.getInstance("RSA", "BC");
       cipherRSA.init(Cipher.ENCRYPT_MODE, my_ts.priv);
@@ -136,7 +114,7 @@ public class TrentThread extends Thread {
       System.out.println(key.getMessage());
     } catch(SignatureException sign) {
       System.out.println(sign.getMessage());
-    } 
+    }
 
     my_ts.serverList.addServer(address, pub, sigBytes);
     return true;

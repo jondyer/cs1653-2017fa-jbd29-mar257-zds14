@@ -6,6 +6,9 @@ import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
+import javax.crypto.*;
+import java.security.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 // Driver Class
 public class RunClientApp {
@@ -28,9 +31,9 @@ class ClientApp {
   private String trentHost = "localhost";
 
   Scanner console = new Scanner(System.in);
+  TrentClient trentClient = new TrentClient();
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
-  TrentClient trentClient = new TrentClient();
   public ClientApp() throws Exception {
     run();
   }
@@ -51,13 +54,14 @@ class ClientApp {
   }
 
   public void run() throws Exception {
+    Security.addProvider(new BouncyCastleProvider());
 
     // Connect to Server
     groupClient.connect(groupHost, GROUP_PORT);
-    fileClient.connect(fileHost, FILE_PORT);
-    fileClient.keyExchange();
     trentClient.connect(trentHost, TRENT_PORT);
-    trentClient.keyExchange();
+    PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost); // Get selected File Server's public key from Trent to later use for verification
+    fileClient.connect(fileHost, FILE_PORT);
+    fileClient.keyExchange(fileServerPublicKey);
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
