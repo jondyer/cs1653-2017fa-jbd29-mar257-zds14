@@ -30,7 +30,7 @@ class ClientApp {
   Scanner console = new Scanner(System.in);
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
-
+  TrentClient trentClient = new TrentClient();
   public ClientApp() throws Exception {
     run();
   }
@@ -56,7 +56,8 @@ class ClientApp {
     groupClient.connect(groupHost, GROUP_PORT);
     fileClient.connect(fileHost, FILE_PORT);
     fileClient.keyExchange();
-
+    trentClient.connect(trentHost, TRENT_PORT);
+    trentClient.keyExchange();
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");

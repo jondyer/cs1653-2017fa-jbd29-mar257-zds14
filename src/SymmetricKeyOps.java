@@ -15,7 +15,8 @@ public class SymmetricKeyOps {
   public static final int GCM_TAG = 128;     //bit-length of verification tag
 
   public static byte[] encrypt(byte[] plainText, SecretKey agreedKey, GCMParameterSpec spec) {
-    try{
+    try {
+      Security.addProvider(new BouncyCastleProvider());
       Cipher symCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
       symCipher.init(Cipher.ENCRYPT_MODE, agreedKey, spec);
       byte[] cipherText = symCipher.doFinal(plainText);
@@ -46,6 +47,7 @@ public class SymmetricKeyOps {
 
   public static byte[] decrypt(byte[] cipherText, SecretKey agreedKey, GCMParameterSpec spec) {
     try {
+      Security.addProvider(new BouncyCastleProvider());
       Cipher symCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
       symCipher.init(Cipher.DECRYPT_MODE, agreedKey, spec);
       byte[] plainText = symCipher.doFinal(cipherText);
@@ -76,6 +78,7 @@ public class SymmetricKeyOps {
 
   // TODO: May want to consider just trading IV between user/server and not GCMParameterSpec...
   public static GCMParameterSpec geneatGCMParameterSpec() {
+    Security.addProvider(new BouncyCastleProvider());
     // SecureRandom r = SecureRandom.getInstance()
     // final byte[] iv = new byte[GCM_IV];
     // r.nextBytes(iv);

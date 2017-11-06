@@ -1,16 +1,19 @@
 /* This thread does all the work. It communicates with the client through Envelopes.*/
- 
+
 import java.lang.Thread;
 import java.net.Socket;
 import java.io.*;
 import java.util.List;
 import java.util.*;
 import javax.crypto.*;
+import javax.crypto.spec.*;
+
 import java.security.*;
 
 public class TrentThread extends Thread {
   private final Socket socket;
   private TrentServer my_ts;
+  private SecretKey sessionKey;
 
   public TrentThread(Socket _socket, TrentServer _ts) {
     socket = _socket;
@@ -31,7 +34,32 @@ public class TrentThread extends Thread {
         System.out.println("Request received: " + e.getMessage());
         Envelope response = new Envelope("FAIL");
 
-        if(e.getMessage().equals("CSERV")) {//Client wants to create a server
+        if(e.getMessage().equals("KEYX")) {
+          if (e.getObjContents().size() < 1) response = new Envelope("FAIL-BADCONTENTS");
+          else {
+            // Get client's Public Key & Initialization vector
+						PublicKey clientPubKey = (PublicKey) e.getObjContents().get(0);
+						IvParameterSpec ivSpec = new IvParameterSpec((byte[]) e.getObjContents().get(1));
+
+						// Generate Keypair for Server
+						KeyPair serverKeyPair = ECDH.generateKeyPair();
+
+						// Generate Symmetric key from Server Private Key and Client Public Key
+						this.sessionKey = ECDH.calculateKey(clientPubKey, serverKeyPair.getPrivate());
+
+						Cipher enCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+						enCipher.init(Cipher.ENCRYPT_MODE, sessionKey, ivSpec);
+						byte[] cipherText = enCipher.doFinal("I AM A TEST FROM THE TRENT SERVER".getBytes());
+
+						response = new Envelope("OK");
+						response.addObject(serverKeyPair.getPublic());
+						response.addObject(cipherText);
+						output.writeObject(response);
+          }
+          output.writeObject(response);
+        }
+
+        if(e.getMessage().equals("CSERV")) { //Client wants to create a server
           if (e.getObjContents().size() < 2)
             response = new Envelope("FAIL-BADCONTENTS");
           else {
@@ -47,7 +75,7 @@ public class TrentThread extends Thread {
           }
           output.writeObject(response);
         } else if(e.getMessage().equals("DSERV")) {
-          // TODO: Delete File Server Control          
+          // TODO: Delete File Server Control
         } else if(e.getMessage().equals("GET")) {
           // TODO: Encrypt both ways
           if (e.getObjContents().size() < 2)
