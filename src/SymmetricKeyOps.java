@@ -43,7 +43,7 @@ public class SymmetricKeyOps {
 
 
   // TODO: Make this work for envelopes with more than one encrypted object, OR just return the cipherText
-  public static byte[] encrypt(byte[] plainText, SecretKey agreedKey) {
+  /*public static byte[] encrypt(byte[] plainText, SecretKey agreedKey) {
     try {
       Security.addProvider(new BouncyCastleProvider());
 
@@ -89,6 +89,7 @@ public class SymmetricKeyOps {
     }
     return null;
   }
+  */
 
   public static byte[] decrypt(byte[] cipherText, SecretKey agreedKey, GCMParameterSpec spec) {
     try {

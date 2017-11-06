@@ -21,17 +21,17 @@ public class GroupServer extends Server {
 
   public GroupServer() {
     super(SERVER_PORT, "ALPHA");
+    registerServer();
   }
 
   public GroupServer(int _port) {
     super(_port, "ALPHA");
+    registerServer();
   }
 
   // TODO: Establish group server keypair on startup
   public void start() {
     // Overwrote server.start() because if no user file exists, initial admin account needs to be created
-
-    getKeyPair();
 
     String userFile = "UserList.bin";
     String groupFile = "GroupList.bin";
