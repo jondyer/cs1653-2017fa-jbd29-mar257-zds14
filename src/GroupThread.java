@@ -25,7 +25,6 @@ public class GroupThread extends Thread {
   private GroupServer my_gs;
   private SecretKey K;
 
-  // TODO: Replace N and g with more secure values (Group 19?)
   private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
         + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
         + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
@@ -98,7 +97,7 @@ public class GroupThread extends Thread {
 
                 if (B != null) {
                   response = new Envelope("OK");
-                  response.addObject(B.toByteArray());
+                  response.addObject(B);
                   GCMParameterSpec spec = SymmetricKeyOps.getGCM();
                   response.addObject(spec.getIV());
                   response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K, spec));
@@ -117,7 +116,6 @@ public class GroupThread extends Thread {
               String username = (String)message.getObjContents().get(0); //Extract the username
 
               response.addObject(my_gs.userList.getSalt(username));
-              output.writeObject(response);
             }
           }
           output.writeObject(response);

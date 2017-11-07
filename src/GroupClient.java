@@ -34,7 +34,6 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
 
-	// TODO: Get SRP to work
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
 		BigInteger A = null;
@@ -60,15 +59,13 @@ public class GroupClient extends Client implements GroupClientInterface {
         }
 
         try {
-        	byte[] key = (byte [])resp2.getObjContents().get(0);
-			System.out.println("Are they equal? " + Arrays.equals(s, key));
-        	S = client.calculateSecret(new BigInteger(key));
+        	S = client.calculateSecret((BigInteger)resp2.getObjContents().get(0));
         } catch (CryptoException cry) {
         	System.out.println(cry.getMessage());
         }
 
         K = new SecretKeySpec(S.toByteArray(), 0, 16, "AES");
-        System.out.println("Envelope size: " + resp2.getObjContents().size());
+
         byte[] iv = (byte[]) resp2.getObjContents().get(1);
         byte[] cypherText = (byte[]) resp2.getObjContents().get(2);
         byte[] plain = SymmetricKeyOps.decrypt(cypherText, K, iv);

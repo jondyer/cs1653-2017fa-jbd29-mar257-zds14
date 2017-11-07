@@ -60,9 +60,9 @@ class ClientApp {
     groupClient.connect(groupHost, GROUP_PORT);
     trentClient.connect(trentHost, TRENT_PORT);
     PublicKey trentPublicKey = trentClient.getTrentPub();
-    //PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT, trentPublicKey); // Get selected File Server's public key from Trent to later use for verification
+    PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT, trentPublicKey); // Get selected File Server's public key from Trent to later use for verification
     fileClient.connect(fileHost, FILE_PORT);
-    //fileClient.keyExchange(fileServerPublicKey);
+    fileClient.keyExchange(fileServerPublicKey);
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
@@ -70,7 +70,6 @@ class ClientApp {
     System.out.print("Please enter your password >> ");
     String pw = console.next();
 
-    // TODO: Authenticate with GroupServer first -- loginSRP() and such
     groupClient.clientSRP(username, pw);
 
 

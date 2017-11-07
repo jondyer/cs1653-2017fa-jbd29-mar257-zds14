@@ -42,7 +42,6 @@ public class GroupServer extends Server {
     registerServer();
   }
 
-  // TODO: Establish group server keypair on startup
   public void start() {
     // Overwrote server.start() because if no user file exists, initial admin account needs to be created
 
@@ -82,9 +81,6 @@ public class GroupServer extends Server {
         pw2 = console.next();
         if(pw1.equals(pw2)) match = true;
       }
-
-
-      // TODO: Setup W-storage -- calculate W = g^W (mod p) -- for all passwords
 
       //Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
       userList = new UserList();
