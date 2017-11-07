@@ -22,7 +22,10 @@ public class FileThread extends Thread {
 	private final Socket socket;
 	private FileServer my_fs;
 	private SecretKey sessionKey;
-
+	private GCMParameterSpec spec;
+	private byte [] iv, encRemotePath, encToken;
+	private String remotePath;
+	private Token t;
 	public FileThread(Socket _socket, FileServer _fs) {
 		this.socket = _socket;
 		this.my_fs = _fs;
@@ -161,8 +164,13 @@ public class FileThread extends Thread {
 				}
 				else if (e.getMessage().compareTo("DOWNLOADF")==0) {
 
-					String remotePath = (String)e.getObjContents().get(0);
-					Token t = (Token)e.getObjContents().get(1);
+					encRemotePath = (byte[]) e.getObjContents().get(0);
+					encToken = (byte[]) e.getObjContents().get(1);
+					iv = (byte[]) e.getObjContents().get(2);
+
+					remotePath = new String(SymmetricKeyOps.decrypt(encRemotePath, this.sessionKey, iv));
+					t = (Token) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encToken, this.sessionKey, iv));
+
 					ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
 					if (sf == null) {
 						System.out.printf("Error: File %s doesn't exist\n", remotePath);
@@ -204,10 +212,10 @@ public class FileThread extends Thread {
 
 								}
 
-
-								e.addObject(buf);
-								e.addObject(new Integer(n));
-
+								spec = SymmetricKeyOps.getGCM();
+								e.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
+								e.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
+								e.addObject(spec.getIV());
 								output.writeObject(e);
 
 								e = (Envelope)input.readObject();
@@ -217,8 +225,7 @@ public class FileThread extends Thread {
 							while (fis.available()>0);
 
 							//If server indicates success, return the member list
-							if(e.getMessage().compareTo("DOWNLOADF")==0)
-							{
+							if(e.getMessage().compareTo("DOWNLOADF")==0) {
 
 								e = new Envelope("EOF");
 								output.writeObject(e);
@@ -251,8 +258,12 @@ public class FileThread extends Thread {
 				}
 				else if (e.getMessage().compareTo("DELETEF")==0) {
 
-					String remotePath = (String)e.getObjContents().get(0);
-					Token t = (Token)e.getObjContents().get(1);
+					encRemotePath = (byte[]) e.getObjContents().get(0);
+					encToken = (byte[]) e.getObjContents().get(1);
+					iv = (byte[]) e.getObjContents().get(2);
+					remotePath = new String(SymmetricKeyOps.decrypt(encRemotePath, this.sessionKey, iv));
+					t = (Token) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encToken, this.sessionKey, iv));
+
 					ShareFile sf = FileServer.fileList.getFile("/"+remotePath);
 					if (sf == null) {
 						System.out.printf("Error: File %s doesn't exist\n", remotePath);
@@ -296,8 +307,7 @@ public class FileThread extends Thread {
 					output.writeObject(e);
 
 				}
-				else if(e.getMessage().equals("DISCONNECT"))
-				{
+				else if(e.getMessage().equals("DISCONNECT")) {
 					socket.close();
 					proceed = false;
 				}

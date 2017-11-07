@@ -21,6 +21,9 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 public class FileClient extends Client implements FileClientInterface {
 
 	private SecretKey sessionKey;
+	private GCMParameterSpec spec;
+	private byte [] iv, encRemotePath, encToken, buf;
+	private int n;
 
 	/**
 	 * MUST MUST MUST be run before any other method
@@ -75,9 +78,11 @@ public class FileClient extends Client implements FileClientInterface {
 			remotePath = filename;
 
 		Envelope env = new Envelope("DELETEF"); //Success
-	    env.addObject(remotePath);
-	    env.addObject(token);
-	    try {
+		spec = SymmetricKeyOps.getGCM();
+		env.addObject(SymmetricKeyOps.encrypt(remotePath.getBytes(), this.sessionKey, spec));
+		env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+		env.addObject(spec.getIV());
+			try {
 				output.writeObject(env);
 				env = (Envelope)input.readObject();
 
@@ -111,14 +116,22 @@ public class FileClient extends Client implements FileClientInterface {
 					    FileOutputStream fos = new FileOutputStream(file);
 
 					    Envelope env = new Envelope("DOWNLOADF"); //Success
-					    env.addObject(sourceFile);
-					    env.addObject(token);
-					    output.writeObject(env);
+
+							spec = SymmetricKeyOps.getGCM();
+							env.addObject(SymmetricKeyOps.encrypt(sourceFile.getBytes(), this.sessionKey, spec));
+							env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+							env.addObject(spec.getIV());
+
+							output.writeObject(env);
 
 					    env = (Envelope)input.readObject();
 
 						while (env.getMessage().compareTo("CHUNK")==0) {
-								fos.write((byte[])env.getObjContents().get(0), 0, (Integer)env.getObjContents().get(1));
+								iv = (byte[]) env.getObjContents().get(2);
+								buf = SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(0), sessionKey, iv);
+								n = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
+
+								fos.write(buf, 0, n);
 								System.out.printf(".");
 								env = new Envelope("DOWNLOADF"); //Success
 								output.writeObject(env);
