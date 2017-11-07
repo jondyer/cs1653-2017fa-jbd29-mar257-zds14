@@ -44,14 +44,13 @@ public class Token implements UserToken, java.io.Serializable {
       Collections.sort(groups, String.CASE_INSENSITIVE_ORDER);
     }
 
-    // TODO: Remove colon off of last group in string
     public String getIdentifier() {
       StringBuilder b = new StringBuilder();
       b.append(issuer + ":");
       b.append(subject + ":");
       for(String s : groups)
         b.append(s + ":");
-      return b.toString();
+      return b.substring(0, b.length() - 1);
     }
 
 }

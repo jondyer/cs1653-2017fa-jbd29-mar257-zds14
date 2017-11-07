@@ -28,8 +28,6 @@ public abstract class Server {
 
 	abstract void start();
 
-	// TODO: Include D-H CONSTANTS
-
 	public Server(int _SERVER_PORT, String _serverName) {
 		port = _SERVER_PORT;
 		name = _serverName;
