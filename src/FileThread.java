@@ -56,9 +56,7 @@ public class FileThread extends Thread {
 						this.sessionKey = ECDH.calculateKey(clientPubKey, serverKeyPair.getPrivate());
 
 						// Hash FS's D-H public key (to reduce size for signing)
-						MessageDigest hashedDHPubKey = MessageDigest.getInstance("SHA-256", "BC");
-						hashedDHPubKey.update(serverKeyPair.getPublic().getEncoded()); // Change this to "UTF-16" if needed
-						byte[] digest = hashedDHPubKey.digest();
+						byte[] digest = SymmetricKeyOps.hash(serverKeyPair.getPublic().getEncoded());
 
 						// Sign D-H public key hash using RSA private key
 						Signature privSig = Signature.getInstance("SHA256withRSA");

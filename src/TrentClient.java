@@ -43,9 +43,7 @@ public class TrentClient extends Client {
     String toHash = ip +  ":" + returnedPort + ":" + fileServerPublicKey;
 
     // Hash plainKey to update signature object to verify trent
-    MessageDigest hashedDHPubKey = MessageDigest.getInstance("SHA-256", "BC");
-    hashedDHPubKey.update(toHash.getBytes());
-    byte[] digest = hashedDHPubKey.digest();
+    byte[] digest = SymmetricKeyOps.hash(toHash);
 
     // Verify FSx's Public Key from returned bytes
     Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");

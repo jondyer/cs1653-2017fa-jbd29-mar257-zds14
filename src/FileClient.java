@@ -49,9 +49,7 @@ public class FileClient extends Client implements FileClientInterface {
 			PublicKey serverPubKey = (PublicKey) env.getObjContents().get(1);
 
 			// Hash plainKey to update signature object to verify File Server
-			MessageDigest hashedDHPubKey = MessageDigest.getInstance("SHA-256", "BC");
-			hashedDHPubKey.update(serverPubKey.getEncoded()); // Change this to "UTF-16" if needed
-			byte[] digest = hashedDHPubKey.digest();
+			byte[] digest = SymmetricKeyOps.hash(serverPubKey.getEncoded());
 
 			// Verify match using Server's RSA public key (from Trent)
 			Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
