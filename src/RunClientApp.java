@@ -107,7 +107,7 @@ class ClientApp {
 
       // TODO: Support selection of multiple groups at once for operation
       // Select a group
-      System.out.print("Please select a group you wish to access ('q' to quit, 'r' to refresh, 'c' to create a new group) >> ");
+      System.out.print("Please select a group you wish to access ('q' to quit, 'c' to create a new group) >> ");
       String selection = console.next();
       if(selection.equals("q")) {
         selectGroup = false;
@@ -116,10 +116,10 @@ class ClientApp {
         createGroup(token);
         //updateConnection(groupClient, groupHost, GROUP_PORT);
         continue;
-      } else if(selection.equals("r")) {
-        updateConnection(groupClient, groupHost, GROUP_PORT);
-        updateConnection(fileClient, fileHost, FILE_PORT);
-        continue;
+      // } else if(selection.equals("r")) {
+      //   updateConnection(groupClient, groupHost, GROUP_PORT);
+      //   updateConnection(fileClient, fileHost, FILE_PORT);
+      //   continue;
       }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
@@ -188,7 +188,7 @@ class ClientApp {
           System.out.println(i + ") " + memberList.get(i));
         System.out.println("\n");
 
-        System.out.print("Please select an option ('q' to select a different group, 'r' to refresh) >> ");
+        System.out.print("Please select an option ('q' to select a different group) >> ");
         String response = console.next();
         switch(response) {
 
@@ -279,10 +279,10 @@ class ClientApp {
             break;
 
           //refresh
-          case "r":
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
-            break;
+          // case "r":
+          //   updateConnection(groupClient, groupHost, GROUP_PORT);
+          //   updateConnection(fileClient, fileHost, FILE_PORT);
+          //   break;
 
           // Invalid choice
           default:
