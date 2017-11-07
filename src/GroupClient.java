@@ -36,6 +36,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
 
+	// TODO: Challenge response after SRP
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
 		BigInteger A = null;

@@ -114,7 +114,7 @@ class ClientApp {
         break;
       } else if(selection.equals("c")) {
         createGroup(token);
-        updateConnection(groupClient, groupHost, GROUP_PORT);
+        //updateConnection(groupClient, groupHost, GROUP_PORT);
         continue;
       } else if(selection.equals("r")) {
         updateConnection(groupClient, groupHost, GROUP_PORT);
@@ -196,15 +196,15 @@ class ClientApp {
           // Create user
           case "a0":
             if(isAdmin) createUser(token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           // Delete user
           case "a1":
             if(isAdmin) deleteUser(token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           case "a2":
@@ -225,20 +225,20 @@ class ClientApp {
           // Add user to a group
           case "o1":
             if(isOwner) addUserToGroup(choice, token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Remove user from a group
           case "o2":
             if(isOwner) removeUserFromGroup(choice, token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             doAgain = false;
             break;
 
@@ -269,8 +269,8 @@ class ClientApp {
           case "4":
             // Create a group
             createGroup(token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           //quit
@@ -534,6 +534,8 @@ class ClientApp {
     return status;
   }
 
+
+  // DEPRECATED -- no longer necessary since reconnect issue fixed
   /**
    * Resets the connection to the specified client with the given port
    * @param  Client client        Client object whose connection is to be reset
@@ -545,7 +547,7 @@ class ClientApp {
     return client.connect("127.0.0.1", port, true);
   }
 
-  // TODO: Fix reconnecting issue with deep copy
+  // DEPRECATED -- no longer necessary since reconnect issue fixed
   /**
    * Resets the connection to the specified client with the given host and port
    * @param  client   Client object whose connection is to be reset
