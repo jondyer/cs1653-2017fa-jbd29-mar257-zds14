@@ -107,7 +107,7 @@ public class TrentThread extends Thread {
       // Hash toSign
       MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
       hashed.update(toSign.getBytes());
-      byte[] digest = hashed.digest();
+      byte[] digest = SymmetricKeyOps.hash(toSign);
 
       sig.update(digest);
       sigBytes = sig.sign();

@@ -26,7 +26,7 @@ public class TrentClient extends Client {
   public PublicKey getPublicKey(String ipaddress, int port, PublicKey trentPubKey) throws Exception {
     Security.addProvider(new BouncyCastleProvider());
 
-    // Pass Trent address of file server we want to connect to
+    // Pass Trent address of server we want to connect to
     Envelope env = new Envelope("GET");
     String address = ipaddress + ":" + port;
     env.addObject(address);
@@ -43,9 +43,7 @@ public class TrentClient extends Client {
     String toHash = ip +  ":" + returnedPort + ":" + fileServerPublicKey;
 
     // Hash plainKey to update signature object to verify trent
-    MessageDigest hashedDHPubKey = MessageDigest.getInstance("SHA-256", "BC");
-    hashedDHPubKey.update(toHash.getBytes());
-    byte[] digest = hashedDHPubKey.digest();
+    byte[] digest = SymmetricKeyOps.hash(toHash);
 
     // Verify FSx's Public Key from returned bytes
     Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");

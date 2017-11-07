@@ -60,6 +60,8 @@ class ClientApp {
     groupClient.connect(groupHost, GROUP_PORT);
     trentClient.connect(trentHost, TRENT_PORT);
     PublicKey trentPublicKey = trentClient.getTrentPub();
+    PublicKey groupServerPublicKey = trentClient.getPublicKey(groupHost, GROUP_PORT, trentPublicKey); // Get group server's public key
+    groupClient.setGroupPubKey(groupServerPublicKey);
     PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT, trentPublicKey); // Get selected File Server's public key from Trent to later use for verification
     fileClient.connect(fileHost, FILE_PORT);
     fileClient.keyExchange(fileServerPublicKey);

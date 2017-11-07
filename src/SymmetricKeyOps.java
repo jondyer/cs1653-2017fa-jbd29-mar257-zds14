@@ -150,7 +150,7 @@ public class SymmetricKeyOps {
   }
 
   /**
-   * Hashes string using SHA256withRSA
+   * Hashes string using SHA256
    * @param  String text          String to be hashed
    * @return        byte [] of hashed text
    */
@@ -160,6 +160,23 @@ public class SymmetricKeyOps {
       Security.addProvider(new BouncyCastleProvider());
       MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
       hashed.update(text.getBytes()); // Change this to "UTF-16" if needed
+      hash = hashed.digest();
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+    return hash;
+  }
+  /**
+   * Hashes string using SHA256
+   * @param  byte []            text byte [] to be hashedIdentifier
+   * @return      byte [] of hashed text
+   */
+  public static byte [] hash(byte [] text) {
+    byte[] hash = null;
+    try {
+      Security.addProvider(new BouncyCastleProvider());
+      MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
+      hashed.update(text); // Change this to "UTF-16" if needed
       hash = hashed.digest();
     } catch(Exception e) {
       e.printStackTrace();
