@@ -26,7 +26,7 @@ public class FileClient extends Client implements FileClientInterface {
 	/**
 	 * MUST MUST MUST be run before any other method
 	 */
-	public void keyExchange(PublicKey fileServerPublicKey) {
+	public boolean keyExchange(PublicKey fileServerPublicKey) {
 		Security.addProvider(new BouncyCastleProvider());
 		Envelope env = new Envelope("KEYX");
 
@@ -42,6 +42,7 @@ public class FileClient extends Client implements FileClientInterface {
 		env.addObject(iv);
 		try {
 			output.writeObject(env);
+			env = (Envelope)input.readObject();
 
 			// Get Server's D-H public key signed by its RSA private key and get plaintext D-H public key
 			byte [] serverSignedPubKey = (byte []) env.getObjContents().get(0);
@@ -57,14 +58,20 @@ public class FileClient extends Client implements FileClientInterface {
 			pubSig.initVerify(fileServerPublicKey);
 			pubSig.update(digest);
 			boolean match = pubSig.verify(serverSignedPubKey);
-			System.out.println(match);
 
 			// Generate Symmetric key from Server Public Key and Client Private Key
-			SecretKey sessionKey = ECDH.calculateKey(serverPubKey, clientKeyPair.getPrivate());
+			if(match){ // Success
+				this.sessionKey = ECDH.calculateKey(serverPubKey, clientKeyPair.getPrivate());
+				return true;
+			} else {
+				System.out.println("Failed to establish key with File Server, unable to verify signature.");
+				return false;
+			}
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		return false;
 	}
 
 	public boolean delete(String filename, UserToken token) {

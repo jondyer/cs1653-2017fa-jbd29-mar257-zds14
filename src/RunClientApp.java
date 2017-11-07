@@ -24,11 +24,11 @@ public class RunClientApp {
 class ClientApp {
 
   private int GROUP_PORT = 8765;
-  private String groupHost = "localhost";
+  private String groupHost = "127.0.0.1";
   private int FILE_PORT = 4321;
-  private String fileHost = "localhost";
+  private String fileHost = "127.0.0.1";
   private int TRENT_PORT = 4444;
-  private String trentHost = "localhost";
+  private String trentHost = "127.0.0.1";
 
   Scanner console = new Scanner(System.in);
   TrentClient trentClient = new TrentClient();
@@ -59,7 +59,7 @@ class ClientApp {
     // Connect to Server
     groupClient.connect(groupHost, GROUP_PORT);
     trentClient.connect(trentHost, TRENT_PORT);
-    PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost); // Get selected File Server's public key from Trent to later use for verification
+    PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT); // Get selected File Server's public key from Trent to later use for verification
     fileClient.connect(fileHost, FILE_PORT);
     fileClient.keyExchange(fileServerPublicKey);
 
@@ -536,7 +536,7 @@ class ClientApp {
    */
   private boolean updateConnection(Client client, int port) {
     client.disconnect();
-    return client.connect("localhost", port, true);
+    return client.connect("127.0.0.1", port, true);
   }
 
   // TODO: Fix reconnecting issue with deep copy

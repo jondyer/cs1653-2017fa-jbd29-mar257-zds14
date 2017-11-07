@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.*;
 import java.math.BigInteger;
 import javax.crypto.*;
+import javax.crypto.spec.*;
 import java.security.*;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -98,7 +99,9 @@ public class GroupThread extends Thread {
                 if (B != null) {
                   response = new Envelope("OK");
                   response.addObject(B);
-                  response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K));
+                  GCMParameterSpec spec = SymmetricKeyOps.getGCM();
+                  response.addObject(spec.getIV());
+                  response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K, spec));
                 }
               }
             }
@@ -335,8 +338,8 @@ public class GroupThread extends Thread {
     } catch (CryptoException cry) {
       System.out.println(cry.getMessage());
     }
-
-    K = new SecretKeySpec(S.toByteArray(), "AES");
+    System.out.println("S length - " + S.toByteArray().length);
+    K = new SecretKeySpec(S.toByteArray(), 0, 16, "AES");
 
     return B;
   }
