@@ -40,7 +40,9 @@ import java.math.BigInteger;
     }
 
     public synchronized ArrayList<String> getUserGroups(String username) {
-      return list.get(username).getGroups();
+      User user = list.get(username);
+      ArrayList<String> newlist = new ArrayList<String>(user.getGroups());
+      return newlist;
     }
 
     public synchronized ArrayList<String> getUserOwnership(String username) {
