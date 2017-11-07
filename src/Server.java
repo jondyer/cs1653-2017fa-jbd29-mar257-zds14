@@ -163,5 +163,4 @@ public abstract class Server {
         pub = keyPairRSA.getPublic();
         priv = keyPairRSA.getPrivate();
 	}
-
 }

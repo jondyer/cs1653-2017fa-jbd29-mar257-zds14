@@ -23,7 +23,7 @@ public class SymmetricKeyOps {
     try {
       Security.addProvider(new BouncyCastleProvider());
       Envelope env = new Envelope();
-
+      System.out.println("length - " + agreedKey.getEncoded().length);
       // generate the IV
       SecureRandom rand = new SecureRandom();
       final byte[] iv = new byte[GCM_IV];
@@ -78,8 +78,21 @@ public class SymmetricKeyOps {
     return null;
   }
 
+  public static byte[] decrypt(byte[] cipherText, SecretKey agreedKey, byte [] iv) {
+    try {
+      Security.addProvider(new BouncyCastleProvider());
+      Cipher symCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+      GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
+      symCipher.init(Cipher.DECRYPT_MODE, agreedKey, spec);
+      byte[] plainText = symCipher.doFinal(cipherText);
+      return plainText;
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
 
-  public static GCMParameterSpec getGCMParameterSpec() {
+  public static GCMParameterSpec getGCM() {
     Security.addProvider(new BouncyCastleProvider());
     SecureRandom r = new SecureRandom();
     byte[] iv = new byte[GCM_IV];
@@ -88,7 +101,11 @@ public class SymmetricKeyOps {
     return spec;
   }
 
-
+  public static GCMParameterSpec getGCM(byte [] iv) {
+    Security.addProvider(new BouncyCastleProvider());
+    GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
+    return spec;
+  }
 
   /**
    * Util for converting arbitrary serializable object to byte[]
