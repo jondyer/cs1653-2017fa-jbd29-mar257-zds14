@@ -124,7 +124,7 @@ class ClientApp {
 
       // Check if owner of selected group
       if(groupsOwned.contains(choice) && !isAdmin) {
-        System.out.println("Would you to perform owner actions? (y/n) >> ");
+        System.out.print("Would you to perform owner actions? (y/n) >> ");
         String response = console.next();
 
         // Wanna be a big boy?

@@ -84,7 +84,6 @@ public abstract class Server {
 	protected boolean registerServer() {
 		getKeyPair();
 
-	    // TODO: Connect to Trent
 	    if (!connect("127.0.0.1", 4444, true)) return false;
 
 	    Envelope envelope = new Envelope("CSERV");
