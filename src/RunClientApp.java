@@ -72,7 +72,11 @@ class ClientApp {
     System.out.print("Please enter your password >> ");
     String pw = console.next();
 
-    groupClient.clientSRP(username, pw);
+    if (!groupClient.clientSRP(username, pw)) {
+      System.out.println("SRP verification has failed...");
+      System.out.println("Exiting now...");
+      return;
+    }
 
 
     UserToken token = groupClient.getToken(username);

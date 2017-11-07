@@ -51,6 +51,7 @@ public class GroupThread extends Thread {
       System.out.println("*** New connection from " + socket.getInetAddress() + ":" + socket.getPort() + "***");
       final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
       final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+      byte[] c1 = new byte[12]; // Challenge to be looked at in CHAL
 
       do {
         Envelope message = (Envelope)input.readObject();
@@ -99,18 +100,19 @@ public class GroupThread extends Thread {
                 String username = (String)message.getObjContents().get(0); //Extract the username
                 BigInteger A = (BigInteger)message.getObjContents().get(1); //Extract the public key from the client
                 BigInteger B = genSessionKey(username, A);
+                SecureRandom random = new SecureRandom();
+                
+                random.nextBytes(c1); // 96 bit challenge
 
                 if (B != null) {
                   response = new Envelope("OK");
                   response.addObject(B);
-                  spec = SymmetricKeyOps.getGCM();
-                  response.addObject(spec.getIV());
-                  response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K, spec));
+                  response.addObject(c1);
+                  output.writeObject(response);
                 }
               }
             }
           }
-          output.writeObject(response);
         } else if(message.getMessage().equals("SALT")) {
           if(message.getObjContents().size() < 1)
             response = new Envelope("FAIL");
@@ -124,6 +126,31 @@ public class GroupThread extends Thread {
             }
           }
           output.writeObject(response);
+        } else if(message.getMessage().equals("CHAL")) {
+          if(message.getObjContents().size() < 3)
+            response = new Envelope("FAIL");
+          else {
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().get(0) != null) {
+              byte[] iv = (byte[])message.getObjContents().get(0);
+              byte[] c1Cipher = (byte[])message.getObjContents().get(1);
+              byte[] c2 = (byte[])message.getObjContents().get(2);
+
+              byte[] c1_dec = SymmetricKeyOps.decrypt(c1Cipher, K, iv);
+              if(!Arrays.equals(c1, c1_dec)) {
+                output.writeObject(response);
+                System.out.println("Error: Challenge did not match!");
+                System.exit(0);
+              }
+
+              GCMParameterSpec gcm = SymmetricKeyOps.getGCM();
+              response = new Envelope("OK");
+              response.addObject(gcm.getIV());
+              response.addObject(SymmetricKeyOps.encrypt(c2, K, gcm));
+              output.writeObject(response);
+            }
+          }
         } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
           if(message.getObjContents().size() < 4)
             response = new Envelope("FAIL");

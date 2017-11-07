@@ -7,3 +7,5 @@ testfiles/*
 src/shared_files/*
 .DS_STORE
 .classpath
+
+reports/img/plantuml.1.2017.18.jar
