@@ -71,4 +71,4 @@ public class ServerList implements java.io.Serializable {
     public byte[] getSigned() {
       return this.signed;
     }
-  }     // end KeyPair class
+  }    
