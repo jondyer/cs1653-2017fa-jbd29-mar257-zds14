@@ -112,8 +112,15 @@ public class GroupClient extends Client implements GroupClientInterface {
 				ArrayList<Object> temp = null;
 				temp = response.getObjContents();
 
-				if(temp.size() == 1) {
-					token = (UserToken)temp.get(0);
+				System.out.println("Temp size: " + temp.size());
+				if(temp.size() == 3) {
+					byte[] iv = (byte[])temp.get(0);
+					byte[] cipherText = (byte[])temp.get(1);
+					byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
+					if(decrypt == null) System.out.println("Decrypt is null");
+					token = (UserToken)(SymmetricKeyOps.byte2obj(decrypt));
+					if(token == null) System.out.println("Token is null");
+					else System.out.println("Nothing null here");
 					return token;
 				}
 			}
@@ -152,8 +159,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 					ArrayList<Object> temp = null;
 					temp = response.getObjContents();
 
-					if(temp.size() == 1) {
-						token = (UserToken)temp.get(0);
+					if(temp.size() == 3) {
+						byte[] iv = (byte[])temp.get(0);
+						byte[] cipherText = (byte[])temp.get(1);
+						byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
+						token = (UserToken)(SymmetricKeyOps.byte2obj(decrypt));
 						return token;
 					}
 				}

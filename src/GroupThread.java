@@ -70,7 +70,9 @@ public class GroupThread extends Thread {
             if(yourToken != null) {
               //Respond to the client. On error, the client will receive a null token
               response = new Envelope("OK");
-              response.addObject(yourToken);
+              GCMParameterSpec spec = SymmetricKeyOps.getGCM();
+              response.addObject(spec.getIV());
+              response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
               response.addObject(my_gs.signHash(((Token)yourToken).getIdentifier()));
             }
 
@@ -80,7 +82,10 @@ public class GroupThread extends Thread {
 
             //Respond to the client. On error, the client will receive a null token
             response = new Envelope("OK");
-            response.addObject(yourToken);
+            GCMParameterSpec spec = SymmetricKeyOps.getGCM();
+            response.addObject(spec.getIV());
+            response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
+            response.addObject(my_gs.signHash(((Token)yourToken).getIdentifier()));
             output.writeObject(response);
           }
         } else if (message.getMessage().equals("SRP")) {
