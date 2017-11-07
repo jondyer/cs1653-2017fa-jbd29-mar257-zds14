@@ -31,7 +31,9 @@ public class GroupList implements java.io.Serializable {
     }
 
     public synchronized ArrayList<String> getGroupUsers(String groupName) {
-      return list.get(groupName).getUsers();
+      Group group = list.get(groupName);
+      ArrayList<String> guList = new ArrayList<String>(group.getUsers());
+      return guList;
     }
 
     public synchronized boolean addToGroup(String group, String user) {
