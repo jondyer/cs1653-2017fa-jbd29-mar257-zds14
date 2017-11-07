@@ -25,6 +25,7 @@ public class GroupThread extends Thread {
   private GroupServer my_gs;
   private SecretKey K;
   private GCMParameterSpec spec;
+  private byte[] iv;
 
   private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
         + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
@@ -58,38 +59,7 @@ public class GroupThread extends Thread {
         System.out.println("Request received: " + message.getMessage());
         Envelope response = new Envelope("FAIL");
 
-        if(message.getMessage().equals("GET")) { //Client wants a token
-          String username = (String)message.getObjContents().get(0); //Get the username
-          if(username == null) {
-            response = new Envelope("FAIL");
-            response.addObject(null);
-            output.writeObject(response);
-          } else if(message.getObjContents().size() > 1) {  // this is for partial tokens
-            String groupname = (String)message.getObjContents().get(1);
-            UserToken yourToken = createToken(username, groupname); //Create a token with the specified group
-
-            if(yourToken != null) {
-              //Respond to the client. On error, the client will receive a null token
-              response = new Envelope("OK");
-              spec = SymmetricKeyOps.getGCM();
-              response.addObject(spec.getIV());
-              response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-              response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
-            }
-
-            output.writeObject(response);
-          } else {
-            UserToken yourToken = createToken(username); //Create a token
-
-            //Respond to the client. On error, the client will receive a null token
-            response = new Envelope("OK");
-            spec = SymmetricKeyOps.getGCM();
-            response.addObject(spec.getIV());
-            response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
-            output.writeObject(response);
-          }
-        } else if (message.getMessage().equals("SRP")) {
+        if (message.getMessage().equals("SRP")) {
           if(message.getObjContents().size() < 2)
             response = new Envelope("FAIL");
           else {
@@ -101,7 +71,7 @@ public class GroupThread extends Thread {
                 BigInteger A = (BigInteger)message.getObjContents().get(1); //Extract the public key from the client
                 BigInteger B = genSessionKey(username, A);
                 SecureRandom random = new SecureRandom();
-                
+
                 random.nextBytes(c1); // 96 bit challenge
 
                 if (B != null) {
@@ -150,6 +120,45 @@ public class GroupThread extends Thread {
               response.addObject(SymmetricKeyOps.encrypt(c2, K, gcm));
               output.writeObject(response);
             }
+          }
+        } else if(message.getMessage().equals("GET")) { //Client wants a token
+          String username;
+          iv = (byte[])message.getObjContents().get(0);   // Get the IV
+          spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+          byte[] namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec); //Decrypt the username
+          username = new String(namebytes); //Convert to String
+
+          if(username == null) {
+            response = new Envelope("FAIL");
+            response.addObject(null);
+            output.writeObject(response);
+          } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
+
+            String groupname;
+            namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec); //Decrypt the groupname
+            groupname = new String(namebytes); //Convert to String
+            UserToken yourToken = createToken(username, groupname); //Create a token with the specified group
+
+            if(yourToken != null) {
+              //Respond to the client. On error, the client will receive a null token
+              response = new Envelope("OK");
+              spec = SymmetricKeyOps.getGCM();
+              response.addObject(spec.getIV());
+              response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
+              response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+            }
+
+            output.writeObject(response);
+          } else {
+            UserToken yourToken = createToken(username); //Create a token
+
+            //Respond to the client. On error, the client will receive a null token
+            response = new Envelope("OK");
+            spec = SymmetricKeyOps.getGCM();
+            response.addObject(spec.getIV());
+            response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
+            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+            output.writeObject(response);
           }
         } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
           if(message.getObjContents().size() < 4)
