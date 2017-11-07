@@ -98,7 +98,7 @@ public class GroupThread extends Thread {
 
                 if (B != null) {
                   response = new Envelope("OK");
-                  response.addObject(B);
+                  response.addObject(B.toByteArray());
                   GCMParameterSpec spec = SymmetricKeyOps.getGCM();
                   response.addObject(spec.getIV());
                   response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K, spec));

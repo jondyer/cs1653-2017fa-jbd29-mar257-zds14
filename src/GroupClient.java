@@ -1,6 +1,7 @@
 /* Implements the GroupClient Interface */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.io.ObjectInputStream;
 import java.math.BigInteger;
@@ -38,27 +39,20 @@ public class GroupClient extends Client implements GroupClientInterface {
 		Security.addProvider(new BouncyCastleProvider());
 		BigInteger A = null;
 		BigInteger S = null;
+		byte[] s = getSalt(user);
 
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
-
-        Envelope response = null;
-        Envelope message = new Envelope("SALT");
+        
+        Envelope resp2 = null;
+        Envelope mes2 = new Envelope("SRP");
         try {
-	        message.addObject(user);
-	        output.writeObject(message);
-	        response = (Envelope)input.readObject();
-	        byte[] s = (byte [])response.getObjContents().get(0);
-
-	        message = new Envelope("SRP");
-	        response = null;
-
 	        A = client.generateClientCredentials(s, user.getBytes(), pass.getBytes());
-	        message.addObject(user);
-	        message.addObject(A);
+	        mes2.addObject(user);
+	        mes2.addObject(A);
 
-	        output.writeObject(message);
-	        response = (Envelope)input.readObject();
+	        output.writeObject(mes2);
+	        resp2 = (Envelope)input.readObject();
         } catch (IOException io) {
         	System.out.println(io.getMessage());
         } catch (ClassNotFoundException cl) {
@@ -66,19 +60,40 @@ public class GroupClient extends Client implements GroupClientInterface {
         }
 
         try {
-        	S = client.calculateSecret((BigInteger)response.getObjContents().get(0));
+        	byte[] key = (byte [])resp2.getObjContents().get(0);
+			System.out.println("Are they equal? " + Arrays.equals(s, key));
+        	S = client.calculateSecret(new BigInteger(key));
         } catch (CryptoException cry) {
         	System.out.println(cry.getMessage());
         }
 
         K = new SecretKeySpec(S.toByteArray(), 0, 16, "AES");
-
-        byte[] cypherText = (byte[]) response.getObjContents().get(2);
-        byte[] plain = SymmetricKeyOps.decrypt(cypherText, K, (byte[]) response.getObjContents().get(1));
+        System.out.println("Envelope size: " + resp2.getObjContents().size());
+        byte[] iv = (byte[]) resp2.getObjContents().get(1);
+        byte[] cypherText = (byte[]) resp2.getObjContents().get(2);
+        byte[] plain = SymmetricKeyOps.decrypt(cypherText, K, iv);
 
 		System.out.println(new String(plain));
 
         return true;
+	}
+
+	private byte[] getSalt(String user) {
+		Envelope resp1 = null;
+        Envelope mes1 = new Envelope("SALT");
+        byte[] salt = null;
+
+        try {
+	        mes1.addObject(user);
+	        output.writeObject(mes1);
+	        resp1 = (Envelope)input.readObject();
+	        salt = (byte [])resp1.getObjContents().get(0);
+        } catch (IOException io) {
+        	System.out.println(io.getMessage());
+        } catch (ClassNotFoundException cl) {
+        	System.out.println(cl.getMessage());
+        }
+        return salt;
 	}
 
 	public UserToken getToken(String username) {
