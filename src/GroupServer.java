@@ -20,6 +20,8 @@ public class GroupServer extends Server {
 
 
   public static final int SERVER_PORT = 8765;
+  public static int TRENT_PORT = 4444;
+  public static String TRENT_IP = "127.0.0.1";
   public UserList userList;
   public GroupList groupList;
 
@@ -34,16 +36,20 @@ public class GroupServer extends Server {
 
   public GroupServer() {
     super(SERVER_PORT, "ALPHA");
-    registerServer();
   }
 
   public GroupServer(int _port) {
     super(_port, "ALPHA");
-    registerServer();
   }
 
-  public void start() {
+  public void start(String[] args) {
     // Overwrote server.start() because if no user file exists, initial admin account needs to be created
+    if(args.length >= 2)      // just the Trent IP
+      TRENT_IP = args[1];
+    if(args.length >= 3)      // IP and port
+      TRENT_PORT = Integer.parseInt(args[2]);
+
+    registerServer(TRENT_IP, TRENT_PORT);
 
     String userFile = "UserList.bin";
     String groupFile = "GroupList.bin";

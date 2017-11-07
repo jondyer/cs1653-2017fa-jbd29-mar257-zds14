@@ -41,12 +41,14 @@ import java.math.BigInteger;
 
     public synchronized ArrayList<String> getUserGroups(String username) {
       User user = list.get(username);
-      ArrayList<String> newlist = new ArrayList<String>(user.getGroups());
-      return newlist;
+      ArrayList<String> glist = new ArrayList<String>(user.getGroups());
+      return glist;
     }
 
     public synchronized ArrayList<String> getUserOwnership(String username) {
-      return list.get(username).getOwnership();
+      User user = list.get(username);
+      ArrayList<String> ownList = new ArrayList<String>(user.getOwnership());
+      return ownList;
     }
 
     public synchronized void addGroup(String user, String groupname) {

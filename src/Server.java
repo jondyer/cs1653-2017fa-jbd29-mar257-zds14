@@ -26,7 +26,7 @@ public abstract class Server {
 
 	protected String keyFile;
 
-	abstract void start();
+
 
 	public Server(int _SERVER_PORT, String _serverName) {
 		port = _SERVER_PORT;
@@ -79,16 +79,16 @@ public abstract class Server {
 	    }
 	}
 
-	protected boolean registerServer() {
+	protected boolean registerServer(String TRENT_IP, int TRENT_PORT) {
 		getKeyPair();
 
-	    if (!connect("127.0.0.1", 4444, true)) return false;
+    if (!connect(TRENT_IP, TRENT_PORT, true)) return false;
 
-	    Envelope envelope = new Envelope("CSERV");
-	    envelope.addObject(pub);
-	    envelope.addObject(getPort());
+    Envelope envelope = new Envelope("CSERV");
+    envelope.addObject(pub);
+    envelope.addObject(getPort());
 
-	    try {
+    try {
 	  	output.writeObject(envelope);
 	    envelope = (Envelope)input.readObject();
 
@@ -96,7 +96,7 @@ public abstract class Server {
 		    System.out.printf("File Server created successfully\n");
 		  }
 		  else {
-		    System.out.printf("Error creating File Server\n");
+		    System.out.printf("Server already exists...\n");
 		    return false;
 		  }
 		} catch (IOException e1) {

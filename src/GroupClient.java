@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.io.IOException;
 import javax.crypto.*;
+import javax.crypto.spec.*;
 import java.security.*;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -23,6 +24,7 @@ import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 public class GroupClient extends Client implements GroupClientInterface {
 
 	private PublicKey groupServerPublicKey;
+	private GCMParameterSpec spec;
 
 	// We selected group 21 a.k.a. group p-521 (elliptic curve) for our system
 	private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
@@ -36,7 +38,6 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
 
-	// TODO: Challenge response after SRP
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
 		BigInteger A = null;
@@ -69,13 +70,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 
         K = new SecretKeySpec(S.toByteArray(), 0, 16, "AES");
 
-        byte[] iv = (byte[]) resp2.getObjContents().get(1);
-        byte[] cypherText = (byte[]) resp2.getObjContents().get(2);
-        byte[] plain = SymmetricKeyOps.decrypt(cypherText, K, iv);
+        byte[] c1 = (byte[]) resp2.getObjContents().get(1);
 
-		System.out.println(new String(plain));
-
-        return true;
+        return challengeResponse(c1);
 	}
 
 	private byte[] getSalt(String user) {
@@ -96,6 +93,36 @@ public class GroupClient extends Client implements GroupClientInterface {
         return salt;
 	}
 
+	private boolean challengeResponse(byte[] c1) {
+
+		Envelope resp = null;
+		Envelope mes = new Envelope("CHAL");
+		GCMParameterSpec gcm = SymmetricKeyOps.getGCM();
+
+		SecureRandom random = new SecureRandom();
+        byte[] c2 = new byte[12];
+        random.nextBytes(c2); // 96 bit challenge
+
+        mes.addObject(gcm.getIV());
+        mes.addObject(SymmetricKeyOps.encrypt(c1, K, gcm));
+        mes.addObject(c2);
+
+        try{
+	        output.writeObject(mes);
+		    resp = (Envelope)input.readObject();
+		} catch (IOException io) {
+			System.out.println(io.getMessage());
+		} catch (ClassNotFoundException cl) {
+			System.out.println(cl.getMessage());
+		}
+
+	    byte[] iv = (byte[])resp.getObjContents().get(0);
+        byte[] c2Cipher = (byte[])resp.getObjContents().get(1);
+        byte[] c2_dec = SymmetricKeyOps.decrypt(c2Cipher, K, iv);
+
+		return Arrays.equals(c2, c2_dec);
+	}
+
 	public UserToken getToken(String username) {
 		try {
 			UserToken token = null;
@@ -103,7 +130,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 			//Tell the server to return a token.
 			message = new Envelope("GET");
-			message.addObject(username); //Add user name string
+			spec = SymmetricKeyOps.getGCM();
+			response.addObject(spec.getIV());
+			response.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 			output.writeObject(message);
 
 			//Get the response from the server
@@ -115,15 +144,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				ArrayList<Object> temp = null;
 				temp = response.getObjContents();
 
-				System.out.println("Temp size: " + temp.size());
 				if(temp.size() == 3) {
 					byte[] iv = (byte[])temp.get(0);
 					byte[] cipherText = (byte[])temp.get(1);
 					byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
-					if(decrypt == null) System.out.println("Decrypt is null");
 					token = (UserToken)(SymmetricKeyOps.byte2obj(decrypt));
-					if(token == null) System.out.println("Token is null");
-					else System.out.println("Nothing null here");
 					return token;
 				}
 			}
@@ -179,7 +204,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 						pubSig.initVerify(this.groupServerPublicKey);
 						pubSig.update(hashedIdentifier);
 						boolean match = pubSig.verify(signedHash);
-						System.out.println("Signature matched - " + match);
+
 						if(match)
 							return token;
 						System.out.println("Error verifing GroupServer signature");
