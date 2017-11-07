@@ -23,6 +23,7 @@ import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 public class GroupClient extends Client implements GroupClientInterface {
 
 	private PublicKey groupServerPublicKey;
+	private GCMParameterSpec spec;
 
 	// We selected group 21 a.k.a. group p-521 (elliptic curve) for our system
 	private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
@@ -103,7 +104,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 			//Tell the server to return a token.
 			message = new Envelope("GET");
-			message.addObject(username); //Add user name string
+			spec = SymmetricKeyOps.getGCM();
+			response.addObject(spec.getIV());
+			response.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 			output.writeObject(message);
 
 			//Get the response from the server
