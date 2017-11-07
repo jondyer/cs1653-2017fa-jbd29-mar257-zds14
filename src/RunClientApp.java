@@ -534,6 +534,8 @@ class ClientApp {
     return status;
   }
 
+
+  // DEPRECATED -- no longer necessary since reconnect issue fixed
   /**
    * Resets the connection to the specified client with the given port
    * @param  Client client        Client object whose connection is to be reset
@@ -545,7 +547,7 @@ class ClientApp {
     return client.connect("127.0.0.1", port, true);
   }
 
-  // TODO: Fix reconnecting issue with deep copy
+  // DEPRECATED -- no longer necessary since reconnect issue fixed
   /**
    * Resets the connection to the specified client with the given host and port
    * @param  client   Client object whose connection is to be reset
