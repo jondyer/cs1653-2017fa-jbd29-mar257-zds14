@@ -20,7 +20,6 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 public class TrentClient extends Client {
 
   private SecretKey sessionKey;
-  public byte[] iv = new SecureRandom().generateSeed(16);
 
   @SuppressWarnings("all")
   public PublicKey getPublicKey(String ipaddress, int port, PublicKey trentPubKey) throws Exception {

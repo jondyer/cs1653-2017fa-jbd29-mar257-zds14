@@ -21,7 +21,6 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 public class FileClient extends Client implements FileClientInterface {
 
 	private SecretKey sessionKey;
-	public byte[] iv = new SecureRandom().generateSeed(16);
 
 	/**
 	 * MUST MUST MUST be run before any other method
@@ -30,13 +29,9 @@ public class FileClient extends Client implements FileClientInterface {
 		Security.addProvider(new BouncyCastleProvider());
 		Envelope env = new Envelope("KEYX");
 
-
-		SecureRandom rand = new SecureRandom();
-		byte[] iv = new byte[16];
-		rand.nextBytes(iv);
-
 		// Generate User's Keypair using Elliptic Curve D-H
 		KeyPair clientKeyPair = ECDH.generateKeyPair();
+		byte [] iv = SymmetricKeyOps.getGCM().getIV();
 
 		env.addObject(clientKeyPair.getPublic());
 		env.addObject(iv);
