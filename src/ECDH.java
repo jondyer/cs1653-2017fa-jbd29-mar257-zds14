@@ -24,6 +24,7 @@ public class ECDH {
    */
   public static KeyPair generateKeyPair() {
     try {
+      Security.addProvider(new BouncyCastleProvider());
       ECNamedCurveParameterSpec paramSpec = ECNamedCurveTable.getParameterSpec("secp521r1");
       KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("ECDH", "BC");
       keyPairGen.initialize(paramSpec);
@@ -49,6 +50,7 @@ public class ECDH {
    */
   public static SecretKey calculateKey(PublicKey pubKey, PrivateKey privKey){
     try {
+      Security.addProvider(new BouncyCastleProvider());
       KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
       keyAgreement.init(privKey);
       keyAgreement.doPhase(pubKey, true);

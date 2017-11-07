@@ -51,7 +51,7 @@ public class TrentThread extends Thread {
           }
           output.writeObject(response);
         } else if(e.getMessage().equals("DSERV")) {
-          // TODO: Delete File Server Control
+          // TODO: Delete File Server Control - IGNORE FOR NOW, NOT a REQUIREMENT
         } else if(e.getMessage().equals("GET")) {
           if (e.getObjContents().size() < 1)
             response = new Envelope("FAIL-BADCONTENTS");
@@ -127,5 +127,5 @@ public class TrentThread extends Thread {
     return true;
   }
 
-  // TODO: Remove File Server
+  // TODO: Remove File Server -- EXTRA CREDIT
 }
