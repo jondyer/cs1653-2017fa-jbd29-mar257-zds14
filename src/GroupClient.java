@@ -43,16 +43,18 @@ public class GroupClient extends Client implements GroupClientInterface {
         client.init(N_1024, g_1024, new SHA256Digest(), random);
 
         Envelope response = null;
-        Envelope message = new Envelope("SRP");
+        Envelope message = new Envelope("SALT");
         try {
 	        message.addObject(user);
 	        output.writeObject(message);
 	        response = (Envelope)input.readObject();
-
 	        byte[] s = (byte [])response.getObjContents().get(0);
+
+	        message = new Envelope("SRP");
 	        response = null;
 
 	        A = client.generateClientCredentials(s, user.getBytes(), pass.getBytes());
+	        message.addObject(user);
 	        message.addObject(A);
 
 	        output.writeObject(message);

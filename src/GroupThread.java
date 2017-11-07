@@ -93,11 +93,6 @@ public class GroupThread extends Thread {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
                 String username = (String)message.getObjContents().get(0); //Extract the username
-
-                response.addObject(my_gs.userList.getSalt(username));
-                output.writeObject(response);
-                response = new Envelope("FAIL");
-
                 BigInteger A = (BigInteger)message.getObjContents().get(1); //Extract the public key from the client
                 BigInteger B = genSessionKey(username, A);
 
@@ -109,6 +104,20 @@ public class GroupThread extends Thread {
                   response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K, spec));
                 }
               }
+            }
+          }
+          output.writeObject(response);
+        } else if(message.getMessage().equals("SALT")) {
+          if(message.getObjContents().size() < 1)
+            response = new Envelope("FAIL");
+          else {
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().get(0) != null) {
+              String username = (String)message.getObjContents().get(0); //Extract the username
+
+              response.addObject(my_gs.userList.getSalt(username));
+              output.writeObject(response);
             }
           }
           output.writeObject(response);
