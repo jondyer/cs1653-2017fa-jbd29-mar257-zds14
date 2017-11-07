@@ -502,6 +502,10 @@ class ClientApp {
   private boolean createGroup(UserToken myToken) {
     System.out.print("Name of the group you wish to create? >> ");
     String group = console.next();
+    if(group.contains(":")){
+      System.out.println("Group name cannot contain colons. ");
+      return false;
+    }
     boolean status = groupClient.createGroup(group, myToken);
     if (status) {
       System.out.println("Successfully created group '" + group + "'\n");
