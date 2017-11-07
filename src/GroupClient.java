@@ -34,26 +34,27 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private SecretKey K;
 
 	// TODO: Get SRP to work
-	public boolean clientSRP() {
+	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
 		BigInteger A = null;
 		BigInteger S = null;
 
-		byte[] I = "username".getBytes();
-        byte[] P = "password".getBytes();
-        byte[] s = new byte[32];
-        //random.nextBytes(s);
-
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
-        A = client.generateClientCredentials(s, I, P);
 
         Envelope response = null;
         Envelope message = new Envelope("SRP");
-        message.addObject("username");
-        message.addObject(A);
-
         try {
+	        message.addObject(user);
+	        output.writeObject(message);
+	        response = (Envelope)input.readObject();
+
+	        byte[] s = (byte [])response.getObjContents().get(0);
+	        response = null;
+
+	        A = client.generateClientCredentials(s, user.getBytes(), pass.getBytes());
+	        message.addObject(A);
+
 	        output.writeObject(message);
 	        response = (Envelope)input.readObject();
         } catch (IOException io) {
@@ -189,8 +190,17 @@ public class GroupClient extends Client implements GroupClientInterface {
 				//Tell the server to create a user
 				//If no password is given, initialize to empty
 				message = new Envelope("CUSER");
+
+				SecureRandom random = new SecureRandom();
+				byte[] s = new byte[32];
+    			random.nextBytes(s);
+
+				BigInteger x = SRP6Util.calculateX(new SHA256Digest(), N_1024, s, username.getBytes(), pw.getBytes());
+    			BigInteger v = g_1024.modPow(x, N_1024);
+
 				message.addObject(username); //Add user name string
-				message.addObject(pw); //Add user password
+				message.addObject(s); // Add salt
+				message.addObject(v); //Add user password
 				message.addObject(token); //Add the requester's token
 				output.writeObject(message);
 

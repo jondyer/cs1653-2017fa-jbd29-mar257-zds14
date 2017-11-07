@@ -93,8 +93,13 @@ public class GroupThread extends Thread {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
                 String username = (String)message.getObjContents().get(0); //Extract the username
+
+                response.addObject(my_gs.userList.getSalt(username));
+                output.writeObject(response);
+                response = new Envelope("FAIL");
+
                 BigInteger A = (BigInteger)message.getObjContents().get(1); //Extract the public key from the client
-                BigInteger B = genSessionKey(A);
+                BigInteger B = genSessionKey(username, A);
 
                 if (B != null) {
                   response = new Envelope("OK");
@@ -108,7 +113,7 @@ public class GroupThread extends Thread {
           }
           output.writeObject(response);
         } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
-          if(message.getObjContents().size() < 2)
+          if(message.getObjContents().size() < 4)
             response = new Envelope("FAIL");
           else {
             response = new Envelope("FAIL");
@@ -116,10 +121,11 @@ public class GroupThread extends Thread {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
                 String username = (String)message.getObjContents().get(0); //Extract the username
-                String password = (String)message.getObjContents().get(1); //Extract the password
-                UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
+                byte[] salt = (byte[])message.getObjContents().get(1); // Extract the salt
+                BigInteger password = (BigInteger)message.getObjContents().get(2); //Extract the password
+                UserToken yourToken = (UserToken)message.getObjContents().get(3); //Extract the token
 
-                if(createUser(username, password, yourToken)){
+                if(createUser(username, salt, password, yourToken)){
                   response = new Envelope("OK"); //Success
                 }
               }
@@ -312,25 +318,15 @@ public class GroupThread extends Thread {
     return null;
   }
 
-  private BigInteger genSessionKey(BigInteger A) {
+  private BigInteger genSessionKey(String user, BigInteger A) {
     Security.addProvider(new BouncyCastleProvider());
 
-    SecureRandom random = new SecureRandom();
     BigInteger B = null;
     BigInteger S = null;
-    BigInteger v = null;
-
-    byte[] I = "username".getBytes();
-    byte[] P = "password".getBytes();
-    byte[] s = new byte[32];
-    //random.nextBytes(s);
 
     SRP6Server server = new SRP6Server();
-    BigInteger x = SRP6Util.calculateX(new SHA256Digest(), N_1024, s, I, P);
-    v = g_1024.modPow(x, N_1024);
 
-    // TODO: Figure out what v is
-    server.init(N_1024, g_1024, v, new SHA256Digest(), new SecureRandom());
+    server.init(N_1024, g_1024, my_gs.userList.getPass(user), new SHA256Digest(), new SecureRandom());
     B = server.generateServerCredentials();
 
     try {
@@ -338,14 +334,14 @@ public class GroupThread extends Thread {
     } catch (CryptoException cry) {
       System.out.println(cry.getMessage());
     }
-    System.out.println("S length - " + S.toByteArray().length);
+
     K = new SecretKeySpec(S.toByteArray(), 0, 16, "AES");
 
     return B;
   }
 
   //Method to create a user
-  private boolean createUser(String username, String password, UserToken yourToken) {
+  private boolean createUser(String username, byte[] salt, BigInteger password, UserToken yourToken) {
     String requester = yourToken.getSubject();
 
     //Check if requester exists
@@ -358,8 +354,7 @@ public class GroupThread extends Thread {
         if(my_gs.userList.checkUser(username))
           return false; //User already exists
         else {
-          my_gs.userList.addUser(username);
-          my_gs.userList.setPass(username, password);
+          my_gs.userList.addUser(username, salt, password);
           return true;
         }
       }else return false; //requester not an administrator

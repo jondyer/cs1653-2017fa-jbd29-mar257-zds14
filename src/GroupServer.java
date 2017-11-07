@@ -8,9 +8,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
 import java.util.*;
+import java.math.BigInteger;
 import javax.crypto.*;
 import java.security.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.crypto.agreement.srp.SRP6Util;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.util.encoders.Hex;
 
 public class GroupServer extends Server {
 
@@ -18,6 +22,15 @@ public class GroupServer extends Server {
   public static final int SERVER_PORT = 8765;
   public UserList userList;
   public GroupList groupList;
+
+  private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
+        + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
+        + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
+        + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A"
+        + "FD5138FE8376435B9FC61D2FC0EB06E3"));
+  private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("000001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
 
   public GroupServer() {
     super(SERVER_PORT, "ALPHA");
@@ -78,7 +91,13 @@ public class GroupServer extends Server {
       userList.addUser(username);
       userList.addGroup(username, "ADMIN");
       userList.addOwnership(username, "ADMIN");
-      userList.setPass(username, pw1);
+
+      SecureRandom random = new SecureRandom();
+      byte[] s = new byte[32];
+      random.nextBytes(s);
+
+      BigInteger x = SRP6Util.calculateX(new SHA256Digest(), N_1024, s, username.getBytes(), pw1.getBytes());
+      userList.setPass(username, s, g_1024.modPow(x, N_1024));
 
       groupList = new GroupList();
       groupList.addGroup("ADMIN", username);

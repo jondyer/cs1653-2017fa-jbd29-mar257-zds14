@@ -47,7 +47,6 @@ public class ServerList implements java.io.Serializable {
     private int port;
     private byte[] signed;
 
-    // TODO: Store signed pair
     public FServ(String ip, int port, PublicKey pub, byte[] signed) {
       this.ip = ip;
       this.port = port;
