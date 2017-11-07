@@ -63,7 +63,7 @@ public class TrentThread extends Thread {
 
                 if(my_ts.serverList.checkServer(address)) {
                   response = new Envelope("OK"); // Success
-                  response.addObject(my_ts.serverList.getPubKey(address));
+                  response.addObject(my_ts.serverList.getFServ(address));
                 }
               }
           }
@@ -71,6 +71,10 @@ public class TrentThread extends Thread {
         } else if(e.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
           socket.close(); //Close the socket
           proceed = false; //End this communication loop
+        } else if(e.getMessage().equals("TRENT")) { // GET TRENTS PUBLIC KEY
+          response = new Envelope("OK"); // Success
+          response.addObject(my_ts.pub);
+          output.writeObject(response);
         } else {
           response = new Envelope("FAIL"); //Server does not understand client request
           output.writeObject(response);
@@ -99,7 +103,13 @@ public class TrentThread extends Thread {
       sig.initSign(my_ts.priv, new SecureRandom());
 
       String toSign = address + ":" + pub;
-      sig.update(toSign.getBytes());
+
+      // Hash toSign
+      MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
+      hashed.update(toSign.getBytes());
+      byte[] digest = hashed.digest();
+
+      sig.update(digest);
       sigBytes = sig.sign();
     } catch(NoSuchAlgorithmException alg) {
       System.out.println(alg.getMessage());

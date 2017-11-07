@@ -17,7 +17,6 @@ public class ServerList implements java.io.Serializable {
 
       FServ newServer = new FServ(parts[0], Integer.parseInt(parts[1]), pub, signed);
       list.put(address, newServer);
-      System.out.println(list.keySet());
     }
 
     public synchronized void deleteServer(String groupName) {
@@ -31,13 +30,16 @@ public class ServerList implements java.io.Serializable {
     }
 
     public synchronized PublicKey getPubKey(String address) {
-      System.out.println("Returning key at address " + address);
       return list.get(address).getPubKey();
+    }
+    public synchronized FServ getFServ(String address) {
+      return list.get(address);
     }
 
     /**
      * Inner class to facilitate ServerList functions and features
     */
+  }
   class FServ implements java.io.Serializable {
 
     private static final long serialVersionUID = -6699986336399821572L;
@@ -71,4 +73,3 @@ public class ServerList implements java.io.Serializable {
       return this.signed;
     }
   }     // end KeyPair class
-}

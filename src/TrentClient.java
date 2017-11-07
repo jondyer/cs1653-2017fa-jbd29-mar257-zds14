@@ -22,8 +22,8 @@ public class TrentClient extends Client {
   private SecretKey sessionKey;
   public byte[] iv = new SecureRandom().generateSeed(16);
 
-
-  public PublicKey getPublicKey(String ipaddress, int port) throws Exception {
+  @SuppressWarnings("all")
+  public PublicKey getPublicKey(String ipaddress, int port, PublicKey trentPubKey) throws Exception {
     Security.addProvider(new BouncyCastleProvider());
 
     // Pass Trent address of file server we want to connect to
@@ -32,9 +32,37 @@ public class TrentClient extends Client {
     env.addObject(address);
     output.writeObject(env);
 
-    // Recover FSx's Public Key from returned bytes
+    // Recover fields from FServ Object
     env = (Envelope)input.readObject();
-    PublicKey fileServerPublicKey = (PublicKey) env.getObjContents().get(0);
-    return fileServerPublicKey;
+    FServ returned = (FServ) env.getObjContents().get(0);
+    PublicKey fileServerPublicKey = returned.getPubKey();
+    String ip = returned.getIP();
+    int returnedPort = returned.getPort();
+    byte[] signed = returned.getSigned();
+
+    String toHash = ip +  ":" + returnedPort + ":" + fileServerPublicKey;
+
+    // Hash plainKey to update signature object to verify trent
+    MessageDigest hashedDHPubKey = MessageDigest.getInstance("SHA-256", "BC");
+    hashedDHPubKey.update(toHash.getBytes());
+    byte[] digest = hashedDHPubKey.digest();
+
+    // Verify FSx's Public Key from returned bytes
+    Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
+    pubSig.initVerify(trentPubKey);
+    pubSig.update(digest);
+    boolean match = pubSig.verify(signed);
+
+    if(match)
+      return fileServerPublicKey;
+    System.out.println("Error verifing Trent's public key");
+    return null;
+  }
+
+  public PublicKey getTrentPub() throws Exception {
+    Envelope env = new Envelope("TRENT");
+    output.writeObject(env);
+    env = (Envelope)input.readObject();
+    return (PublicKey) env.getObjContents().get(0);
   }
 }

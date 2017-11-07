@@ -19,6 +19,7 @@ public class SymmetricKeyOps {
   public static final int GCM_IV = 12;    //byte-length of IV
   public static final int GCM_TAG = 128;     //bit-length of verification tag
 
+
   public static Envelope encrypt(byte[] plainText, SecretKey agreedKey) {
     try {
       Security.addProvider(new BouncyCastleProvider());
