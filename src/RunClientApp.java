@@ -38,36 +38,36 @@ class ClientApp {
     // INTERACTIVE SETUP
     String temp;
     int temport;
-    System.out.println("Please enter an IP address for Trent, or leave blank for default (localhost) >> ");
+    System.out.print("Please enter an IP address for Trent, or leave blank for default (localhost) >> ");
     temp = console.nextLine();
     if(!temp.equals(""))
       trentHost = temp.trim();
 
-    System.out.println("Please enter a port for Trent, or leave blank for default (4444) >> ");
+    System.out.print("Please enter a port for Trent, or leave blank for default (4444) >> ");
     temp = console.nextLine();
     if(!temp.equals("")) {
       temport = Integer.parseInt(temp.trim());
       TRENT_PORT = temport;
     }
 
-    System.out.println("Please enter an IP address for GroupServer, or leave blank for default (localhost) >> ");
+    System.out.print("Please enter an IP address for GroupServer, or leave blank for default (localhost) >> ");
     temp = console.nextLine();
     if(!temp.equals(""))
       groupHost = temp.trim();
 
-    System.out.println("Please enter a port for GroupServer, or leave blank for default (8765) >> ");
+    System.out.print("Please enter a port for GroupServer, or leave blank for default (8765) >> ");
     temp = console.nextLine();
     if(!temp.equals("")) {
       temport = Integer.parseInt(temp.trim());
       GROUP_PORT = temport;
     }
 
-    System.out.println("Please enter an IP address for FileServer, or leave blank for default (localhost) >> ");
+    System.out.print("Please enter an IP address for FileServer, or leave blank for default (localhost) >> ");
     temp = console.nextLine();
     if(!temp.equals(""))
       fileHost = temp.trim();
 
-    System.out.println("Please enter a port for FileServer, or leave blank for default (4321) >> ");
+    System.out.print("Please enter a port for FileServer, or leave blank for default (4321) >> ");
     temp = console.nextLine();
     if(!temp.equals("")) {
       temport = Integer.parseInt(temp.trim());
