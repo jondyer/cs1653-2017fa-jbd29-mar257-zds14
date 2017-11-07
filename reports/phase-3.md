@@ -41,7 +41,7 @@ This threat has to do with users--who may or may not have malicious intent--desi
 
 To address this threat, we chose to use RSA signatures to guarantee the validity of a token. The shared session key K<sub>GB</sub> is generated during user login shown in T1. The GroupServer is the only place that makes/grants tokens, so each token that is issued by it will be accompanied by a signed Token-hash generated in the following manner:  
 1.  These Tokens are standardized upon creation (so that two functionally equivalent Tokens are indistinguishable) by alphabetizing the groups associated with them.  
-2.  When a Token's 'identifier' is requested, the Token is represented as a series of Strings in this format: `issuer:subject:g<sub>1</sub>:g<sub>2</sub>:...g<sub>n</sub>` (where *g<sub>i</sub>* indicates the *i<sup>th</sup>* group associated with the Token).  
+2.  When a Token's 'identifier' is requested, the Token is represented as a series of Strings in this format: `issuer:subject:g1:g2:...gn` (where *g<sub>i</sub>* indicates the *i<sup>th</sup>* group associated with the Token).  
 3.  This series of Strings is converted to a byte array, which is then hashed using the SHA-256 algorithm.  
 4.  The hash is then signed with the GroupServer's private key and sent alongside the Token itself.  
 
