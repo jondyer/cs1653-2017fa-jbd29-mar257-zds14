@@ -176,15 +176,21 @@ public class FileClient extends Client implements FileClientInterface {
 			 Envelope message = null, e = null;
 			 //Tell the server to return the member list
 			 message = new Envelope("LFILES");
-			 message.addObject(token); //Add requester's token
+			 spec = SymmetricKeyOps.getGCM();
+			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+			 message.addObject(spec.getIV());
 			 output.writeObject(message);
 
 			 e = (Envelope)input.readObject();
 
 			 //If server indicates success, return the member list
-			 if(e.getMessage().equals("OK"))
-				return (List<String>)e.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
-
+			 if(e.getMessage().equals("OK")){
+				 System.out.println("IN HERE  qpieuhfpq87hfp0834hf24f8p9u");
+				 byte [] encByteList = (byte[]) e.getObjContents().get(0);
+				 iv = (byte[]) e.getObjContents().get(1);
+				 List<String> fileList = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encByteList, sessionKey, iv));
+				 return fileList;
+			 }
 
 			 return (new ArrayList<String>());
 

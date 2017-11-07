@@ -85,10 +85,14 @@ public class FileThread extends Thread {
 							if (e.getObjContents().get(0) == null)
 								response = new Envelope("FAIL-BADTOKEN");
 							else {
-							UserToken yourToken = (UserToken)e.getObjContents().get(0); //Extract token
-							List<ShareFile> fullFileList = FileServer.fileList.getFiles();
-							List<String> userFileList = new ArrayList<String>();
-							List<String> groups = yourToken.getGroups();
+
+								byte [] token = (byte[]) e.getObjContents().get(0);
+								iv = (byte[]) e.getObjContents().get(1);
+								UserToken yourToken = (UserToken)SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(token, sessionKey, iv));
+
+								List<ShareFile> fullFileList = FileServer.fileList.getFiles();
+								List<String> userFileList = new ArrayList<String>();
+								List<String> groups = yourToken.getGroups();
 
 							if (fullFileList != null) {
 								for (ShareFile sf: fullFileList) {
@@ -96,9 +100,24 @@ public class FileThread extends Thread {
 										userFileList.add(sf.getPath() + "\t(" + sf.getGroup() + ":" + sf.getOwner() + ")");
 								}
 							}
+							ByteArrayOutputStream bos = new ByteArrayOutputStream();
+							ObjectOutput out = null;
+							byte[] yourBytes = new byte[0];
+							try {
+								out = new ObjectOutputStream(bos);
+								out.writeObject(userFileList);
+								out.flush();
+								yourBytes = bos.toByteArray();
+							} finally { try{bos.close();}catch(Exception ex) {}}
 
-							response = new Envelope("OK"); //Success
-							response.addObject(userFileList);
+							spec = SymmetricKeyOps.getGCM();
+							byte[] encByteList = SymmetricKeyOps.encrypt(yourBytes, sessionKey, spec);
+
+							response = new Envelope("OK"); // Success
+
+							response.addObject(encByteList);
+							response.addObject(spec.getIV());
+
 							}
 					}
 					output.writeObject(response);
