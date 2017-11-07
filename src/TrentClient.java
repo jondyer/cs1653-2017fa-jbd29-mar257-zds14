@@ -26,7 +26,7 @@ public class TrentClient extends Client {
   public PublicKey getPublicKey(String ipaddress, int port, PublicKey trentPubKey) throws Exception {
     Security.addProvider(new BouncyCastleProvider());
 
-    // Pass Trent address of file server we want to connect to
+    // Pass Trent address of server we want to connect to
     Envelope env = new Envelope("GET");
     String address = ipaddress + ":" + port;
     env.addObject(address);

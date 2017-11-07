@@ -22,6 +22,8 @@ import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 
 public class GroupClient extends Client implements GroupClientInterface {
 
+	private PublicKey groupServerPublicKey;
+
 	// We selected group 21 a.k.a. group p-521 (elliptic curve) for our system
 	private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
         + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
@@ -141,7 +143,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		*/
 		public UserToken getToken(String username, String groupname) {
 			try {
-				UserToken token = null;
+				Token token = null;
 				Envelope message = null, response = null;
 
 				//Tell the server to return a token.
@@ -160,15 +162,27 @@ public class GroupClient extends Client implements GroupClientInterface {
 					temp = response.getObjContents();
 
 					if(temp.size() == 3) {
+						// Get IV, cipherText, use to recover encrypted token
 						byte[] iv = (byte[])temp.get(0);
 						byte[] cipherText = (byte[])temp.get(1);
 						byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
-						token = (UserToken)(SymmetricKeyOps.byte2obj(decrypt));
+						token = (Token)(SymmetricKeyOps.byte2obj(decrypt));
+
+						// Hash identifier of recovered token
 						String identifier = token.getIdentifier();
 						byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
 
-
-						return token;
+						// Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
+						Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
+						byte [] signedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
+						pubSig.initVerify(this.groupServerPublicKey);
+						pubSig.update(hashedIdentifier);
+						boolean match = pubSig.verify(signedHash);
+						System.out.println("Signature matched - " + match);
+						if(match)
+							return token;
+						System.out.println("Error verifing GroupServer signature");
+						return null;
 					}
 				}
 				return null;
@@ -464,6 +478,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 				e.printStackTrace(System.err);
 				return false;
 			}
+	 }
+
+	 public void setGroupPubKey(PublicKey pubKey) {
+		 this.groupServerPublicKey = pubKey;
 	 }
 
 }
