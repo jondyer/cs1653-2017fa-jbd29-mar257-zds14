@@ -21,13 +21,15 @@ import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 
 public class GroupClient extends Client implements GroupClientInterface {
 
-	// TODO: Replace N and g with more secure values (Group 19?)
-	private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
-	      + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
-	      + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
-	      + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A"
-	      + "FD5138FE8376435B9FC61D2FC0EB06E3"));
-	private static final BigInteger g_1024 = BigInteger.valueOf(2);
+	// We selected group 21 a.k.a. group p-521 (elliptic curve) for our system
+	private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
+        + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
+        + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
+        + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A"
+        + "FD5138FE8376435B9FC61D2FC0EB06E3"));
+  private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("000001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
 
@@ -40,7 +42,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		byte[] I = "username".getBytes();
         byte[] P = "password".getBytes();
         byte[] s = new byte[32];
-        //random.nextBytes(s);
+        random.nextBytes(s);
 
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
@@ -70,7 +72,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
         byte[] cypherText = (byte[])((Envelope)response.getObjContents().get(1)).getObjContents().get(0);
         byte[] plain = SymmetricKeyOps.decrypt(cypherText, K, SymmetricKeyOps.getGCMParameterSpec());
-		
+
 		System.out.println(plain.toString());
 
         return true;

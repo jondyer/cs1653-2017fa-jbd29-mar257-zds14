@@ -25,12 +25,14 @@ public class GroupThread extends Thread {
   private SecretKey K;
 
   // TODO: Replace N and g with more secure values (Group 19?)
-  private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
+  private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
         + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
         + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
         + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A"
         + "FD5138FE8376435B9FC61D2FC0EB06E3"));
-  private static final BigInteger g_1024 = BigInteger.valueOf(2);
+  private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("000001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
 
   public GroupThread(Socket _socket, GroupServer _gs) {
     socket = _socket;
@@ -71,7 +73,7 @@ public class GroupThread extends Thread {
               response.addObject(yourToken);
               response.addObject(my_gs.signHash(((Token)yourToken).getIdentifier()));
             }
-            
+
             output.writeObject(response);
           } else {
             UserToken yourToken = createToken(username); //Create a token
@@ -318,7 +320,7 @@ public class GroupThread extends Thread {
     byte[] I = "username".getBytes();
     byte[] P = "password".getBytes();
     byte[] s = new byte[32];
-    //random.nextBytes(s);
+    random.nextBytes(s);
 
     SRP6Server server = new SRP6Server();
     BigInteger x = SRP6Util.calculateX(new SHA256Digest(), N_1024, s, I, P);
@@ -334,7 +336,7 @@ public class GroupThread extends Thread {
       System.out.println(cry.getMessage());
     }
 
-    K = new SecretKeySpec(S.toByteArray(), "AES128");
+    K = new SecretKeySpec(S.toByteArray(), "AES");
 
     return B;
   }
