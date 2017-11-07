@@ -6,11 +6,11 @@ This phase of the project is the first stage of hardening our Galactic File-Host
 We will use a variety of techniques and protocols to address the given threat models and keep our system secure. These are specified herewith, along with reasoning and justification for each. We also implemented a trusted mediated authentication service, called Trent. This server provides public keys for registered file servers.
 *   Protocols:
     -   Secure Remote Password (SRP) -- SRP provides mutual authentication of the user and GroupServer and simultaneously allows them to agree on a session key, all securely and over an open channel. It leverages the fact that the user and GroupServer have a shared secret (set up when the user is created) to easily and securely establish a channel so the GroupServer can give the user their Token.
-    -   Diffie-Hellman (D-H) key exchange -- Diffie-Hellman is a trusted and secure method for establishing a session key over an open channel. We chose D-H group 21, since it is compatible with the 128-bit key lengths we are using, and it also provides next-gen security (i.e. it should be secure for at least the next two decades).<sup id="a1">[1](#f1)</sup>
+    -   Diffie-Hellman (D-H) key exchange -- Diffie-Hellman is a trusted and secure method for establishing a session key over an open channel. We chose to perform elliptic curve D-H exchanges and used elliptic curve group 21 (also used for SRP values<sup id="a1">[1](#f1)</sup>), since it is compatible with the 128-bit key lengths we are using, and it also provides next-gen security (i.e. it should be secure for at least the next two decades).<sup id="a2">[2](#f2)</sup>
 
 *   Tools and Algorithms:
-    -   AES (128-bit) -- We chose AES because it is the *de facto* standard for quick and secure symmetric key encryption according to NIST. The 128-bit version is projected to be secure for a number of years, and provides for the time being essentially the same security as larger key sizes. <sup id="a2">[2](#f2)</sup> We will be using AES with Galois/Counter Mode (GCM), which conveniently allows to both encrypt *and* authenticate in the same go. This allows us to detect errors or tampering with the ciphertext in some more secure way than just getting garbage when we decrypt. We will forgo any message padding for the time being to eliminate confusion and keep things simple.
-    -   SHA-256 -- We chose SHA-256 because it is recommended for a variety of applications by NIST <sup id="a3">[3](#f3)</sup>, along with salt to inhibit brute-force attacks. This will be used for two purposes: validating user passwords on the GroupServer, and hashing user Tokens in order to verify their origin. Details are in sections T1 and T2, respectively.
+    -   AES (128-bit) -- We chose AES because it is the *de facto* standard for quick and secure symmetric key encryption according to NIST. The 128-bit version is projected to be secure for a number of years, and provides for the time being essentially the same security as larger key sizes. <sup id="a3">[3](#f3)</sup> We will be using AES with Galois/Counter Mode (GCM), which conveniently allows to both encrypt *and* authenticate in the same go. This allows us to detect errors or tampering with the ciphertext in some more secure way than just getting garbage when we decrypt. We will forgo any message padding for the time being to eliminate confusion and keep things simple.
+    -   SHA-256 -- We chose SHA-256 because it is recommended for a variety of applications by NIST <sup id="a5">[5](#f5)</sup>, along with salt to inhibit brute-force attacks. This will be used for two purposes: validating user passwords on the GroupServer, and hashing user Tokens in order to verify their origin. Details are in sections T1 and T2, respectively.
     -   RSA-2048 -- We use RSA signatures to guarantee the validity of a token and to sign public keys issued by Trent. RSA-2048 is approved by NIST for generation/verification of digital signatures and keys,<sup id="a4">[4](#f4)</sup> which is exactly what we are using it for.  
 
 *   Bonus:  
@@ -100,8 +100,8 @@ Importantly, no information that isn't already public is sent over any open chan
 
 
 
-
-<b id="f1">1:</b> <https://supportforums.cisco.com/t5/security-documents/diffie-hellman-groups/ta-p/3147010> [↩](#a1)  
-<b id="f2">2:</b> <http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175B.pdf> [↩](#a2)  
-<b id="f3">3:</b> <https://csrc.nist.gov/csrc/media/publications/fips/140/2/final/documents/fips1402annexa.pdf> [↩](#a3)  
-<b id="f4">4:</b> <http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf> [↩](#a4)  
+<b id="f1">1:</b> <https://tools.ietf.org/html/rfc5114#section-2.8> [↩](#a1)
+<b id="f2">2:</b> <https://supportforums.cisco.com/t5/security-documents/diffie-hellman-groups/ta-p/3147010> [↩](#a2)  
+<b id="f3">3:</b> <http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175B.pdf> [↩](#a3)  
+<b id="f4">4:</b> <https://csrc.nist.gov/csrc/media/publications/fips/140/2/final/documents/fips1402annexa.pdf> [↩](#a4)  
+<b id="f5">5:</b> <http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf> [↩](#a5)  
