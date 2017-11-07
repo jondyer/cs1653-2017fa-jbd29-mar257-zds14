@@ -155,9 +155,15 @@ public class SymmetricKeyOps {
    * @return        byte [] of hashed text
    */
   public static byte [] hash(String text) {
-    Security.addProvider(new BouncyCastleProvider());
-    MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
-    hashed.update(text.getBytes()); // Change this to "UTF-16" if needed
-    byte[] hash = hashed.digest();
+    byte[] hash = null;
+    try {
+      Security.addProvider(new BouncyCastleProvider());
+      MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
+      hashed.update(text.getBytes()); // Change this to "UTF-16" if needed
+      hash = hashed.digest();
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+    return hash;
   }
 }

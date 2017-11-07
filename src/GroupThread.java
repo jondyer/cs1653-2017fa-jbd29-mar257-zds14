@@ -24,6 +24,7 @@ public class GroupThread extends Thread {
   private final Socket socket;
   private GroupServer my_gs;
   private SecretKey K;
+  private GCMParameterSpec spec;
 
   private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
         + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
@@ -103,7 +104,7 @@ public class GroupThread extends Thread {
                 if (B != null) {
                   response = new Envelope("OK");
                   response.addObject(B);
-                  GCMParameterSpec spec = SymmetricKeyOps.getGCM();
+                  spec = SymmetricKeyOps.getGCM();
                   response.addObject(spec.getIV());
                   response.addObject(SymmetricKeyOps.encrypt("Hello World!".getBytes(), K, spec));
                 }
