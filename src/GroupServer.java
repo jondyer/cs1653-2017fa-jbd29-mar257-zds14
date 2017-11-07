@@ -130,20 +130,25 @@ public class GroupServer extends Server {
     }
   }
 
-  protected byte[] signHash(String hash) {
+  protected byte[] signAndHash(String text) {
     Security.addProvider(new BouncyCastleProvider());
     Cipher cipherRSA;
     Signature sig;
     byte [] signed = null;
 
     try{
+      // Hash
+      MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
+			hashed.update(text.getBytes()); // Change this to "UTF-16" if needed
+			byte[] hash = hashed.digest();
+
+      // Sign
       cipherRSA = Cipher.getInstance("RSA", "BC");
       cipherRSA.init(Cipher.ENCRYPT_MODE, priv);
-
       sig = Signature.getInstance("SHA256withRSA", "BC");
       sig.initSign(priv, new SecureRandom());
 
-      sig.update(hash.getBytes());
+      sig.update(hash);
       signed = sig.sign();
     } catch(NoSuchAlgorithmException alg) {
       System.out.println(alg.getMessage());
@@ -155,7 +160,7 @@ public class GroupServer extends Server {
       System.out.println(key.getMessage());
     } catch(SignatureException sign) {
       System.out.println(sign.getMessage());
-    } 
+    }
 
     return signed;
   }

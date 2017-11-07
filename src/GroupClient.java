@@ -42,7 +42,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
-        
+
         Envelope resp2 = null;
         Envelope mes2 = new Envelope("SRP");
         try {
@@ -164,6 +164,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 						byte[] cipherText = (byte[])temp.get(1);
 						byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
 						token = (UserToken)(SymmetricKeyOps.byte2obj(decrypt));
+						String identifier = token.getIdentifier();
+						byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
+
+
 						return token;
 					}
 				}

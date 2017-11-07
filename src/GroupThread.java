@@ -73,7 +73,7 @@ public class GroupThread extends Thread {
               GCMParameterSpec spec = SymmetricKeyOps.getGCM();
               response.addObject(spec.getIV());
               response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-              response.addObject(my_gs.signHash(((Token)yourToken).getIdentifier()));
+              response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
             }
 
             output.writeObject(response);
@@ -85,7 +85,7 @@ public class GroupThread extends Thread {
             GCMParameterSpec spec = SymmetricKeyOps.getGCM();
             response.addObject(spec.getIV());
             response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-            response.addObject(my_gs.signHash(((Token)yourToken).getIdentifier()));
+            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
             output.writeObject(response);
           }
         } else if (message.getMessage().equals("SRP")) {
