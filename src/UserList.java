@@ -1,6 +1,6 @@
 /* This list represents the users on the server */
 import java.util.*;
-
+import java.math.BigInteger;
 
   public class UserList implements java.io.Serializable {
 
@@ -17,14 +17,13 @@ import java.util.*;
     public synchronized void addUser(String username) {
       User newUser = new User();
       list.put(username, newUser);
-      list.get(username).setPass("");     // initialize to empty password
     }
 
     // overload addUser
-    public synchronized void addUser(String username, String password) {
+    public synchronized void addUser(String username, byte[] salt, BigInteger hashPass) {
       User newUser = new User();
       list.put(username, newUser);
-      list.get(username).setPass(password);
+      list.get(username).setPass(salt, hashPass);
     }
 
     public synchronized void deleteUser(String username) {
@@ -64,27 +63,31 @@ import java.util.*;
       list.get(user).removeOwnership(groupname);
     }
 
-    public synchronized void setPass(String user, String password) {
-      list.get(user).setPass(password);
+    public synchronized void setPass(String user, byte[] salt, BigInteger hashPass) {
+      list.get(user).setPass(salt, hashPass);
+    }
+
+    public synchronized byte[] getSalt(String user) {
+      return list.get(user).getSalt();
+    }
+
+    public synchronized BigInteger getPass(String user) {
+      return list.get(user).getPass();
     }
 
 
 
   class User implements java.io.Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -6699986336399821598L;
     private ArrayList<String> groups;
     private ArrayList<String> ownership;
-    // TODO: don't store password here, store g^W(mod p)
-    private String pw;
+    private BigInteger hashPass;
+    private byte[] salt;
 
     public User() {
       groups = new ArrayList<String>();
       ownership = new ArrayList<String>();
-      pw = "";
     }
 
     public ArrayList<String> getGroups() {
@@ -119,8 +122,17 @@ import java.util.*;
       }
     }
 
-    public void setPass(String password) {
-      pw = password;
+    public void setPass(byte[] salt, BigInteger hashPass) {
+      this.salt = salt;
+      this.hashPass = hashPass;
+    }
+
+    public byte[] getSalt() {
+      return this.salt;
+    }
+
+    public BigInteger getPass() {
+      return this.hashPass;
     }
 
   }
