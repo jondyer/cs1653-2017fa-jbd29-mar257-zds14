@@ -122,10 +122,10 @@ public class GroupThread extends Thread {
             }
           }
         } else if(message.getMessage().equals("GET")) { //Client wants a token
-          String username;
           iv = (byte[])message.getObjContents().get(0);   // Get the IV
           spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
           byte[] namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec); //Decrypt the username
+          String username;
           username = new String(namebytes); //Convert to String
 
           if(username == null) {
@@ -133,7 +133,6 @@ public class GroupThread extends Thread {
             response.addObject(null);
             output.writeObject(response);
           } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
-
             String groupname;
             namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec); //Decrypt the groupname
             groupname = new String(namebytes); //Convert to String

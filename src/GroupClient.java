@@ -131,8 +131,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			//Tell the server to return a token.
 			message = new Envelope("GET");
 			spec = SymmetricKeyOps.getGCM();
-			response.addObject(spec.getIV());
-			response.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 			output.writeObject(message);
 
 			//Get the response from the server
@@ -174,8 +174,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 				//Tell the server to return a token.
 				message = new Envelope("GET");
-				message.addObject(username); //Add user name string
-				message.addObject(groupname); //Add groupname
+				spec = SymmetricKeyOps.getGCM();
+				message.addObject(spec.getIV());
+				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
 				output.writeObject(message);
 
 				//Get the response from the server
