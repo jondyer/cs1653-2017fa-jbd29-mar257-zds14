@@ -42,7 +42,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 		byte[] I = "username".getBytes();
         byte[] P = "password".getBytes();
         byte[] s = new byte[32];
-        random.nextBytes(s);
+        //random.nextBytes(s);
 
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);

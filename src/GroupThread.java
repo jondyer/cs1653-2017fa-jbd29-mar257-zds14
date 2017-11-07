@@ -323,7 +323,7 @@ public class GroupThread extends Thread {
     byte[] I = "username".getBytes();
     byte[] P = "password".getBytes();
     byte[] s = new byte[32];
-    random.nextBytes(s);
+    //random.nextBytes(s);
 
     SRP6Server server = new SRP6Server();
     BigInteger x = SRP6Util.calculateX(new SHA256Digest(), N_1024, s, I, P);
