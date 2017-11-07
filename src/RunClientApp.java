@@ -35,6 +35,47 @@ class ClientApp {
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
   public ClientApp() throws Exception {
+    // INTERACTIVE SETUP
+    String temp;
+    int temport;
+    System.out.println("Please enter an IP address for Trent, or leave blank for default (localhost) >> ");
+    temp = console.nextLine();
+    if(!temp.equals(""))
+      trentHost = temp.trim();
+
+    System.out.println("Please enter a port for Trent, or leave blank for default (4444) >> ");
+    temp = console.nextLine();
+    if(!temp.equals("")) {
+      temport = Integer.parseInt(temp.trim());
+      TRENT_PORT = temport;
+    }
+
+    System.out.println("Please enter an IP address for GroupServer, or leave blank for default (localhost) >> ");
+    temp = console.nextLine();
+    if(!temp.equals(""))
+      groupHost = temp.trim();
+
+    System.out.println("Please enter a port for GroupServer, or leave blank for default (8765) >> ");
+    temp = console.nextLine();
+    if(!temp.equals("")) {
+      temport = Integer.parseInt(temp.trim());
+      GROUP_PORT = temport;
+    }
+
+    System.out.println("Please enter an IP address for FileServer, or leave blank for default (localhost) >> ");
+    temp = console.nextLine();
+    if(!temp.equals(""))
+      fileHost = temp.trim();
+
+    System.out.println("Please enter a port for FileServer, or leave blank for default (4321) >> ");
+    temp = console.nextLine();
+    if(!temp.equals("")) {
+      temport = Integer.parseInt(temp.trim());
+      FILE_PORT = temport;
+    }
+
+    // END INTERACTIVE SETUP
+
     run();
   }
 
@@ -44,17 +85,30 @@ class ClientApp {
     else if (args.length == 2) {
       FILE_PORT = Integer.parseInt(args[0]);
       GROUP_PORT = Integer.parseInt(args[1]);
-    } else if (args.length == 4) {
+    } else if (args.length == 3) {
+      FILE_PORT = Integer.parseInt(args[0]);
+      GROUP_PORT = Integer.parseInt(args[1]);
+      TRENT_PORT = Integer.parseInt(args[3]);
+    }
+     if (args.length == 4) {
       fileHost = args[0];
       FILE_PORT = Integer.parseInt(args[1]);
       groupHost = args[2];
       GROUP_PORT = Integer.parseInt(args[3]);
+    } else if (args.length == 6) {
+      fileHost = args[0];
+      FILE_PORT = Integer.parseInt(args[1]);
+      groupHost = args[2];
+      GROUP_PORT = Integer.parseInt(args[3]);
+      trentHost = args[4];
+      TRENT_PORT = Integer.parseInt(args[5]);
     }
     run();
   }
 
   public void run() throws Exception {
     Security.addProvider(new BouncyCastleProvider());
+
 
     // Connect to Server
     groupClient.connect(groupHost, GROUP_PORT);
