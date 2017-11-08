@@ -466,7 +466,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 Envelope message = null, response = null;
 			 //Tell the server to return the group list
 			 message = new Envelope("LAUSERS");
-			 message.addObject(token); //Add requester's token
+			 spec = SymmetricKeyOps.getGCM();
+			 message.addObject(spec.getIV());
+			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec)); //Add requester's token
 			 output.writeObject(message);
 
 			 response = (Envelope)input.readObject();
@@ -492,9 +494,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				Envelope message = null, response = null;
 				//Tell the server to add a user to the group
 				message = new Envelope("AUSERTOGROUP");
-				message.addObject(username); //Add user name string
-				message.addObject(groupname); //Add group name string
-				message.addObject(token); //Add requester's token
+				spec = SymmetricKeyOps.getGCM();
+				message.addObject(spec.getIV());
+				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 				output.writeObject(message);
 
 				response = (Envelope)input.readObject();
@@ -515,9 +519,11 @@ public class GroupClient extends Client implements GroupClientInterface {
 				Envelope message = null, response = null;
 				//Tell the server to remove a user from the group
 				message = new Envelope("RUSERFROMGROUP");
-				message.addObject(username); //Add user name string
-				message.addObject(groupname); //Add group name string
-				message.addObject(token); //Add requester's token
+				spec = SymmetricKeyOps.getGCM();
+				message.addObject(spec.getIV());
+				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 				output.writeObject(message);
 
 				response = (Envelope)input.readObject();
