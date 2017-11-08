@@ -293,9 +293,12 @@ public class GroupThread extends Thread {
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the token
 
                 List<String> users = listAllUsers(yourToken);
+                spec = SymmetricKeyOps.getGCM();
+                byte[] encUsers = SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(users), K, spec);
                 if (users != null)
-                  response = new Envelope("OK"); //Success
-                response.addObject(users);
+                  response = new Envelope("OK"); //Succes
+                response.addObject(spec.getIV());
+                response.addObject(encUsers);
               }
             }
 

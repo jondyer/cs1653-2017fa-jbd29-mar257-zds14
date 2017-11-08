@@ -467,11 +467,12 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 output.writeObject(message);
 
 			 response = (Envelope)input.readObject();
-
+			 spec = SymmetricKeyOps.getGCM((byte[]) response.getObjContents().get(0));
+			 List<String> allUsers = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec));
 			 //If server indicates success, return the user list
 			 if(response.getMessage().equals("OK"))
 			 {
-				return (List<String>)response.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
+				return allUsers; //This cast creates compiler warnings. Sorry.
 			 }
 
 			 return null;
