@@ -102,15 +102,8 @@ public class FileThread extends Thread {
 							}
 							ByteArrayOutputStream bos = new ByteArrayOutputStream();
 							ObjectOutput out = null;
-							byte[] yourBytes = new byte[0];
-							try {
-								out = new ObjectOutputStream(bos);
-								out.writeObject(userFileList);
-								out.flush();
-								yourBytes = bos.toByteArray();
-							} finally { try{bos.close();}catch(Exception ex) {}}
-
 							spec = SymmetricKeyOps.getGCM();
+							byte[] yourBytes = SymmetricKeyOps.obj2byte(userFileList);
 							byte[] encByteList = SymmetricKeyOps.encrypt(yourBytes, sessionKey, spec);
 
 							response = new Envelope("OK"); // Success
@@ -136,9 +129,16 @@ public class FileThread extends Thread {
 						if(e.getObjContents().get(2) == null)
 							response = new Envelope("FAIL-BADTOKEN");
 						else {
-							String remotePath = (String)e.getObjContents().get(0);
-							String group = (String)e.getObjContents().get(1);
-							UserToken yourToken = (UserToken)e.getObjContents().get(2); //Extract token
+							// Get contents from envelope
+							encRemotePath = (byte[]) e.getObjContents().get(0);
+							byte[] encGroup = (byte[]) e.getObjContents().get(1);
+							encToken = (byte[]) e.getObjContents().get(2);
+							iv = (byte[]) e.getObjContents().get(3);
+
+							// Decrypt contents
+							String remotePath = new String(SymmetricKeyOps.decrypt(encRemotePath, this.sessionKey, iv));
+							String group = new String(SymmetricKeyOps.decrypt(encGroup, this.sessionKey, iv));
+							Token yourToken = (Token) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encToken, this.sessionKey, iv));
 
 							if (FileServer.fileList.checkFile(remotePath)) {
 								System.out.printf("Error: file already exists at %s\n", remotePath);
@@ -158,8 +158,13 @@ public class FileThread extends Thread {
 								output.writeObject(response);
 
 								e = (Envelope)input.readObject();
+
+								iv = (byte[]) e.getObjContents().get(2);
+								byte []buf = SymmetricKeyOps.decrypt((byte[])e.getObjContents().get(0), sessionKey, iv);
+								int n = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])e.getObjContents().get(1), sessionKey, iv)));
+
 								while (e.getMessage().compareTo("CHUNK")==0) {
-									fos.write((byte[])e.getObjContents().get(0), 0, (Integer)e.getObjContents().get(1));
+									fos.write(buf, 0, (Integer) n);
 									response = new Envelope("READY"); //Success
 									output.writeObject(response);
 									e = (Envelope)input.readObject();
@@ -231,6 +236,7 @@ public class FileThread extends Thread {
 
 								}
 
+								// Encrypt and send chunk
 								spec = SymmetricKeyOps.getGCM();
 								e.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
 								e.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
