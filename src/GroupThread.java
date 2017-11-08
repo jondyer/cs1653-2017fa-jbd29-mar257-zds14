@@ -284,12 +284,13 @@ public class GroupThread extends Thread {
             }
 
           output.writeObject(response);
-        } else if(message.getMessage().equals("LAUSERS")) { //Client wants a list of all groups
+        } else if(message.getMessage().equals("LAUSERS")) { //Client wants a list of all users
             response = new Envelope("FAIL");
 
             if(message.getObjContents().size() >= 1) {
               if(message.getObjContents().get(0) != null) {
-                UserToken yourToken = (UserToken)message.getObjContents().get(0); //Extract the token
+                spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the token
 
                 List<String> users = listAllUsers(yourToken);
                 if (users != null)
@@ -302,37 +303,43 @@ public class GroupThread extends Thread {
         } else if(message.getMessage().equals("AUSERTOGROUP")) {//Client wants to add user to a group
           response = new Envelope("FAIL");
 
-          if(message.getObjContents().size() >= 3) {
+          if(message.getObjContents().size() >= 4) {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
                 if(message.getObjContents().get(2) != null) {
-                String userName = (String)message.getObjContents().get(0); //Extract the username
-                String groupName = (String)message.getObjContents().get(1); //Extract the groupName
-                UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
+                  if(message.getObjContents().get(3) != null) {
+                    spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                    String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
+                    String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
+                    UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
 
-                if(addUserToGroup(userName, groupName, yourToken))
-                  response = new Envelope("OK"); //Success
-                } // missing token
-              } // missing groupName
-            } // missing userName
+                    if(addUserToGroup(userName, groupName, yourToken))
+                    response = new Envelope("OK"); //Success
+                  } // missing token
+                } // missing groupName
+              } // missing userName
+            } // missing iv
           } // missing something!
           output.writeObject(response);
         } else if(message.getMessage().equals("RUSERFROMGROUP")) {//Client wants to remove user from a group
             response = new Envelope("FAIL");
 
-            if(message.getObjContents().size() >= 3) {
+            if(message.getObjContents().size() >= 4) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
                   if(message.getObjContents().get(2) != null) {
-                  String userName = (String)message.getObjContents().get(0); //Extract the username
-                  String groupName = (String)message.getObjContents().get(1); //Extract the groupName
-                  UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
+                    if(message.getObjContents().get(3) != null) {
+                      spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                      String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
+                      String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
+                      UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
 
-                  if(deleteUserFromGroup(userName, groupName, yourToken))
-                    response = new Envelope("OK"); //Success
-                  } // missing token
-                } // missing groupName
-              } // missing userName
+                      if(deleteUserFromGroup(userName, groupName, yourToken))
+                      response = new Envelope("OK"); //Success
+                    } // missing token
+                  } // missing groupName
+                } // missing userName
+              } // missing iv
             } // missing something!
             output.writeObject(response);
         } else if(message.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
