@@ -62,7 +62,6 @@ public class TrentThread extends Thread {
                 String address = (String) e.getObjContents().get(0); //Extract address
 
                 if(my_ts.serverList.checkServer(address)) {
-                  System.out.println("Address exists");
                   response = new Envelope("OK"); // Success
                   response.addObject(my_ts.serverList.getFServ(address));
                 }
