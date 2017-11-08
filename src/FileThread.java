@@ -138,7 +138,7 @@ public class FileThread extends Thread {
 							// Decrypt contents
 							String remotePath = new String(SymmetricKeyOps.decrypt(encRemotePath, this.sessionKey, iv));
 							String group = new String(SymmetricKeyOps.decrypt(encGroup, this.sessionKey, iv));
-							Token yourToken = (Token) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encToken, this.sessionKey, iv));
+							UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encToken, this.sessionKey, iv));
 
 							if (FileServer.fileList.checkFile(remotePath)) {
 								System.out.printf("Error: file already exists at %s\n", remotePath);
