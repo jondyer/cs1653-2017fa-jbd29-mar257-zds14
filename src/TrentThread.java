@@ -80,7 +80,10 @@ public class TrentThread extends Thread {
           output.writeObject(response);
         }
       } while(proceed);
-    } catch(Exception e) {
+    } catch(EOFException ex){
+
+      }
+      catch(Exception e) {
       System.err.println("Error: " + e.getMessage());
       e.printStackTrace(System.err);
     }
