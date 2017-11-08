@@ -93,7 +93,7 @@ public abstract class Server {
 	    envelope = (Envelope)input.readObject();
 
 		  if (envelope.getMessage().compareTo("OK")==0) {
-		    System.out.printf("File Server created successfully\n");
+		    System.out.printf("Server created successfully\n");
 		  }
 		  else {
 		    System.out.printf("Server already exists...\n");
