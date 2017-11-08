@@ -44,6 +44,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 		BigInteger S = null;
 		byte[] s = getSalt(user);
 
+		if(s == null) return false;
+
         SRP6Client client = new SRP6Client();
         client.init(N_1024, g_1024, new SHA256Digest(), random);
 
