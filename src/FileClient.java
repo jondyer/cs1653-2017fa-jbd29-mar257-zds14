@@ -185,7 +185,6 @@ public class FileClient extends Client implements FileClientInterface {
 
 			 //If server indicates success, return the member list
 			 if(e.getMessage().equals("OK")){
-				 System.out.println("IN HERE  qpieuhfpq87hfp0834hf24f8p9u");
 				 byte [] encByteList = (byte[]) e.getObjContents().get(0);
 				 iv = (byte[]) e.getObjContents().get(1);
 				 List<String> fileList = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encByteList, sessionKey, iv));
