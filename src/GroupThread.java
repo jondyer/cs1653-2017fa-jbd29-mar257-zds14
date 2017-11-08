@@ -382,6 +382,9 @@ public class GroupThread extends Thread {
     catch(EOFException ex){
 
     }
+    catch(SocketException ex){
+      
+    }
     catch(Exception e) {
       System.err.println("Error: " + e.getMessage());
       e.printStackTrace(System.err);
