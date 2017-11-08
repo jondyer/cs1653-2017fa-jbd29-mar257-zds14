@@ -111,7 +111,7 @@ public class GroupThread extends Thread {
               if(!Arrays.equals(c1, c1_dec)) {
                 output.writeObject(response);
                 System.out.println("Error: Challenge did not match!");
-                System.exit(0);
+                //System.exit(0);
               }
 
               GCMParameterSpec gcm = SymmetricKeyOps.getGCM();

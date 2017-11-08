@@ -85,7 +85,13 @@ public class SymmetricKeyOps {
       Cipher symCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
       GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG, iv);
       symCipher.init(Cipher.DECRYPT_MODE, agreedKey, spec);
-      byte[] plainText = symCipher.doFinal(cipherText);
+      byte[] plainText = null;// = symCipher.doFinal(cipherText);
+
+      try{
+        plainText = symCipher.doFinal(cipherText);
+      } catch (AEADBadTagException aead) {
+        String temp = aead.getMessage();
+      }
       return plainText;
     } catch(Exception e) {
       e.printStackTrace();

@@ -116,6 +116,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			System.out.println(cl.getMessage());
 		}
 
+		if(resp.getObjContents().size() < 2) return false;
+
 	    byte[] iv = (byte[])resp.getObjContents().get(0);
         byte[] c2Cipher = (byte[])resp.getObjContents().get(1);
         byte[] c2_dec = SymmetricKeyOps.decrypt(c2Cipher, K, iv);
