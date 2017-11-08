@@ -390,8 +390,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 response = (Envelope)input.readObject();
 
 			 //If server indicates success, return the member list
-			 if(response.getMessage().equals("OK"))
-			  return (List<String>)SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(0), K, spec)); //Extract the token
+			 if(response.getMessage().equals("OK")) {
+				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
+			  return (List<String>)SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the token
+			}
 
 			 return null;
 
@@ -420,7 +422,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 //If server indicates success, return the member list
 			 if(response.getMessage().equals("OK"))
 			 {
-				return (List<List<String>>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(0), K, spec)); //Extract the list of lists
+				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
+				return (List<List<String>>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list of lists
 			 }
 
 			 return null;
@@ -448,7 +451,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 //If server indicates success, return the group list
 			 if(response.getMessage().equals("OK"))
 			 {
-				return (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(0), K, spec)); //Extract the list 
+				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
+				return (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list
 			 }
 
 			 return null;

@@ -253,6 +253,9 @@ public class GroupThread extends Thread {
                   List<String> members = listMembers(groupName, yourToken);
                   if(members.size() > 0) {
                     response = new Envelope("OK"); //Success
+
+                    spec = SymmetricKeyOps.getGCM();
+                    response.addObject(spec.getIV());
                 	  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(members), K, spec));  // add encrypted list
                   }
                 }
@@ -276,6 +279,8 @@ public class GroupThread extends Thread {
 
 
                   response = new Envelope("OK"); //Success
+                  spec = SymmetricKeyOps.getGCM();
+                  response.addObject(spec.getIV());
                   response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(resp), K, spec));  // add encrypted token array
                 }
               }
@@ -293,9 +298,13 @@ public class GroupThread extends Thread {
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the token
 
                 List<String> groups = listAllGroups(yourToken);
-                if (groups != null)
+                if (groups != null) {
                   response = new Envelope("OK"); //Success
-                response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(groups), K, spec));  // add encrypted token array
+
+                  spec = SymmetricKeyOps.getGCM();
+                  response.addObject(spec.getIV());
+                  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(groups), K, spec));  // add encrypted token array
+                }
               }
             }
 
