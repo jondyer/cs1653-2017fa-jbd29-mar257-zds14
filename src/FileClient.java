@@ -185,7 +185,6 @@ public class FileClient extends Client implements FileClientInterface {
 
 			 //If server indicates success, return the member list
 			 if(e.getMessage().equals("OK")){
-				 System.out.println("IN HERE  qpieuhfpq87hfp0834hf24f8p9u");
 				 byte [] encByteList = (byte[]) e.getObjContents().get(0);
 				 iv = (byte[]) e.getObjContents().get(1);
 				 List<String> fileList = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encByteList, sessionKey, iv));
@@ -209,46 +208,52 @@ public class FileClient extends Client implements FileClientInterface {
 
 		try {
 
-			 Envelope message = null, env = null;
-			 //Tell the server to return the member list
-			 message = new Envelope("UPLOADF");
-			 message.addObject(destFile);
-			 message.addObject(group);
-			 message.addObject(token); //Add requester's token
-			 output.writeObject(message);
+			Envelope message = null, env = null;
+			//Tell the server to return the member list
+			message = new Envelope("UPLOADF");
+
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(SymmetricKeyOps.encrypt(destFile.getBytes(), this.sessionKey, spec));
+			message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), this.sessionKey, spec));
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+			message.addObject(spec.getIV());
+
+			output.writeObject(message);
 
 
-			 FileInputStream fis = new FileInputStream(sourceFile);
+			FileInputStream fis = new FileInputStream(sourceFile);
 
-			 env = (Envelope)input.readObject();
+			env = (Envelope)input.readObject();
 
-			 //If server indicates success, return the member list
-			 if(env.getMessage().equals("READY"))
+			//If server indicates success, return the member list
+			if(env.getMessage().equals("READY"))
 				System.out.printf("Meta data upload successful\n");
-			 else {
-				 System.out.printf("Upload failed: %s\n", env.getMessage());
-				 return false;
-			 }
+			else {
+				System.out.printf("Upload failed: %s\n", env.getMessage());
+				return false;
+			}
 
 
-			 do {
-				 byte[] buf = new byte[4096];
-				 	if (env.getMessage().compareTo("READY")!=0) {
-				 		System.out.printf("Server error: %s\n", env.getMessage());
-				 		return false;
-				 	}
-				 	message = new Envelope("CHUNK");
-					int n = fis.read(buf); //can throw an IOException
-					if (n > 0) {
-						System.out.printf(".");
-					} else if (n < 0) {
+			do {
+				byte[] buf = new byte[4096];
+				if (env.getMessage().compareTo("READY")!=0) {
+					System.out.printf("Server error: %s\n", env.getMessage());
+					return false;
+				}
+				message = new Envelope("CHUNK");
+				int n = fis.read(buf); //can throw an IOException
+				if (n > 0) {
+					System.out.printf(".");
+				} else if (n < 0) {
 						System.out.println("Read error");
 						return false;
 					}
 
-					message.addObject(buf);
-					message.addObject(new Integer(n));
-
+					// Encrypt and send chunk
+					spec = SymmetricKeyOps.getGCM();
+					message.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
+					message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
+					message.addObject(spec.getIV());
 					output.writeObject(message);
 
 
