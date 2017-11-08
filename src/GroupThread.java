@@ -206,6 +206,9 @@ public class GroupThread extends Thread {
           if(message.getObjContents().size() >= 2) {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
+                iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
                 String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
@@ -221,6 +224,9 @@ public class GroupThread extends Thread {
             if(message.getObjContents().size() >= 2) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
+                  iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                  spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
                   String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                   UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
@@ -238,6 +244,9 @@ public class GroupThread extends Thread {
             if(message.getObjContents().size() >= 2) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
+                  iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                  spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
                   String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                   UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
@@ -257,13 +266,17 @@ public class GroupThread extends Thread {
             if(message.getObjContents().size() >= 2) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
-                  String userName = (String)message.getObjContents().get(0); //Extract the userName
-                  UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+                  iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                  spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                  String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
+                  UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
                   List<List<String>> resp = listGroups(userName, yourToken);
 
+
                   response = new Envelope("OK"); //Success
-                  response.addObject(resp);
+                  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(resp), K, spec));  // add encrypted token array
                 }
               }
             }
@@ -274,12 +287,15 @@ public class GroupThread extends Thread {
 
             if(message.getObjContents().size() >= 1) {
               if(message.getObjContents().get(0) != null) {
-                UserToken yourToken = (UserToken)message.getObjContents().get(0); //Extract the token
+                iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the token
 
                 List<String> groups = listAllGroups(yourToken);
                 if (groups != null)
                   response = new Envelope("OK"); //Success
-                response.addObject(groups);
+                response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(groups), K, spec));  // add encrypted token array
               }
             }
 

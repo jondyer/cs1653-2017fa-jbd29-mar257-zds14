@@ -408,16 +408,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 Envelope message = null, response = null;
 			 //Tell the server to return the member list
 			 message = new Envelope("LGROUPS");
-			 message.addObject(user); //Add username string
-			 message.addObject(token); //Add requester's token
+			 spec = SymmetricKeyOps.getGCM();
+			 message.addObject(spec.getIV());
+			 message.addObject(SymmetricKeyOps.encrypt(user.getBytes(), K, spec));	// add encrypted username
+			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			 output.writeObject(message);
+
 
 			 response = (Envelope)input.readObject();
 
 			 //If server indicates success, return the member list
 			 if(response.getMessage().equals("OK"))
 			 {
-				return (List<List<String>>)response.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
+				return (List<List<String>>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(0), K, spec)); //Extract the list of lists
 			 }
 
 			 return null;
@@ -435,7 +438,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 Envelope message = null, response = null;
 			 //Tell the server to return the group list
 			 message = new Envelope("LAGROUPS");
-			 message.addObject(token); //Add requester's token
+			 spec = SymmetricKeyOps.getGCM();
+			 message.addObject(spec.getIV());
+			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			 output.writeObject(message);
 
 			 response = (Envelope)input.readObject();
@@ -443,7 +448,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 //If server indicates success, return the group list
 			 if(response.getMessage().equals("OK"))
 			 {
-				return (List<String>)response.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
+				return (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(0), K, spec)); //Extract the list 
 			 }
 
 			 return null;
