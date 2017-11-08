@@ -176,9 +176,10 @@ public class GroupThread extends Thread {
                 byte[] salt = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec); // Extract the salt
                 BigInteger password = new BigInteger(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); //Extract the password
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec)); //Extract the token
-
-
-                if(createUser(username, salt, password, yourToken)){
+                byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(5), K, spec);
+                if(!verifyToken((Token) yourToken, signedHash))
+                  response = new Envelope("FAIL");
+                else if(createUser(username, salt, password, yourToken)){
                   response = new Envelope("OK"); //Success
                 }
               }
@@ -195,8 +196,10 @@ public class GroupThread extends Thread {
 
                 String username = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
-
-                if(deleteUser(username, yourToken))
+                byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec);
+                if(!verifyToken((Token) yourToken, signedHash))
+                  response = new Envelope("FAIL");
+                else if(deleteUser(username, yourToken))
                   response = new Envelope("OK"); //Success
               }
             }
@@ -212,8 +215,10 @@ public class GroupThread extends Thread {
 
                 String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
-
-                if(createGroup(groupName, yourToken))
+                byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec);
+                if(!verifyToken((Token) yourToken, signedHash))
+                  response = new Envelope("FAIL");
+                else if(createGroup(groupName, yourToken))
                   response = new Envelope("OK"); //Success
               }
             }
@@ -230,8 +235,10 @@ public class GroupThread extends Thread {
 
                   String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                   UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
-
-                  if(deleteGroup(groupName, yourToken)) {
+                  byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec);
+                  if(!verifyToken((Token) yourToken, signedHash))
+                    response = new Envelope("FAIL");
+                  else if(deleteGroup(groupName, yourToken)) {
                     response = new Envelope("OK"); //Success
                   }
                 }
@@ -250,9 +257,11 @@ public class GroupThread extends Thread {
 
                   String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                   UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
-
+                  byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec);
                   List<String> members = listMembers(groupName, yourToken);
-                  if(members.size() > 0) {
+                  if(!verifyToken((Token) yourToken, signedHash))
+                    response = new Envelope("FAIL");
+                  else if(members.size() > 0) {
                     response = new Envelope("OK"); //Success
 
                     spec = SymmetricKeyOps.getGCM();
@@ -275,14 +284,18 @@ public class GroupThread extends Thread {
 
                   String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
                   UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
+                  byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec);
+                  if(!verifyToken((Token) yourToken, signedHash))
+                    response = new Envelope("FAIL");
+                  else {
+                    List<List<String>> resp = listGroups(userName, yourToken);
 
-                  List<List<String>> resp = listGroups(userName, yourToken);
 
-
-                  response = new Envelope("OK"); //Success
-                  spec = SymmetricKeyOps.getGCM();
-                  response.addObject(spec.getIV());
-                  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(resp), K, spec));  // add encrypted token array
+                    response = new Envelope("OK"); //Success
+                    spec = SymmetricKeyOps.getGCM();
+                    response.addObject(spec.getIV());
+                    response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(resp), K, spec));  // add encrypted token array
+                  }
                 }
               }
             }
@@ -297,14 +310,18 @@ public class GroupThread extends Thread {
                 spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
 
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the token
+                byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec);
+                if(!verifyToken((Token) yourToken, signedHash))
+                  response = new Envelope("FAIL");
+                else {
+                  List<String> groups = listAllGroups(yourToken);
+                  if (groups != null) {
+                    response = new Envelope("OK"); //Success
 
-                List<String> groups = listAllGroups(yourToken);
-                if (groups != null) {
-                  response = new Envelope("OK"); //Success
-
-                  spec = SymmetricKeyOps.getGCM();
-                  response.addObject(spec.getIV());
-                  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(groups), K, spec));  // add encrypted token array
+                    spec = SymmetricKeyOps.getGCM();
+                    response.addObject(spec.getIV());
+                    response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(groups), K, spec));  // add encrypted token array
+                  }
                 }
               }
             }
@@ -317,14 +334,18 @@ public class GroupThread extends Thread {
               if(message.getObjContents().get(0) != null) {
                 spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
                 UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the token
-
-                List<String> users = listAllUsers(yourToken);
-                spec = SymmetricKeyOps.getGCM();
-                byte[] encUsers = SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(users), K, spec);
-                if (users != null)
+                byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec);
+                if(!verifyToken((Token) yourToken, signedHash))
+                  response = new Envelope("FAIL");
+                else {
+                  List<String> users = listAllUsers(yourToken);
+                  spec = SymmetricKeyOps.getGCM();
+                  byte[] encUsers = SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(users), K, spec);
+                  if (users != null)
                   response = new Envelope("OK"); //Succes
-                response.addObject(spec.getIV());
-                response.addObject(encUsers);
+                  response.addObject(spec.getIV());
+                  response.addObject(encUsers);
+                }
               }
             }
 
@@ -341,8 +362,10 @@ public class GroupThread extends Thread {
                     String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
                     String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
                     UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
-
-                    if(addUserToGroup(userName, groupName, yourToken))
+                    byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
+                    if(!verifyToken((Token) yourToken, signedHash))
+                      response = new Envelope("FAIL");
+                    else if(addUserToGroup(userName, groupName, yourToken))
                     response = new Envelope("OK"); //Success
                   } // missing token
                 } // missing groupName
@@ -362,8 +385,10 @@ public class GroupThread extends Thread {
                       String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
                       String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
                       UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
-
-                      if(deleteUserFromGroup(userName, groupName, yourToken))
+                      byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
+                      if(!verifyToken((Token) yourToken, signedHash))
+                        response = new Envelope("FAIL");
+                      else if(deleteUserFromGroup(userName, groupName, yourToken))
                       response = new Envelope("OK"); //Success
                     } // missing token
                   } // missing groupName
@@ -668,5 +693,29 @@ public class GroupThread extends Thread {
     }
 
     return false;
+  }
+
+/**
+ * Verifies a token from the User to make sure it originated from the GroupServer
+ * @param  Token  tokenToVerify         Token from User
+ * @param  String groupServerSignedHash GroupServer-Signed Hash that accompanies token
+ * @return        Status of if the signed hash matched the token
+ */
+  private boolean verifyToken(Token tokenToVerify, byte[] groupServerSignedHash) {
+    try {
+      // Hash identifier of recovered token
+      String identifier = tokenToVerify.getIdentifier();
+      byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
+
+      // Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
+      Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
+      pubSig.initVerify(this.my_gs.pub);
+      pubSig.update(hashedIdentifier);
+      boolean match = pubSig.verify(groupServerSignedHash);
+      System.out.println("Verifying User's Token.... " + match);
+      if(match) return true;
+
+    } catch (Exception e){}
+      return false;
   }
 }

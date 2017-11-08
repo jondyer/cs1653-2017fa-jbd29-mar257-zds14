@@ -37,6 +37,7 @@ public class GroupClient extends Client implements GroupClientInterface {
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
+	private byte [] signedHash;
 
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
@@ -206,7 +207,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 						// Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
 						Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
-						byte [] signedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
+						this.signedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
 						pubSig.initVerify(this.groupServerPublicKey);
 						pubSig.update(hashedIdentifier);
 						boolean match = pubSig.verify(signedHash);
@@ -243,6 +244,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(username); //Add user name string
 				message.addObject(pw); //Add user password
 				message.addObject(token); //Add the requester's token
+				message.addObject(signedHash);
 				output.writeObject(message);
 
 				response = (Envelope)input.readObject();
@@ -280,6 +282,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(s, K, spec));	// add encrypted salt
 				message.addObject(SymmetricKeyOps.encrypt(v.toByteArray(), K, spec)); // add encrypted secret
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 				output.writeObject(message);
 
 
@@ -308,6 +311,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(spec.getIV());
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 				output.writeObject(message);
 
 
@@ -335,6 +339,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(spec.getIV());
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 				output.writeObject(message);
 
 
@@ -362,6 +367,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(spec.getIV());
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 				output.writeObject(message);
 
 
@@ -388,6 +394,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 message.addObject(spec.getIV());
 			 message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), K, spec));	// add encrypted username
 			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 			 output.writeObject(message);
 
 
@@ -418,6 +425,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 message.addObject(spec.getIV());
 			 message.addObject(SymmetricKeyOps.encrypt(user.getBytes(), K, spec));	// add encrypted username
 			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 			 output.writeObject(message);
 
 
@@ -448,6 +456,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 spec = SymmetricKeyOps.getGCM();
 			 message.addObject(spec.getIV());
 			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 			 output.writeObject(message);
 
 			 response = (Envelope)input.readObject();
@@ -477,6 +486,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			 spec = SymmetricKeyOps.getGCM();
 			 message.addObject(spec.getIV());
 			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec)); //Add requester's token
+			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 			 output.writeObject(message);
 
 			 response = (Envelope)input.readObject();
@@ -508,6 +518,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 				output.writeObject(message);
 
 				response = (Envelope)input.readObject();
@@ -533,6 +544,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 				output.writeObject(message);
 
 				response = (Envelope)input.readObject();
