@@ -379,6 +379,9 @@ public class GroupThread extends Thread {
         }
       } while(proceed);
     }
+    catch(EOFException ex){
+
+    }
     catch(Exception e) {
       System.err.println("Error: " + e.getMessage());
       e.printStackTrace(System.err);
