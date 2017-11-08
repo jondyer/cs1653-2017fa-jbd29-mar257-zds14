@@ -62,7 +62,7 @@ public class FileThread extends Thread {
 						byte[] digest = SymmetricKeyOps.hash(serverKeyPair.getPublic().getEncoded());
 
 						// Sign D-H public key hash using RSA private key
-						Signature privSig = Signature.getInstance("SHA256withRSA");
+						Signature privSig = Signature.getInstance("SHA256withRSA", "BC");
 						privSig.initSign(my_fs.priv);
 						privSig.update(digest);
 						byte [] signedDHPubKey = privSig.sign(); // Generate updated signature
