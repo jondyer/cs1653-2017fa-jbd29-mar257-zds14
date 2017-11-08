@@ -5,6 +5,8 @@ actor Bob
 Bob <--> GroupServer: Setup: Share weak secret W = H(salt || password)
 note right: Store〈 Bob, g<sup>W</sup> mod p, salt 〉
 |||
+Bob -> GroupServer: Bob, SRP
+GroupServer -> Bob: salt
 Bob -> GroupServer: Bob, g<sup>b</sup> mod p 
 note left: Choose random b
 note right
@@ -14,7 +16,7 @@ note right
 	K<sub>GB</sub> = g<sup>s(b + uW)</sup> mod p
 end note
 
-GroupServer -> Bob: (g<sup>s</sup> + g<sup>W</sup>) mod p, u, C<sub>1</sub>, salt
+GroupServer -> Bob: (g<sup>s</sup> + g<sup>W</sup>) mod p, C<sub>1</sub>
 note left
 	Choose challenge C<sub>2</sub>
 	K<sub>GB</sub> = g<sup>s(b + uW)</sup> mod p

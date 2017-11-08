@@ -61,11 +61,10 @@ This threat involves the possibility of a malicious fileserver or man in the mid
 
 In order to prevent the impersonation of a fileserver and to help Bob be sure that he is in fact connecting to his desired fileserver, we have required each newly created fileserver to 'register' its location, via IP address and port, and public key with Trent. The details are as follows (also see the diagram below):
 1.  A new fileserver sends a message to Trent indicating the intent to register, as part of a Diffie-Hellman exchange.
-2.  Trent makes note of the IP address this request came from, so that he can independently verify it later on.
-3.  Trent responds with the second half of the D-H exchange, but this half is signed with his private key.
-4.  The fileserver verifies Trent (having acquired his public key from some public source) and calculates the session key.
-5.  The fileserver sends an encrypted message with its public key, together with its IP and the port it is running on.
-6.  If Trent matches the IP with the one he detected earlier, then he stores that info and a signed hash of it and informs the fileserver.
+2.  Trent responds with the second half of the D-H exchange, but this half is signed with his private key.
+3.  The fileserver verifies Trent (having acquired his public key from some public source) and calculates the session key.
+4.  The fileserver sends an encrypted message with its public key, and the port it is running on.
+5.  Trent combines the IP address of the incoming connection with the port and public key sent earlier, then he stores that info and a signed hash of it and informs the fileserver.
 
 ![Image of File Server Registration](./img/Register_FS.png)
 
