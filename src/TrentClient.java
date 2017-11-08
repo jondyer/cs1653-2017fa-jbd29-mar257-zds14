@@ -28,7 +28,6 @@ public class TrentClient extends Client {
     // Pass Trent address of server we want to connect to
     Envelope env = new Envelope("GET");
     String address = ipaddress + ":" + port;
-    System.out.println("AddressClient = " + address);
     env.addObject(address);
     output.writeObject(env);
 
