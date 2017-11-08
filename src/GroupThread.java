@@ -11,6 +11,7 @@ import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.*;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
@@ -383,7 +384,7 @@ public class GroupThread extends Thread {
 
     }
     catch(SocketException ex){
-      
+
     }
     catch(Exception e) {
       System.err.println("Error: " + e.getMessage());
