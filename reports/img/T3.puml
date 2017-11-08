@@ -1,0 +1,21 @@
+@startuml
+title __T3: Unauthorized File Servers__
+actor Bob
+participant FS
+participant Trent
+
+Bob -> Trent: Bob || FileServer_X
+Trent -> Bob: FileServer_X || [IP || port || k<sub>FSX</sub>]k<sub>T</sub><sup>-1</sup>
+note left: Verify Trent as the source
+
+|||
+
+create FS
+Bob -> FS: Bob || FileServer_X || g<sup>b</sup> mod q
+note left: Choose random b
+
+FS -> Bob: FS<sub>X</sub> || [Bob || g<sup>f</sup> mod q]k<sub>FSX</sub><sup>-1</sup>
+Bob -> Bob: Verify FileServer_X through k<sub>FSX</sub>
+note left: K<sub>BF</sub> = g<sup>bf</sup> mod p
+
+@enduml

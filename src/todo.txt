@@ -1,0 +1,7 @@
+Page for To-do's that have no particular class or place
+
+// TODO: Make sure bouncycastle is set as provider everywhere
+// TODO: Make sure all necessary .jar files are in the repo
+// TODO: Look over images to make sure that they reflect our code
+// TODO: Remove extraneous console output
+// TODO: Extra credit, password reset

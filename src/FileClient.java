@@ -1,13 +1,74 @@
 /* FileClient provides all the client functionality regarding the file server */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.io.*;
+
+import java.lang.Thread;
+import java.net.Socket;
+
+import java.security.*;
+
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+
+
 public class FileClient extends Client implements FileClientInterface {
+
+	private SecretKey sessionKey;
+	private GCMParameterSpec spec;
+	private byte [] iv, encRemotePath, encToken, buf;
+	private int n;
+
+	/**
+	 * MUST MUST MUST be run before any other method
+	 */
+	public boolean keyExchange(PublicKey fileServerPublicKey) {
+		Security.addProvider(new BouncyCastleProvider());
+		Envelope env = new Envelope("KEYX");
+
+		// Generate User's Keypair using Elliptic Curve D-H
+		KeyPair clientKeyPair = ECDH.generateKeyPair();
+		byte [] iv = SymmetricKeyOps.getGCM().getIV();
+
+		env.addObject(clientKeyPair.getPublic());
+		env.addObject(iv);
+		try {
+			output.writeObject(env);
+			env = (Envelope)input.readObject();
+
+			// Get Server's D-H public key signed by its RSA private key and get plaintext D-H public key
+			byte [] serverSignedPubKey = (byte []) env.getObjContents().get(0);
+			PublicKey serverPubKey = (PublicKey) env.getObjContents().get(1);
+
+			// Hash plainKey to update signature object to verify File Server
+			byte[] digest = SymmetricKeyOps.hash(serverPubKey.getEncoded());
+
+			// Verify match using Server's RSA public key (from Trent)
+			Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
+			pubSig.initVerify(fileServerPublicKey);
+			pubSig.update(digest);
+			boolean match = pubSig.verify(serverSignedPubKey);
+
+			// Generate Symmetric key from Server Public Key and Client Private Key
+			if(match){ // Success
+				this.sessionKey = ECDH.calculateKey(serverPubKey, clientKeyPair.getPrivate());
+				return true;
+			} else {
+				System.out.println("Failed to establish key with File Server, unable to verify signature.");
+				return false;
+			}
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		return false;
+	}
 
 	public boolean delete(String filename, UserToken token) {
 		String remotePath;
@@ -17,11 +78,13 @@ public class FileClient extends Client implements FileClientInterface {
 			remotePath = filename;
 
 		Envelope env = new Envelope("DELETEF"); //Success
-	    env.addObject(remotePath);
-	    env.addObject(token);
-	    try {
-			output.writeObject(env);
-		    env = (Envelope)input.readObject();
+		spec = SymmetricKeyOps.getGCM();
+		env.addObject(SymmetricKeyOps.encrypt(remotePath.getBytes(), this.sessionKey, spec));
+		env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+		env.addObject(spec.getIV());
+			try {
+				output.writeObject(env);
+				env = (Envelope)input.readObject();
 
 			if (env.getMessage().compareTo("OK")==0) {
 				System.out.printf("File %s deleted successfully\n", filename);
@@ -53,14 +116,22 @@ public class FileClient extends Client implements FileClientInterface {
 					    FileOutputStream fos = new FileOutputStream(file);
 
 					    Envelope env = new Envelope("DOWNLOADF"); //Success
-					    env.addObject(sourceFile);
-					    env.addObject(token);
-					    output.writeObject(env);
+
+							spec = SymmetricKeyOps.getGCM();
+							env.addObject(SymmetricKeyOps.encrypt(sourceFile.getBytes(), this.sessionKey, spec));
+							env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+							env.addObject(spec.getIV());
+
+							output.writeObject(env);
 
 					    env = (Envelope)input.readObject();
 
 						while (env.getMessage().compareTo("CHUNK")==0) {
-								fos.write((byte[])env.getObjContents().get(0), 0, (Integer)env.getObjContents().get(1));
+								iv = (byte[]) env.getObjContents().get(2);
+								buf = SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(0), sessionKey, iv);
+								n = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
+
+								fos.write(buf, 0, n);
 								System.out.printf(".");
 								env = new Envelope("DOWNLOADF"); //Success
 								output.writeObject(env);
@@ -105,15 +176,20 @@ public class FileClient extends Client implements FileClientInterface {
 			 Envelope message = null, e = null;
 			 //Tell the server to return the member list
 			 message = new Envelope("LFILES");
-			 message.addObject(token); //Add requester's token
+			 spec = SymmetricKeyOps.getGCM();
+			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+			 message.addObject(spec.getIV());
 			 output.writeObject(message);
 
 			 e = (Envelope)input.readObject();
 
 			 //If server indicates success, return the member list
-			 if(e.getMessage().equals("OK"))
-				return (List<String>)e.getObjContents().get(0); //This cast creates compiler warnings. Sorry.
-
+			 if(e.getMessage().equals("OK")){
+				 byte [] encByteList = (byte[]) e.getObjContents().get(0);
+				 iv = (byte[]) e.getObjContents().get(1);
+				 List<String> fileList = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encByteList, sessionKey, iv));
+				 return fileList;
+			 }
 
 			 return (new ArrayList<String>());
 
@@ -132,46 +208,52 @@ public class FileClient extends Client implements FileClientInterface {
 
 		try {
 
-			 Envelope message = null, env = null;
-			 //Tell the server to return the member list
-			 message = new Envelope("UPLOADF");
-			 message.addObject(destFile);
-			 message.addObject(group);
-			 message.addObject(token); //Add requester's token
-			 output.writeObject(message);
+			Envelope message = null, env = null;
+			//Tell the server to return the member list
+			message = new Envelope("UPLOADF");
+
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(SymmetricKeyOps.encrypt(destFile.getBytes(), this.sessionKey, spec));
+			message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), this.sessionKey, spec));
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+			message.addObject(spec.getIV());
+
+			output.writeObject(message);
 
 
-			 FileInputStream fis = new FileInputStream(sourceFile);
+			FileInputStream fis = new FileInputStream(sourceFile);
 
-			 env = (Envelope)input.readObject();
+			env = (Envelope)input.readObject();
 
-			 //If server indicates success, return the member list
-			 if(env.getMessage().equals("READY"))
+			//If server indicates success, return the member list
+			if(env.getMessage().equals("READY"))
 				System.out.printf("Meta data upload successful\n");
-			 else {
-				 System.out.printf("Upload failed: %s\n", env.getMessage());
-				 return false;
-			 }
+			else {
+				System.out.printf("Upload failed: %s\n", env.getMessage());
+				return false;
+			}
 
 
-			 do {
-				 byte[] buf = new byte[4096];
-				 	if (env.getMessage().compareTo("READY")!=0) {
-				 		System.out.printf("Server error: %s\n", env.getMessage());
-				 		return false;
-				 	}
-				 	message = new Envelope("CHUNK");
-					int n = fis.read(buf); //can throw an IOException
-					if (n > 0) {
-						System.out.printf(".");
-					} else if (n < 0) {
+			do {
+				byte[] buf = new byte[4096];
+				if (env.getMessage().compareTo("READY")!=0) {
+					System.out.printf("Server error: %s\n", env.getMessage());
+					return false;
+				}
+				message = new Envelope("CHUNK");
+				int n = fis.read(buf); //can throw an IOException
+				if (n > 0) {
+					System.out.printf(".");
+				} else if (n < 0) {
 						System.out.println("Read error");
 						return false;
 					}
 
-					message.addObject(buf);
-					message.addObject(new Integer(n));
-
+					// Encrypt and send chunk
+					spec = SymmetricKeyOps.getGCM();
+					message.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
+					message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
+					message.addObject(spec.getIV());
 					output.writeObject(message);
 
 

@@ -6,10 +6,13 @@ import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
+import javax.crypto.*;
+import java.security.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 // Driver Class
 public class RunClientApp {
-  public static void main(String [] args) {
+  public static void main(String [] args) throws Exception {
     ClientApp newApp;
     if (args.length == 0)
       newApp = new ClientApp();
@@ -21,42 +24,115 @@ public class RunClientApp {
 class ClientApp {
 
   private int GROUP_PORT = 8765;
-  private String groupHost = "localhost";
+  private String groupHost = "127.0.0.1";
   private int FILE_PORT = 4321;
-  private String fileHost = "localhost";
+  private String fileHost = "127.0.0.1";
+  private int TRENT_PORT = 4444;
+  private String trentHost = "127.0.0.1";
 
   Scanner console = new Scanner(System.in);
+  TrentClient trentClient = new TrentClient();
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
+  public ClientApp() throws Exception {
+    // INTERACTIVE SETUP
+    String temp;
+    int temport;
+    System.out.print("Please enter an IP address for Trent, or leave blank for default (localhost) >> ");
+    temp = console.nextLine();
+    if(!temp.equals(""))
+      trentHost = temp.trim();
 
-  public ClientApp() {
+    System.out.print("Please enter a port for Trent, or leave blank for default (4444) >> ");
+    temp = console.nextLine();
+    if(!temp.equals("")) {
+      temport = Integer.parseInt(temp.trim());
+      TRENT_PORT = temport;
+    }
+
+    System.out.print("Please enter an IP address for GroupServer, or leave blank for default (localhost) >> ");
+    temp = console.nextLine();
+    if(!temp.equals(""))
+      groupHost = temp.trim();
+
+    System.out.print("Please enter a port for GroupServer, or leave blank for default (8765) >> ");
+    temp = console.nextLine();
+    if(!temp.equals("")) {
+      temport = Integer.parseInt(temp.trim());
+      GROUP_PORT = temport;
+    }
+
+    System.out.print("Please enter an IP address for FileServer, or leave blank for default (localhost) >> ");
+    temp = console.nextLine();
+    if(!temp.equals(""))
+      fileHost = temp.trim();
+
+    System.out.print("Please enter a port for FileServer, or leave blank for default (4321) >> ");
+    temp = console.nextLine();
+    if(!temp.equals("")) {
+      temport = Integer.parseInt(temp.trim());
+      FILE_PORT = temport;
+    }
+
+    // END INTERACTIVE SETUP
+
     run();
   }
 
-  public ClientApp(String [] args){
+  public ClientApp(String [] args) throws Exception {
     if (args.length == 1)
       FILE_PORT = Integer.parseInt(args[0]);
     else if (args.length == 2) {
       FILE_PORT = Integer.parseInt(args[0]);
       GROUP_PORT = Integer.parseInt(args[1]);
-    } else if (args.length == 4) {
+    } else if (args.length == 3) {
+      FILE_PORT = Integer.parseInt(args[0]);
+      GROUP_PORT = Integer.parseInt(args[1]);
+      TRENT_PORT = Integer.parseInt(args[3]);
+    }
+     if (args.length == 4) {
       fileHost = args[0];
       FILE_PORT = Integer.parseInt(args[1]);
       groupHost = args[2];
       GROUP_PORT = Integer.parseInt(args[3]);
+    } else if (args.length == 6) {
+      fileHost = args[0];
+      FILE_PORT = Integer.parseInt(args[1]);
+      groupHost = args[2];
+      GROUP_PORT = Integer.parseInt(args[3]);
+      trentHost = args[4];
+      TRENT_PORT = Integer.parseInt(args[5]);
     }
     run();
   }
 
-  public void run() {
+  public void run() throws Exception {
+    Security.addProvider(new BouncyCastleProvider());
+
 
     // Connect to Server
     groupClient.connect(groupHost, GROUP_PORT);
+    trentClient.connect(trentHost, TRENT_PORT);
+    PublicKey trentPublicKey = trentClient.getTrentPub();
+    PublicKey groupServerPublicKey = trentClient.getPublicKey(groupHost, GROUP_PORT, trentPublicKey); // Get group server's public key
+    groupClient.setGroupPubKey(groupServerPublicKey);
+    PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT, trentPublicKey); // Get selected File Server's public key from Trent to later use for verification
     fileClient.connect(fileHost, FILE_PORT);
+    fileClient.keyExchange(fileServerPublicKey);
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
     String username = console.next();
+    System.out.print("Please enter your password >> ");
+    String pw = console.next();
+
+    if (!groupClient.clientSRP(username, pw)) {
+      System.out.println("SRP verification has failed...");
+      System.out.println("Exiting now...");
+      return;
+    }
+
+
     UserToken token = groupClient.getToken(username);
 
     // Check to make sure token exists
@@ -87,27 +163,28 @@ class ClientApp {
       for(int i=0; i<groupsBelongedTo.size(); i++)
       System.out.println(i + ") " + groupsBelongedTo.get(i));
 
+      // TODO: Support selection of multiple groups at once for operation
       // Select a group
-      System.out.print("Please select a group you wish to access ('q' to quit, 'r' to refresh, 'c' to create a new group) >> ");
+      System.out.print("Please select a group you wish to access ('q' to quit, 'c' to create a new group) >> ");
       String selection = console.next();
       if(selection.equals("q")) {
         selectGroup = false;
         break;
       } else if(selection.equals("c")) {
         createGroup(token);
-        updateConnection(groupClient, groupHost, GROUP_PORT);
+        //updateConnection(groupClient, groupHost, GROUP_PORT);
         continue;
-      } else if(selection.equals("r")) {
-        updateConnection(groupClient, groupHost, GROUP_PORT);
-        updateConnection(fileClient, fileHost, FILE_PORT);
-        continue;
-      } 
+      // } else if(selection.equals("r")) {
+      //   updateConnection(groupClient, groupHost, GROUP_PORT);
+      //   updateConnection(fileClient, fileHost, FILE_PORT);
+      //   continue;
+      }
       String choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
 
       // Check if owner of selected group
       if(groupsOwned.contains(choice) && !isAdmin) {
-        System.out.println("Would you to perform owner actions? (y/n) >> ");
+        System.out.print("Would you to perform owner actions? (y/n) >> ");
         String response = console.next();
 
         // Wanna be a big boy?
@@ -129,12 +206,12 @@ class ClientApp {
       ownerList.add("Add user to group");
       ownerList.add("Remove user from group");
       ownerList.add("Delete group");
-      ArrayList<String> userList = new ArrayList<String>();
-      userList.add("List files");
-      userList.add("Upload files");
-      userList.add("Download files");
-      userList.add("Delete files");
-      userList.add("Create a group");
+      ArrayList<String> memberList = new ArrayList<String>();
+      memberList.add("List files");
+      memberList.add("Upload files");
+      memberList.add("Download files");
+      memberList.add("Delete files");
+      memberList.add("Create a group");
 
       boolean doAgain = true;
       while(doAgain) {   // main menu while loop
@@ -156,20 +233,20 @@ class ClientApp {
             System.out.println("a" + i + ") " + adminList.get(i));
           System.out.println("\n");
         }
-        //OWNER
+        // OWNER
         if(isOwner){
           System.out.println("Owner Ops:");
           for(int i = 0; i < ownerList.size(); i++)
             System.out.println("o" + i + ") " + ownerList.get(i));
           System.out.println("\n");
         }
-        //USER (options are always there for user level)
+        // USER (options are always there for user level)
         System.out.println("User Ops:");
-        for(int i = 0; i < userList.size(); i++)
-          System.out.println(i + ") " + userList.get(i));
+        for(int i = 0; i < memberList.size(); i++)
+          System.out.println(i + ") " + memberList.get(i));
         System.out.println("\n");
 
-        System.out.print("Please select an option ('q' to select a different group, 'r' to refresh) >> ");
+        System.out.print("Please select an option ('q' to select a different group) >> ");
         String response = console.next();
         switch(response) {
 
@@ -177,15 +254,15 @@ class ClientApp {
           // Create user
           case "a0":
             if(isAdmin) createUser(token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           // Delete user
           case "a1":
             if(isAdmin) deleteUser(token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           case "a2":
@@ -206,20 +283,20 @@ class ClientApp {
           // Add user to a group
           case "o1":
             if(isOwner) addUserToGroup(choice, token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Remove user from a group
           case "o2":
             if(isOwner) removeUserFromGroup(choice, token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
             break;
 
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             doAgain = false;
             break;
 
@@ -250,8 +327,8 @@ class ClientApp {
           case "4":
             // Create a group
             createGroup(token);
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
+            //updateConnection(groupClient, groupHost, GROUP_PORT);
+            //updateConnection(fileClient, fileHost, FILE_PORT);
             break;
 
           //quit
@@ -260,10 +337,10 @@ class ClientApp {
             break;
 
           //refresh
-          case "r":
-            updateConnection(groupClient, groupHost, GROUP_PORT);
-            updateConnection(fileClient, fileHost, FILE_PORT);
-            break;
+          // case "r":
+          //   updateConnection(groupClient, groupHost, GROUP_PORT);
+          //   updateConnection(fileClient, fileHost, FILE_PORT);
+          //   break;
 
           // Invalid choice
           default:
@@ -284,7 +361,21 @@ class ClientApp {
   private boolean createUser(UserToken myToken) {
     System.out.print("Username of the person you wish to create? >> ");
     String username = console.next();
-    boolean status = groupClient.createUser(username, myToken);
+
+    boolean match = false;
+    String pw1 = "";
+    String pw2;
+
+    while(!match) {
+      System.out.print("Password for this account? >> ");
+      pw1 = console.next();
+      System.out.print("Please enter the password again to confirm >> ");
+      pw2 = console.next();
+      if(pw1.equals(pw2)) match = true;
+    }
+
+
+    boolean status = groupClient.createUser(username, pw1, myToken);
     if(status)
       System.out.println("Successfully created user '" + username + "'\n");
     else
@@ -470,6 +561,10 @@ class ClientApp {
   private boolean createGroup(UserToken myToken) {
     System.out.print("Name of the group you wish to create? >> ");
     String group = console.next();
+    if(group.contains(":")){
+      System.out.println("Group name cannot contain colons. ");
+      return false;
+    }
     boolean status = groupClient.createGroup(group, myToken);
     if (status) {
       System.out.println("Successfully created group '" + group + "'\n");
@@ -497,6 +592,8 @@ class ClientApp {
     return status;
   }
 
+
+  // DEPRECATED -- no longer necessary since reconnect issue fixed
   /**
    * Resets the connection to the specified client with the given port
    * @param  Client client        Client object whose connection is to be reset
@@ -505,9 +602,10 @@ class ClientApp {
    */
   private boolean updateConnection(Client client, int port) {
     client.disconnect();
-    return client.connect("localhost", port, true);
+    return client.connect("127.0.0.1", port, true);
   }
 
+  // DEPRECATED -- no longer necessary since reconnect issue fixed
   /**
    * Resets the connection to the specified client with the given host and port
    * @param  client   Client object whose connection is to be reset

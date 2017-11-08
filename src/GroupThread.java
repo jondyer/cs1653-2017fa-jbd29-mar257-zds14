@@ -6,15 +6,44 @@ import java.net.Socket;
 import java.io.*;
 import java.util.List;
 import java.util.*;
+import java.math.BigInteger;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.security.*;
+import javax.crypto.spec.SecretKeySpec;
+import java.net.*;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.agreement.srp.SRP6Server;
+import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 
 public class GroupThread extends Thread {
   private final Socket socket;
   private GroupServer my_gs;
+  private SecretKey K;
+  private GCMParameterSpec spec;
+  private byte[] iv;
+
+  private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
+        + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
+        + "8E495C1D6089DAD15DC7D7B46154D6B6CE8EF4AD69B15D4982559B29"
+        + "7BCF1885C529F566660E57EC68EDBC3C05726CC02FD4CBF4976EAA9A"
+        + "FD5138FE8376435B9FC61D2FC0EB06E3"));
+  private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("000001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+          "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
 
   public GroupThread(Socket _socket, GroupServer _gs) {
     socket = _socket;
     my_gs = _gs;
   }
+
+
+  // TODO: Encrypt/Decrypt EVERYTHING (AES/GCM/NoPadding)
 
   public void run() {
     boolean proceed = true;
@@ -24,37 +53,14 @@ public class GroupThread extends Thread {
       System.out.println("*** New connection from " + socket.getInetAddress() + ":" + socket.getPort() + "***");
       final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
       final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+      byte[] c1 = new byte[12]; // Challenge to be looked at in CHAL
 
       do {
         Envelope message = (Envelope)input.readObject();
         System.out.println("Request received: " + message.getMessage());
         Envelope response = new Envelope("FAIL");
 
-        if(message.getMessage().equals("GET")) { //Client wants a token
-          String username = (String)message.getObjContents().get(0); //Get the username
-          if(username == null) {
-            response = new Envelope("FAIL");
-            response.addObject(null);
-            output.writeObject(response);
-          } else if(message.getObjContents().size() > 1) {  // this is for partial tokens
-            String groupname = (String)message.getObjContents().get(1);
-            UserToken yourToken = createToken(username, groupname); //Create a token with the specified group
-
-            if(yourToken != null)
-              //Respond to the client. On error, the client will receive a null token
-              response = new Envelope("OK");
-            response.addObject(yourToken);
-            output.writeObject(response);
-          } else {
-            UserToken yourToken = createToken(username); //Create a token
-
-            //Respond to the client. On error, the client will receive a null token
-            response = new Envelope("OK");
-            response.addObject(yourToken);
-            output.writeObject(response);
-          }
-        }
-        else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
+        if (message.getMessage().equals("SRP")) {
           if(message.getObjContents().size() < 2)
             response = new Envelope("FAIL");
           else {
@@ -63,9 +69,116 @@ public class GroupThread extends Thread {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
                 String username = (String)message.getObjContents().get(0); //Extract the username
-                UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+                BigInteger A = (BigInteger)message.getObjContents().get(1); //Extract the public key from the client
+                BigInteger B = genSessionKey(username, A);
+                SecureRandom random = new SecureRandom();
 
-                if(createUser(username, yourToken)){
+                random.nextBytes(c1); // 96 bit challenge
+
+                if (B != null) {
+                  response = new Envelope("OK");
+                  response.addObject(B);
+                  response.addObject(c1);
+                  output.writeObject(response);
+                }
+              }
+            }
+          }
+        } else if(message.getMessage().equals("SALT")) {
+          if(message.getObjContents().size() < 1)
+            response = new Envelope("FAIL");
+          else {
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().get(0) != null) {
+              String username = (String)message.getObjContents().get(0); //Extract the username
+
+              response.addObject(my_gs.userList.getSalt(username));
+            }
+          }
+          output.writeObject(response);
+        } else if(message.getMessage().equals("CHAL")) {
+          if(message.getObjContents().size() < 3)
+            response = new Envelope("FAIL");
+          else {
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().get(0) != null) {
+              byte[] iv = (byte[])message.getObjContents().get(0);
+              byte[] c1Cipher = (byte[])message.getObjContents().get(1);
+              byte[] c2 = (byte[])message.getObjContents().get(2);
+
+              byte[] c1_dec = SymmetricKeyOps.decrypt(c1Cipher, K, iv);
+              if(!Arrays.equals(c1, c1_dec)) {
+                output.writeObject(response);
+                System.out.println("Error: Challenge did not match!");
+                //System.exit(0);
+              }
+
+              GCMParameterSpec gcm = SymmetricKeyOps.getGCM();
+              response = new Envelope("OK");
+              response.addObject(gcm.getIV());
+              response.addObject(SymmetricKeyOps.encrypt(c2, K, gcm));
+              output.writeObject(response);
+            }
+          }
+        } else if(message.getMessage().equals("GET")) { //Client wants a token
+          iv = (byte[])message.getObjContents().get(0);   // Get the IV
+          spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+          byte[] namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec); //Decrypt the username
+          String username;
+          username = new String(namebytes); //Convert to String
+
+          if(username == null) {
+            response = new Envelope("FAIL");
+            response.addObject(null);
+            output.writeObject(response);
+          } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
+            String groupname;
+            namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec); //Decrypt the groupname
+            groupname = new String(namebytes); //Convert to String
+            UserToken yourToken = createToken(username, groupname); //Create a token with the specified group
+
+            if(yourToken != null) {
+              //Respond to the client. On error, the client will receive a null token
+              response = new Envelope("OK");
+              spec = SymmetricKeyOps.getGCM();
+              response.addObject(spec.getIV());
+              response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
+              response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+            }
+
+            output.writeObject(response);
+          } else {
+            UserToken yourToken = createToken(username); //Create a token
+
+            //Respond to the client. On error, the client will receive a null token
+            response = new Envelope("OK");
+            spec = SymmetricKeyOps.getGCM();
+            response.addObject(spec.getIV());
+            response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
+            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+            output.writeObject(response);
+          }
+        } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
+          if(message.getObjContents().size() < 4)
+            response = new Envelope("FAIL");
+          else {
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().get(0) != null) {
+              if(message.getObjContents().get(1) != null) {
+                iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                String username = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
+
+                byte[] salt = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec); // Extract the salt
+                BigInteger password = new BigInteger(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); //Extract the password
+                UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec)); //Extract the token
+
+
+                if(createUser(username, salt, password, yourToken)){
                   response = new Envelope("OK"); //Success
                 }
               }
@@ -77,8 +190,11 @@ public class GroupThread extends Thread {
           if(message.getObjContents().size() >= 2) {
             if(message.getObjContents().get(0) != null)	{
               if(message.getObjContents().get(1) != null)	{
-                String username = (String)message.getObjContents().get(0); //Extract the username
-                UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+                iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                String username = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
+                UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
                 if(deleteUser(username, yourToken))
                   response = new Envelope("OK"); //Success
@@ -91,8 +207,12 @@ public class GroupThread extends Thread {
           if(message.getObjContents().size() >= 2) {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
-                String groupName = (String) message.getObjContents().get(0); //Extract the group name
-                UserToken yourToken = (UserToken) message.getObjContents().get(1); //Extract the token
+                iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
+                UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
+
                 if(createGroup(groupName, yourToken))
                   response = new Envelope("OK"); //Success
               }
@@ -105,8 +225,11 @@ public class GroupThread extends Thread {
             if(message.getObjContents().size() >= 2) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
-                  String groupName = (String)message.getObjContents().get(0); //Extract the groupName
-                  UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+                  iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                  spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                  String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
+                  UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
                   if(deleteGroup(groupName, yourToken)) {
                     response = new Envelope("OK"); //Success
@@ -122,13 +245,19 @@ public class GroupThread extends Thread {
             if(message.getObjContents().size() >= 2) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
-                  String groupName = (String)message.getObjContents().get(0); //Extract the groupName
-                  UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+                  iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                  spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                  String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
+                  UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
                   List<String> members = listMembers(groupName, yourToken);
                   if(members.size() > 0) {
                     response = new Envelope("OK"); //Success
-                    response.addObject(members);
+
+                    spec = SymmetricKeyOps.getGCM();
+                    response.addObject(spec.getIV());
+                	  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(members), K, spec));  // add encrypted list
                   }
                 }
               }
@@ -141,13 +270,19 @@ public class GroupThread extends Thread {
             if(message.getObjContents().size() >= 2) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
-                  String userName = (String)message.getObjContents().get(0); //Extract the userName
-                  UserToken yourToken = (UserToken)message.getObjContents().get(1); //Extract the token
+                  iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                  spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                  String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the username
+                  UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); //Extract the token
 
                   List<List<String>> resp = listGroups(userName, yourToken);
 
+
                   response = new Envelope("OK"); //Success
-                  response.addObject(resp);
+                  spec = SymmetricKeyOps.getGCM();
+                  response.addObject(spec.getIV());
+                  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(resp), K, spec));  // add encrypted token array
                 }
               }
             }
@@ -158,27 +293,38 @@ public class GroupThread extends Thread {
 
             if(message.getObjContents().size() >= 1) {
               if(message.getObjContents().get(0) != null) {
-                UserToken yourToken = (UserToken)message.getObjContents().get(0); //Extract the token
+                iv = (byte[])message.getObjContents().get(0);   // Get the IV
+                spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+
+                UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); //Extract the token
 
                 List<String> groups = listAllGroups(yourToken);
-                if (groups != null)
+                if (groups != null) {
                   response = new Envelope("OK"); //Success
-                response.addObject(groups);
+
+                  spec = SymmetricKeyOps.getGCM();
+                  response.addObject(spec.getIV());
+                  response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(groups), K, spec));  // add encrypted token array
+                }
               }
             }
 
           output.writeObject(response);
-        } else if(message.getMessage().equals("LAUSERS")) { //Client wants a list of all groups
+        } else if(message.getMessage().equals("LAUSERS")) { //Client wants a list of all users
             response = new Envelope("FAIL");
 
             if(message.getObjContents().size() >= 1) {
               if(message.getObjContents().get(0) != null) {
-                UserToken yourToken = (UserToken)message.getObjContents().get(0); //Extract the token
+                spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the token
 
                 List<String> users = listAllUsers(yourToken);
+                spec = SymmetricKeyOps.getGCM();
+                byte[] encUsers = SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(users), K, spec);
                 if (users != null)
-                  response = new Envelope("OK"); //Success
-                response.addObject(users);
+                  response = new Envelope("OK"); //Succes
+                response.addObject(spec.getIV());
+                response.addObject(encUsers);
               }
             }
 
@@ -186,37 +332,43 @@ public class GroupThread extends Thread {
         } else if(message.getMessage().equals("AUSERTOGROUP")) {//Client wants to add user to a group
           response = new Envelope("FAIL");
 
-          if(message.getObjContents().size() >= 3) {
+          if(message.getObjContents().size() >= 4) {
             if(message.getObjContents().get(0) != null) {
               if(message.getObjContents().get(1) != null) {
                 if(message.getObjContents().get(2) != null) {
-                String userName = (String)message.getObjContents().get(0); //Extract the username
-                String groupName = (String)message.getObjContents().get(1); //Extract the groupName
-                UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
+                  if(message.getObjContents().get(3) != null) {
+                    spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                    String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
+                    String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
+                    UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
 
-                if(addUserToGroup(userName, groupName, yourToken))
-                  response = new Envelope("OK"); //Success
-                } // missing token
-              } // missing groupName
-            } // missing userName
+                    if(addUserToGroup(userName, groupName, yourToken))
+                    response = new Envelope("OK"); //Success
+                  } // missing token
+                } // missing groupName
+              } // missing userName
+            } // missing iv
           } // missing something!
           output.writeObject(response);
         } else if(message.getMessage().equals("RUSERFROMGROUP")) {//Client wants to remove user from a group
             response = new Envelope("FAIL");
 
-            if(message.getObjContents().size() >= 3) {
+            if(message.getObjContents().size() >= 4) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
                   if(message.getObjContents().get(2) != null) {
-                  String userName = (String)message.getObjContents().get(0); //Extract the username
-                  String groupName = (String)message.getObjContents().get(1); //Extract the groupName
-                  UserToken yourToken = (UserToken)message.getObjContents().get(2); //Extract the token
+                    if(message.getObjContents().get(3) != null) {
+                      spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                      String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
+                      String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
+                      UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
 
-                  if(deleteUserFromGroup(userName, groupName, yourToken))
-                    response = new Envelope("OK"); //Success
-                  } // missing token
-                } // missing groupName
-              } // missing userName
+                      if(deleteUserFromGroup(userName, groupName, yourToken))
+                      response = new Envelope("OK"); //Success
+                    } // missing token
+                  } // missing groupName
+                } // missing userName
+              } // missing iv
             } // missing something!
             output.writeObject(response);
         } else if(message.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
@@ -227,6 +379,12 @@ public class GroupThread extends Thread {
           output.writeObject(response);
         }
       } while(proceed);
+    }
+    catch(EOFException ex){
+
+    }
+    catch(SocketException ex){
+
     }
     catch(Exception e) {
       System.err.println("Error: " + e.getMessage());
@@ -258,9 +416,30 @@ public class GroupThread extends Thread {
     return null;
   }
 
+  private BigInteger genSessionKey(String user, BigInteger A) {
+    Security.addProvider(new BouncyCastleProvider());
+
+    BigInteger B = null;
+    BigInteger S = null;
+
+    SRP6Server server = new SRP6Server();
+
+    server.init(N_1024, g_1024, my_gs.userList.getPass(user), new SHA256Digest(), new SecureRandom());
+    B = server.generateServerCredentials();
+
+    try {
+      S = server.calculateSecret(A);
+    } catch (CryptoException cry) {
+      System.out.println(cry.getMessage());
+    }
+
+    K = new SecretKeySpec(S.toByteArray(), 0, 16, "AES");
+
+    return B;
+  }
 
   //Method to create a user
-  private boolean createUser(String username, UserToken yourToken) {
+  private boolean createUser(String username, byte[] salt, BigInteger password, UserToken yourToken) {
     String requester = yourToken.getSubject();
 
     //Check if requester exists
@@ -273,7 +452,7 @@ public class GroupThread extends Thread {
         if(my_gs.userList.checkUser(username))
           return false; //User already exists
         else {
-          my_gs.userList.addUser(username);
+          my_gs.userList.addUser(username, salt, password);
           return true;
         }
       }else return false; //requester not an administrator

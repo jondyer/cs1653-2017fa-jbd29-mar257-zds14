@@ -1,0 +1,11 @@
+@startuml
+title __Register a Server with Trent__
+participant FS
+participant Trent
+
+FS -> FS: Generate public, private \nkey pair k<sub>FSX</sub>, k<sub>FSX</sub><sup>-1</sup>
+
+FS -> Trent: Register || <port, k<sub>FSX</sub>>
+Trent -> Trent: Store IP, port, k<sub>FSX</sub>\nconcatenated, hashed \nand signed
+Trent -> FS: OK
+@enduml

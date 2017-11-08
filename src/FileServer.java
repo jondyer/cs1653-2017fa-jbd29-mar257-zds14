@@ -9,10 +9,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import javax.crypto.*;
+import java.security.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class FileServer extends Server {
 
 	public static final int SERVER_PORT = 4321;
+	public static int TRENT_PORT = 4444;
+	public static String TRENT_IP = "127.0.0.1";
 	public static FileList fileList;
 
 	public FileServer() {
@@ -23,7 +28,16 @@ public class FileServer extends Server {
 		super(_port, "FilePile");
 	}
 
-	public void start() {
+
+  public void start(String[] args) {
+    // Overwrote server.start() because if no user file exists, initial admin account needs to be created
+    if(args.length >= 2)      // just the Trent IP
+      TRENT_IP = args[1];
+    if(args.length >= 3)      // IP and port
+      TRENT_PORT = Integer.parseInt(args[2]);
+
+    registerServer(TRENT_IP, TRENT_PORT);
+
 		String fileFile = "FileList.bin";
 		ObjectInputStream fileStream;
 
@@ -39,11 +53,8 @@ public class FileServer extends Server {
 			fileList = (FileList)fileStream.readObject();
 		} catch(FileNotFoundException e) {
 			System.out.println("FileList Does Not Exist. Creating FileList...");
-
 			fileList = new FileList();
-
-		}
-		catch(IOException e) {
+		} catch(IOException e) {
 			System.out.println("Error reading from FileList file");
 			System.exit(-1);
 		}
@@ -79,7 +90,7 @@ public class FileServer extends Server {
 
 			while(running) {
 				sock = serverSock.accept();
-				thread = new FileThread(sock);
+				thread = new FileThread(sock, this);
 				thread.start();
 			}
 
@@ -92,7 +103,7 @@ public class FileServer extends Server {
 	}
 }
 
-//This thread saves user and group lists
+//This thread saves the file list
 class ShutDownListenerFS implements Runnable {
 
 	public void run() {

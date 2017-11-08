@@ -1,0 +1,28 @@
+@startuml
+title __T1: Unauthorized Token Issuance__
+actor Bob
+
+Bob <--> GroupServer: Setup: Share weak secret W = H(salt || password)
+note right: Store〈 Bob, g<sup>W</sup> mod p, salt 〉
+|||
+Bob -> GroupServer: Bob, SRP
+GroupServer -> Bob: salt
+Bob -> GroupServer: Bob, g<sup>b</sup> mod p 
+note left: Choose random b
+note right
+	Choose random s
+	Choose challenge C<sub>1</sub>
+	Choose 32-bit number u
+	K<sub>GB</sub> = g<sup>s(b + uW)</sup> mod p
+end note
+
+GroupServer -> Bob: (g<sup>s</sup> + g<sup>W</sup>) mod p, C<sub>1</sub>
+note left
+	Choose challenge C<sub>2</sub>
+	K<sub>GB</sub> = g<sup>s(b + uW)</sup> mod p
+end note
+Bob -> GroupServer: {C<sub>1</sub>}K<sub>GB</sub>, C<sub>2</sub>
+note right: Bob is authenticated to the server
+GroupServer -> Bob: {C<sub>2</sub>}K<sub>GB</sub>
+note left: The group server is authenticated to Bob
+@enduml
