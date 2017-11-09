@@ -166,7 +166,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 }
 
 		/**
-		* Overloaded method for retrieving partial tokens (for group-specific operations
+		* Overloaded method for retrieving partial tokens (for group-specific operations)
 		* @param  String username      Owner of the token
 		* @param  String groupname     The group they want to operate in
 		* @return        The newly constructed partial token

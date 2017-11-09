@@ -193,7 +193,8 @@ class ClientApp {
       } else if (groupsOwned.contains(choice) && isAdmin)
           isOwner = true;
 
-
+      // update token --> retrieve new partial token!!!
+      token = groupClient.getToken(username,choice);
 
       // Compile List of privileges for each level of usage
       ArrayList<String> adminList = new ArrayList<String>();

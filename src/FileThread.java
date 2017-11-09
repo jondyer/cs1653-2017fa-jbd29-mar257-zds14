@@ -145,6 +145,8 @@ public class FileThread extends Thread {
 								response = new Envelope("FAIL-FILEEXISTS"); //Success
 							}
 							else if (!yourToken.getGroups().contains(group)) {
+								for (String i : yourToken.getGroups())
+									System.out.println("Group = " + i);
 								System.out.printf("Error: user missing valid token for group %s\n", group);
 								response = new Envelope("FAIL-UNAUTHORIZED"); //Success
 							}

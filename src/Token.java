@@ -36,7 +36,8 @@ public class Token implements UserToken, java.io.Serializable {
     }
 
     public List<String> getGroups() {
-      return groups;
+      List<String> gr = new ArrayList<String>(groups);
+      return gr;
     }
 
     public void addGroup(String group) {
