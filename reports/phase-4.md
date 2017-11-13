@@ -7,8 +7,11 @@ We use a variety of techniques and protocols to address the given threat models 
 
 *   Protocols:
 
-*   Tools and Algorithms:
 
+*   Tools and Algorithms:
+  <!-- RSA-2048
+  AES-128
+  GCM & GMAC -->
 *   Bonus:  
 
 ## Threat Models ##
@@ -23,7 +26,10 @@ We took steps in the previous phase of the project to defend against these threa
 This threat has to do with a file server unintentionally leaking files to a third party, who may be unauthorized to view the file contents. This is obviously quite problematic and not desirable, because we don't want unauthorized person(s) being able to see file contents of a group they do not belong to.
 
 To address this threat, we chose to encrypt every file on the file server using symmetric 128-bit AES keys. Keys will exist on a group-basis, meaning every group has a single key to decrypt its files. This key will be shared among members of the group only, so that only an authorized member of the group can access a file. The file server will not store said key or know about each group's key, since they are largely untrusted. If a file server were to store these keys, all files could be compromised if the file server leaked these keys. Should a group change - i.e. a member is added or removed, the symmetric key will be rotated to a fresh one and be available to all current members. This is to ensure that a new member may access files once he/she joins and that no previous member can still access group files.
-### T7: Token Theft ###
 
+### T7: Token Theft ###
+<!-- - A token currently contains information about its subject
+- When verifying a token, need to bind/auth subject of token to user's identity
+- "ensuring that any stolen tokens are usable only on the server at which the theft took place" ???? -->
 
 ## Summary ##
