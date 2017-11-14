@@ -38,11 +38,13 @@ Managing and distributing these group keys is a task that can easily be carried 
     3.  Something else, maybe check the slides for threshold/group crypto protocols....????????
 
 ### T7: Token Theft ###
-<!-- - A token currently contains information about its subject
-- When verifying a token, need to bind/auth subject of token to user's identity
-- "ensuring that any stolen tokens are usable only on the server at which the theft took place" ???? -->
-This threat deals with file servers stealing tokens and attempting to pass them on to another user. This other user may be able to use this token to gain access to a group and its files on another file server. In a given user session, the user can only connect to a single file server, where upon startup the server's address is specified (or defaulted to localhost). In order to connect to a different file server, the user will need to start a new session and specify the new server he/she wishes to connect to.
+This threat deals with file servers stealing tokens and attempting to pass them on to another user. This other user may be able to use this token to gain access to a group and its files on another file server. In a given user session, the user can only connect to a single file server, where upon startup the server's address is specified (or defaults to localhost if none is entered). In order to connect to a different file server, the user would have to start a new session and specify the new server he/she wishes to connect to, it is not possible to change this during a session.
 
-Using this setup, our solution to this threat was to make a token valid only for the current session and server. If the token is tied to the current session - and also current file server, the token would be non-transferable to any other session or file server. We will do this by adding fields to the token - the address of the file server being used and a timestamp when the token is created. This way, when connecting to the file server we can match the address on the token to the file server, and make sure the timestamp is within a certain window to make sure it is still fresh. The tokens are still being signed by the GroupServer, so any modifications to a token will invalidate it.
+Using this setup, our solution to this threat was to make a token valid only for the current session and file server. Binding the token itself to the current session and selected file server will make it non-transferable to another session or server. We will do this by adding fields to the token itself- the address (IP address & port) of the file server being used and a timestamp of when the token is created. The GroupServer will use the specified file server address from the user and the current time to create the token (along with all other required information to create a token) and then sign it.  
+This way, when connecting to the file server:
+- We can match the address on the token to the file server's address (IP Address and Port #) to ensure that it is not being used on a different server.
+- We can make sure the timestamp is within a safe window of the current time to ensure its freshness, and that it is not being reused by someone else at a later time.
+
+This process does not interfere with measures put forth to counter threat model T2. Users still cannot modify tokens to enhance their privileges, we are simply expanding information stored in the token. The tokens are still being signed by the GroupServer after its creation, so any modifications to a token will invalidate it. The GroupServer's public key will still available to any third party so that they can verify any token for its validity.
 
 ## Summary ##
