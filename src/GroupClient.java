@@ -337,7 +337,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 				output.writeObject(message);
 
-
+				// TODO: Send signed hash with token
 
 				response = (Envelope)input.readObject();
 

@@ -1,0 +1,9 @@
+@startuml
+title __Remove User__
+actor Bob
+participant GS
+
+Bob -> GS: RUSERFROMGROUP || IV || {UserName || \nGroupName || pToken || [H(pToken)]k<sub>G</sub><sup>-1</sup>}K<sub>GB</sub>
+GS -> GS: H<sup>--c</sup>(K<sub>Gn</sub>) \nStore <GroupName, K<sub>Gn</sub>, c, H<sup>c</sup>(K<sub>Gn</sub>)>
+GS -> Bob: {c || H<sup>c</sup>(K<sub>Gn</sub>)}K<sub>GB</sub>
+@enduml
