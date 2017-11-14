@@ -6,8 +6,6 @@ This phase of the project is the second stage of hardening our Galactic File-Hos
 We use a variety of techniques and protocols to address the given threat models and keep our system secure. These are specified herewith, along with reasoning and justification for each. We also implemented a trusted public key infrastructure, called Trent. This server provides public keys for registered file servers. Trent's public key serves as a trust anchor.
 
 *   Protocols:
-
-
 *   Tools and Algorithms:
   <!-- RSA-2048
   AES-128
@@ -35,7 +33,7 @@ Managing and distributing these group keys is a task that can easily be carried 
 -   When groups change, that change is recorded and dealt with by the GroupServer already, so it will be straightforward to have the GroupServer simply stop issuing group-keys to removed members, and start issuing them to new members.  
 
 ^^^ Needs revised: One of a few things needs to happen  
-    1.  The GroupServer needs to find a way to **change** the group-key any time group membership changes, which is not feasible because then all previously encrypted files need to be found and reencrypted with the new key.
+    1.  The GroupServer needs to find a way to **change** the group-key any time group membership changes, which is not feasible because then all previously encrypted files need to be found and re-encrypted with the new key.
     2.  We need a means of keeping the user *and* the fileserver from ever actually having free access to the group-key, possibly by incorporating it into the Token somehow?
     3.  Something else, maybe check the slides for threshold/group crypto protocols....????????
 
@@ -43,5 +41,8 @@ Managing and distributing these group keys is a task that can easily be carried 
 <!-- - A token currently contains information about its subject
 - When verifying a token, need to bind/auth subject of token to user's identity
 - "ensuring that any stolen tokens are usable only on the server at which the theft took place" ???? -->
+This threat deals with file servers stealing tokens and attempting to pass them on to another user. This other user may be able to use this token to gain access to a group and its files on another file server. In a given user session, the user can only connect to a single file server, where upon startup the server's address is specified (or defaulted to localhost). In order to connect to a different file server, the user will need to start a new session and specify the new server he/she wishes to connect to.
+
+Using this setup, our solution to this threat was to make a token valid only for the current session and server. If the token is tied to the current session - and also current file server, the token would be non-transferable to any other session or file server. We will do this by adding fields to the token - the address of the file server being used and a timestamp when the token is created. This way, when connecting to the file server we can match the address on the token to the file server, and make sure the timestamp is within a certain window to make sure it is still fresh. The tokens are still being signed by the GroupServer, so any modifications to a token will invalidate it.
 
 ## Summary ##
