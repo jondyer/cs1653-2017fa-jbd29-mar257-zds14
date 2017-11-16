@@ -6,11 +6,12 @@ This phase of the project is the second stage of hardening our Galactic File-Hos
 We use a variety of techniques and protocols to address the given threat models and keep our system secure. These are specified herewith, along with reasoning and justification for each. We also implemented a trusted public key infrastructure, called Trent. This server provides public keys for registered file servers. Trent's public key serves as a trust anchor.
 
 *   Protocols:
-
+Leslie Lamport OTP style
 
 *   Tools and Algorithms:
   <!-- RSA-2048
   AES-128
+  SHA 256
   GCM & GMAC -->
 *   Bonus:  
 
@@ -49,3 +50,6 @@ This way, when connecting to the file server:
 This process does not interfere with measures put forth to counter threat model T2. Users still cannot modify tokens to enhance their privileges, we are simply expanding information stored in the token. The tokens are still being signed by the GroupServer after its creation, so any modifications to a token will invalidate it. The GroupServer's public key will still available to any third party so that they can verify any token for its validity.
 
 ## Summary ##
+Interplay between mechanisms
+Design process
+T1-T4 still valid
