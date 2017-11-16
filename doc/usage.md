@@ -4,11 +4,11 @@
 
 To start the Trent:
 -   Enter the `src` directory containing **RunTrentServer.class**
--   Type `java -cp .:bcprov-jdk15on-158.jar RunGroupServer [port number]`
+-   Type `java -cp .:bcprov-jdk15on-158.jar RunTrentServer [port number]`
 
 Note that the port number argument to **RunTrentServer** is optional.  This argument specifies the port that the Trent will listen to.  If unspecified, it defaults to port 4444.  Trent must either run on his own machine or all servers must run on the same machine (allowed for testing purposes).
 
-When the Trent is first started, there are no users or groups. Trent should be the first server of the group that is started. If other servers start first, they won't be able to regster their public keys with Trent. 
+When the Trent is first started, there are no users or groups. Trent should be the first server of the group that is started. If other servers start first, they won't be able to regster their public keys with Trent.
 
 ## Running the Group Server ##
 
@@ -16,7 +16,7 @@ To start the Group Server:
 -   Enter the `src` directory containing **RunGroupServer.class**
 -   Type `java -cp .:bcprov-jdk15on-158.jar RunGroupServer [port number] [Trent_IP] [Trent_Port]`
 
-Note that the arguments to **RunGroupServer** are optional.  The first argument specifies the port that the Group Server will listen to.  If unspecified, it defaults to port 8765 and it is assumed that Trent is on the "localhost" at port 4444. You may also enter Trent's actual IP and port if he is not located locally. This allows the server to register its public key with Trent. 
+Note that the arguments to **RunGroupServer** are optional.  The first argument specifies the port that the Group Server will listen to.  If unspecified, it defaults to port 8765 and it is assumed that Trent is on the "localhost" at port 4444. You may also enter Trent's actual IP and port if he is not located locally. This allows the server to register its public key with Trent.
 
 When the group server is first started, there are no users or groups. Since there must be an administer of the system, the user is prompted via the console to enter a username. This name becomes the first user and is a member of the *ADMIN* group.  No groups other than *ADMIN* will exist.  
 
@@ -75,6 +75,6 @@ If the user would like to switch to operate on a different group they can enter 
 
 ## Resetting the Group or File Server ##
 
-To reset the Group Server, delete the file 'ServerList.bin' and any assosciated KeyPair files. 
+To reset the Group Server, delete the file 'ServerList.bin' and any assosciated KeyPair files.
 To reset the Group Server, delete the files 'UserList.bin' and 'GroupList.bin' and any assosciated KeyPair files.  
 To reset a File Server, delete the 'FileList.bin' file and the 'shared_files/' directory and any assosciated KeyPair files.  
