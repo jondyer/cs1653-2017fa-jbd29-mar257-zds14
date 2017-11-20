@@ -68,6 +68,10 @@ public class GroupList implements java.io.Serializable {
       return list.get(group).getHashNum();
     }
 
+    public synchronized void updateKey(String group) {
+      list.get(group).updateKey();
+    }
+
 
     /**
      * Inner class to facilitate GroupList functions and features

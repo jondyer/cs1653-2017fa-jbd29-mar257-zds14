@@ -527,6 +527,7 @@ class ClientApp {
     // Pick new filename
     System.out.print("Name of the destination file? >> ");
     String destinationFilename = console.next();
+    // TODO: Encrypt file before upload
     boolean status = fileClient.upload(sourceFile, destinationFilename, group, myToken);
     if(status)
       System.out.println("Successfully uploaded file '" + sourceFile + "'\n");
@@ -541,6 +542,7 @@ class ClientApp {
    * @return           Sucess of operation.
    */
   private boolean downloadFile(UserToken myToken){
+    // TODO: Decrypt file with GroupKey
     System.out.print("What file do you want to download? >> ");
     String sourceFile = console.next();
     System.out.print("What do you want to save it as? >> ");

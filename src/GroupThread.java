@@ -388,8 +388,10 @@ public class GroupThread extends Thread {
                       byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
                       if(!verifyToken((Token) yourToken, signedHash))
                         response = new Envelope("FAIL");
-                      else if(deleteUserFromGroup(userName, groupName, yourToken))
-                      response = new Envelope("OK"); //Success
+                      else if(deleteUserFromGroup(userName, groupName, yourToken)) {
+                        response = new Envelope("OK"); //Success
+                        my_gs.groupList.updateKey(groupName);
+                      }
                     } // missing token
                   } // missing groupName
                 } // missing userName
