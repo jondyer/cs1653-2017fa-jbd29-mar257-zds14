@@ -9,10 +9,9 @@ We use a variety of techniques and protocols to address the given threat models 
 Leslie Lamport OTP style
 
 *   Tools and Algorithms:
-  <!-- RSA-2048
-  AES-128
-  SHA 256
-  GCM & GMAC -->
+-   AES (128-bit) -- We chose AES because it is the *de facto* standard for quick and secure symmetric key encryption according to NIST. The 128-bit version is projected to be secure for a number of years, and provides for the time being essentially the same security as larger key sizes.<sup id="a3">[3](#f3)</sup>  We use AES with Galois/Counter Mode (GCM), which conveniently allows to both encrypt *and* authenticate in the same go. This allows us to detect errors or tampering with the ciphertext in some more secure way than just getting garbage when we decrypt. We can also add data to the AAD field to protect from additional active attackers. We chose to forgo any message padding for the time being to eliminate confusion and keep things simple.
+-   SHA-256 -- We chose SHA-256 because it is recommended for a variety of applications by NIST <sup id="a5">[5](#f5)</sup>. This is used for: validating user passwords on the GroupServer, hashing user Tokens in order to verify their origin, and for establishing group symmetric keys for encrypting files. When using it to hash passwords we include a salt to inhibit brute-force attacks. Details are in sections T1 and T2, respectively.
+-   RSA-2048 -- We use RSA signatures to guarantee the validity of a token and to sign public keys issued by Trent. RSA-2048 is approved by NIST for generation/verification of digital signatures and keys,<sup id="a4">[4](#f4)</sup> which is exactly what we are using it for.  
 *   Bonus:  
 
 ## Threat Models ##
@@ -21,9 +20,8 @@ This threat has to do with the constant potential threat of a man in the middle 
 
 We took steps in the previous phase of the project to defend against these threats. Firstly, we authenticate each requested server to the user by signing essential messages in the D-H exchange using the server's private key. Only the server has access to that key, so if a malicious party poses as that server then its messages won't be verified. Even if an attacker intercepts and resends an old response from the server, they won't have access to either party's private D-H number, and thus will not be able to figure out the symmetric key.  
 
-Further, we encrypted all communications (not including public keys) with 128-bit AES keys, operating in Galois-Counter-Mode (GCM). GCM includes built-in authentication tags that are tamper evident. Should any part of the message be modified, the ciphertext will no longer match the tag, and in this way we know that the message has been modified. We will also expand the tag's AAD (Additional Authenticated Data) field to include a timestamp to defend from replay attacks. This field is also validated using the GCM tag, even though it is not encrypted. Looking at the timestamp, we can distinguish between a fresh message and an old one that is being resent from a MiTM and therefore prevent this message from being accepted if it is not legitimate.
+Further, we encrypted all communications (not including public keys) with 128-bit AES keys, operating in Galois-Counter-Mode (GCM). GCM includes built-in authentication tags that are tamper evident. Should any part of the message be modified, the ciphertext will no longer match the tag, and in this way we know that the message has been modified. We will also expand the tag's AAD (Additional Authenticated Data) field to include a timestamp and sequence number to defend from replay and reorder attacks. This field is also validated using the GCM tag, even though it is not encrypted. Looking at the timestamp, we can distinguish between a fresh message and an old one that is being resent from a MiTM and therefore prevent this message from being accepted if it is not legitimate. The added sequence number can be used to distinguish the order of each message (1, 2, 3, 4...) so that they cannot be reordered by a MiTM.
 
-^^^ Missing: Reorder attack
 
 ### T6: File Leakage ###
 This threat has to do with a file server unintentionally (or intentionally) leaking files to a third party, who may be unauthorized to view the file contents. This is obviously quite problematic and not desirable, because we don't want unauthorized person(s) being able to see file contents of a group they do not belong to.
@@ -39,10 +37,19 @@ Managing and distributing these group keys is a task that can easily be carried 
 
 We chose to base our key update mechanism off of the Leslie Lamport OTP scheme. This will allow us to easily update keys without having to batch re-encrypt all files. When a group is created, the group server will generate a 128-bit AES key and hash that key 1000 times. The server will store the original key, the current hash number, and the current key. When a user is removed from a group, the group server will decrement the hash number and update the current key. All new or updated material will be encrypted with this new key. If a user wishes to decrypt a file they simply take the difference between the hash number associated with the file and the current hash number. They then hash the current key that number of times. This ensures forward secrecy while allowing for backward compatibility.  
 
+Creating a Group
+
+![Creating a Group](./img/T6_Create_Group.png)
+
+Removing a User
+
+![Removing a User](./img/T6_Remove_User.png)  
+
+
 ### T7: Token Theft ###
 This threat deals with file servers stealing tokens and attempting to pass them on to another user. This other user may be able to use this token to gain access to a group and its files on another file server. In a given user session, the user can only connect to a single file server, where upon startup the server's address is specified (or defaults to localhost if none is entered). In order to connect to a different file server, the user would have to start a new session and specify the new server he/she wishes to connect to--it is not possible to change this during a session.
 
-Using this setup, our solution to this threat was to make a token valid only for the current session and file server. Binding the token itself to the current session and selected file server will make it non-transferable to another session or server. We will do this by adding fields to the token itself--the address (IP address & port) of the file server being used and a timestamp of when the token is created. The GroupServer will use the specified file server address from the user and the current time to create the token (along with all other required information to create a token) and then sign it.  
+Using this setup, our solution to this threat was to make a token valid only for the current session and file server. Binding the token itself to the current session and selected file server will make it non-transferable to another session or server. We will do this by adding fields to the token itself--the address (IP address:port) of the file server being used and a timestamp of when the token is created. The GroupServer will use the specified file server address from the user and the current time to create the token (along with all other required information to create a token) and then sign it.  
 This way, when connecting to the file server:
 -   We can match the address on the token to the file server's address (IP Address and Port #) to ensure that it is not being used on a different server.
 -   We can make sure the timestamp is within a safe window of the current time to ensure its freshness, and that it is not being reused by someone else at a later time.
