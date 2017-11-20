@@ -25,6 +25,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	private PublicKey groupServerPublicKey;
 	private GCMParameterSpec spec;
+	private SecretKey groupKey = null;
+	private int hashNum = -1;
 
 	// We selected group 21 a.k.a. group p-521 (elliptic curve) for our system
 	private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
@@ -535,33 +537,76 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 }
 
 	 public boolean deleteUserFromGroup(String username, String groupname, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to remove a user from the group
-				message = new Envelope("RUSERFROMGROUP");
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to remove a user from the group
+			message = new Envelope("RUSERFROMGROUP");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
 
-				response = (Envelope)input.readObject();
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
+			response = (Envelope)input.readObject();
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
 
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
-			}
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
 	 }
 
 	 public void setGroupPubKey(PublicKey pubKey) {
 		 this.groupServerPublicKey = pubKey;
 	 }
+
+	 public void getKeyAndHash(String username, String groupname, UserToken token) {
+
+	 	try {
+			Envelope message = null, response = null;
+			//Tell the server to remove a user from the group
+			message = new Envelope("GROUPKEY");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
+
+			response = (Envelope)input.readObject();
+			//If server indicates success, return true
+			if(!response.getMessage().equals("OK")) return;
+			ArrayList<Object> temp = response.getObjContents();
+			if(temp.size() != 3) return;
+			byte[] iv = (byte[])temp.get(0);
+			byte[] cipherText = (byte[])temp.get(1);
+			byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
+			groupKey = (SecretKey)(SymmetricKeyOps.byte2obj(decrypt));
+
+			cipherText = (byte[])temp.get(2);
+			decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv); 
+			hashNum = (int) (SymmetricKeyOps.byte2obj(decrypt));
+
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+		}
+
+	} 
+
+	public SecretKey getKey() {
+		return groupKey;
+	}
+
+	public int getHashNum() {
+		return hashNum;
+	}
 
 }

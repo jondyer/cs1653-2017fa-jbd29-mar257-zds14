@@ -1,6 +1,9 @@
 /** Allows easy access and enumeration of groups and their users */
 
 import java.util.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.security.*;
 
 public class GroupList implements java.io.Serializable {
 
@@ -57,6 +60,13 @@ public class GroupList implements java.io.Serializable {
       return true;
     }
 
+    public synchronized SecretKey getKey(String group) {
+      return list.get(group).getKey();
+    }
+
+    public synchronized int getHashNum(String group) {
+      return list.get(group).getHashNum();
+    }
 
 
     /**
@@ -67,11 +77,15 @@ public class GroupList implements java.io.Serializable {
     private static final long serialVersionUID = -6699986336399821572L;
     private ArrayList<String> users;
     private final String owner;
+    private SecretKey baseKey, currKey;
+    private static final int MAX_HASH = 1000;
+    private int currentHashNum = MAX_HASH + 1;
 
     public Group(String owner) {
       users = new ArrayList<String>();
       this.owner = owner;
       users.add(owner);
+      genKey();
     }
 
     public ArrayList<String> getUsers() {
@@ -94,6 +108,37 @@ public class GroupList implements java.io.Serializable {
         }
       }
       return false;
+    }
+
+    private void genKey() {
+      try{
+        KeyGenerator keyGenAES = KeyGenerator.getInstance("AES", "BC");
+        keyGenAES.init(128);
+
+        baseKey = keyGenAES.generateKey();
+        updateKey();
+      } catch(NoSuchAlgorithmException alg) {
+        System.out.println(alg.getMessage());
+      } catch(NoSuchProviderException prov) {
+        System.out.println(prov.getMessage());
+      }
+    }
+
+    public void updateKey() {
+      byte [] hash = SymmetricKeyOps.hash(SymmetricKeyOps.obj2byte(baseKey));
+      currentHashNum--;
+      for (int i = 1; i < currentHashNum; i++) {
+        hash = SymmetricKeyOps.hash(hash);
+      }
+      currKey = new SecretKeySpec(hash, 0, 16, "AES");
+    }
+
+    public SecretKey getKey() {
+      return currKey;
+    }
+
+    public int getHashNum() {
+      return currentHashNum;
     }
 
   }     // end Group class
