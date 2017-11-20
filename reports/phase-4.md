@@ -6,12 +6,12 @@ This phase of the project is the second stage of hardening our Galactic File-Hos
 We use a variety of techniques and protocols to address the given threat models and keep our system secure. These are specified herewith, along with reasoning and justification for each. We also implemented a trusted public key infrastructure, called Trent. This server provides public keys for registered file servers. Trent's public key serves as a trust anchor.
 
 *   Protocols:
-Leslie Lamport OTP style
+    -   Key Update (KU) -- Our key update mechanism was inspired by the Leslie Lamport OTP scheme. The goal of this protocol is for a group to have access to N unique AES keys. We accomplish this by having the group server generate a unique AES key for each group, then that key is hashed using SHA-256 N times. The security of hashing the key can be trusted because it relies on the preimage resistance of SHA-256, which has not known to be compromised. When a key change needs to occur the group key is updated with the hash N-1. This is explained in full in T6.
 
 *   Tools and Algorithms:
--   AES (128-bit) -- We chose AES because it is the *de facto* standard for quick and secure symmetric key encryption according to NIST. The 128-bit version is projected to be secure for a number of years, and provides for the time being essentially the same security as larger key sizes.<sup id="a3">[3](#f3)</sup>  We use AES with Galois/Counter Mode (GCM), which conveniently allows to both encrypt *and* authenticate in the same go. This allows us to detect errors or tampering with the ciphertext in some more secure way than just getting garbage when we decrypt. We can also add data to the AAD field to protect from additional active attackers. We chose to forgo any message padding for the time being to eliminate confusion and keep things simple.
--   SHA-256 -- We chose SHA-256 because it is recommended for a variety of applications by NIST <sup id="a5">[5](#f5)</sup>. This is used for: validating user passwords on the GroupServer, hashing user Tokens in order to verify their origin, and for establishing group symmetric keys for encrypting files. When using it to hash passwords we include a salt to inhibit brute-force attacks. Details are in sections T1 and T2, respectively.
--   RSA-2048 -- We use RSA signatures to guarantee the validity of a token and to sign public keys issued by Trent. RSA-2048 is approved by NIST for generation/verification of digital signatures and keys,<sup id="a4">[4](#f4)</sup> which is exactly what we are using it for.  
+	-   AES (128-bit) -- We chose AES because it is the *de facto* standard for quick and secure symmetric key encryption according to NIST. The 128-bit version is projected to be secure for a number of years, and provides for the time being essentially the same security as larger key sizes.<sup id="a3">[3](#f3)</sup>  We use AES with Galois/Counter Mode (GCM), which conveniently allows to both encrypt *and* authenticate in the same go. This allows us to detect errors or tampering with the ciphertext in some more secure way than just getting garbage when we decrypt. We can also add data to the AAD field to protect from additional active attackers. We chose to forgo any message padding for the time being to eliminate confusion and keep things simple.
+	-   SHA-256 -- We chose SHA-256 because it is recommended for a variety of applications by NIST <sup id="a5">[5](#f5)</sup>. This is used for: validating user passwords on the GroupServer, hashing user Tokens in order to verify their origin, and for establishing group symmetric keys for encrypting files. When using it to hash passwords we include a salt to inhibit brute-force attacks. Details are in sections T1 and T2, respectively.
+	-   RSA-2048 -- We use RSA signatures to guarantee the validity of a token and to sign public keys issued by Trent. RSA-2048 is approved by NIST for generation/verification of digital signatures and keys,<sup id="a4">[4](#f4)</sup> which is exactly what we are using it for.  
 *   Bonus:  
 
 ## Threat Models ##
@@ -54,9 +54,16 @@ This way, when connecting to the file server:
 -   We can match the address on the token to the file server's address (IP Address and Port #) to ensure that it is not being used on a different server.
 -   We can make sure the timestamp is within a safe window of the current time to ensure its freshness, and that it is not being reused by someone else at a later time.
 
-This process does not interfere with measures put forth to counter threat model T2. Users still cannot modify tokens to enhance their privileges, we are simply expanding information stored in the token. The tokens are still being signed by the GroupServer after its creation, so any modifications to a token will invalidate it. The GroupServer's public key will still available to any third party so that they can verify any token for its validity.
 
 ## Summary ##
 Interplay between mechanisms
 Design process
-T1-T4 still valid
+
+
+With the addition of new threat models it is important to ensure that we the previous threats are still being protected against. No changes to our login protocol were necessary so T1 is not broken.
+
+With the introduction of T7, our token must change. This process does not interfere with measures put forth to counter threat model T2. Users still cannot modify tokens to enhance their privileges, we are simply expanding information stored in the token. The tokens are still being signed by the GroupServer after its creation, so any modifications to a token will invalidate it. The GroupServer's public key will still available to any third party so that they can verify any token for its validity.
+
+Now we are under the assumption that file servers are mostly untrusted and may leak files. However this does not change our registration process so T3 is still valid.
+
+This phase of the project assumes that a passive listener or active attacker can be involved in any messages. This means we must be careful to make sure that all necessary communication is encrypted. We also need to be sure to verify the integrity of things like tokens through private key signing. 
