@@ -56,17 +56,11 @@ This way, when connecting to the file server:
 
 
 ## Summary ##
-Interplay between mechanisms
+Interplay between mechanisms  
 Design process
 
 
-With the addition of new threat models it is important to ensure that we the previous threats are still being protected against. No changes to our login protocol were necessary so T1 is not broken.
-
-With the introduction of T7, our token must change. This process does not interfere with measures put forth to counter threat model T2. Users still cannot modify tokens to enhance their privileges, we are simply expanding information stored in the token. The tokens are still being signed by the GroupServer after its creation, so any modifications to a token will invalidate it. The GroupServer's public key will still available to any third party so that they can verify any token for its validity.
-
-Now we are under the assumption that file servers are mostly untrusted and may leak files. However this does not change our registration process so T3 is still valid.
-
-This phase of the project assumes that a passive listener or active attacker can be involved in any messages. This means we must be careful to make sure that all necessary communication is encrypted. We also need to be sure to verify the integrity of things like tokens through private key signing. 
+With the addition of new threat models it is important to ensure that we the previous threats are still being protected against. No changes to our login protocol were necessary so T1 is not broken. With the introduction of T7, our token must change. This process does not interfere with measures put forth to counter threat model T2. Users still cannot modify tokens to enhance their privileges, we are simply expanding information stored in the token. The tokens are still being signed by the GroupServer after its creation, so any modifications to a token will invalidate it. The GroupServer's public key will still available to any third party so that they can verify any token for its validity. Now we are under the assumption that file servers are mostly untrusted and may leak files. However this does not change our registration process so T3 is still valid. This phase of the project assumes that a passive listener or active attacker can be involved in any messages. This means we must be careful to make sure that all necessary communication is encrypted. We also need to be sure to verify the integrity of things like tokens through private key signing. 
 
 
 <b id="f1">1:</b> <http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-175B.pdf> [↩](#a1)  
