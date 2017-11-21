@@ -386,8 +386,41 @@ public class GroupThread extends Thread {
                       byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
                       if(!verifyToken((Token) yourToken, signedHash))
                         response = new Envelope("FAIL");
-                      else if(deleteUserFromGroup(userName, groupName, yourToken))
-                      response = new Envelope("OK"); //Success
+                      else if(deleteUserFromGroup(userName, groupName, yourToken)) {
+                        response = new Envelope("OK"); //Success
+                        my_gs.groupList.updateKey(groupName);
+                      }
+                    } // missing token
+                  } // missing groupName
+                } // missing userName
+              } // missing iv
+            } // missing something!
+            output.writeObject(response);
+        } else if(message.getMessage().equals("GROUPKEY")) {//Client wants to remove user from a group
+            response = new Envelope("FAIL");
+
+            if(message.getObjContents().size() >= 4) {
+              if(message.getObjContents().get(0) != null) {
+                if(message.getObjContents().get(1) != null) {
+                  if(message.getObjContents().get(2) != null) {
+                    if(message.getObjContents().get(3) != null) {
+                      spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                      String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
+                      String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
+                      UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
+                      byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
+                      if(verifyToken((Token) yourToken, signedHash)) {
+                        // verify it is the users token and the user is in the group
+                        if (userName.equals(yourToken.getSubject()) && my_gs.groupList.getGroupUsers(groupName).contains(userName)){
+                          response = new Envelope("OK");
+                          // add key and hashNum
+                          spec = SymmetricKeyOps.getGCM();
+                          response.addObject(spec.getIV());
+                          response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(my_gs.groupList.getKey(groupName)), K, spec));
+                          response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(my_gs.groupList.getHashNum(groupName)), K, spec));
+                        }
+                      }
+                      response = new Envelope("FAIL"); //Success
                     } // missing token
                   } // missing groupName
                 } // missing userName

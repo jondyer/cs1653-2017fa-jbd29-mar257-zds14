@@ -20,6 +20,14 @@ This threat has to do with the constant potential threat of a man in the middle 
 
 We took steps in the previous phase of the project to defend against these threats. Firstly, we authenticate each requested server to the user by signing essential messages in the D-H exchange using the server's private key. Only the server has access to that key, so if a malicious party poses as that server then its messages won't be verified. Even if an attacker intercepts and resends an old response from the server, they won't have access to either party's private D-H number, and thus will not be able to figure out the symmetric key.  
 
+Generating Symmetric Key
+
+![Generating Symmetric Key](./img/T3.png)
+
+Token Signing
+
+![Token Signing](./img/T2.png)
+
 Further, we encrypted all communications (not including public keys) with 128-bit AES keys, operating in Galois-Counter-Mode (GCM). GCM includes built-in authentication tags that are tamper evident. Should any part of the message be modified, the ciphertext will no longer match the tag, and in this way we know that the message has been modified. We will also expand the tag's AAD (Additional Authenticated Data) field to include a timestamp and sequence number to defend from replay and reorder attacks. This field is also validated using the GCM tag, even though it is not encrypted. Looking at the timestamp, we can distinguish between a fresh message and an old one that is being resent from a MiTM and therefore prevent this message from being accepted if it is not legitimate. As an added measure of security, the sequence number can be used to distinguish the order of each message (Message 1 in the process labeled with a "1", Message 2 with a "2", etc.) so that any message sent by a MiTM not in the correct sequence will be disregarded. This also helps to ensure that, for example, Message 1 isn't replayed by the MiTM. Although the timestamp will be in place, differences in the clock of the client and server could leave a window large enough for a malicious MiTM to act. The server will know it has already received Message 1, so it will know not to accept another Message 1 in the protocol.
 
 
@@ -35,7 +43,7 @@ Managing and distributing these group keys is a task that can easily be carried 
 -   Even if an attacker intercepts the message from the GroupServer where this key is being issued, it will be encrypted (just like everything else) using the 128-bit AES session key that was established during the SRP protocol, so there is no chance the attacker will be able to figure out the group-key.  
 -   When groups change, that change is recorded and dealt with by the GroupServer already, so it will be straightforward to have the GroupServer update the group-key while only issuing it to current or new members.  
 
-We chose to base our key update mechanism off of the Leslie Lamport OTP scheme. This will allow us to easily update keys without having to batch re-encrypt all files. When a group is created, the group server will generate a 128-bit AES key and hash that key 1000 times. The server will store the original key, the current hash number, and the current key. When a user is removed from a group, the group server will decrement the hash number and update the current key. All new or updated material will be encrypted with this new key. If a user wishes to decrypt a file they simply take the difference between the hash number associated with the file and the current hash number. They then hash the current key that number of times. This ensures forward secrecy while allowing for backward compatibility.  
+We chose to base our key update mechanism off of the Leslie Lamport OTP scheme. This will allow us to easily update keys without having to batch re-encrypt all files. When a group is created, the group server will generate a 128-bit AES key and hash that key 1000 times. The server will store the original key, the current hash number, and the current key. When a user is removed from a group, the group server will decrement the hash number and update the current key. All new or updated material will be encrypted with this new key. If a user wishes to decrypt a file they simply take the difference between the hash number, which is stored with the file, and the current hash number of the key, which is provided by the group server. They then hash the current key that number of times. This ensures forward secrecy while allowing for backward compatibility.  
 
 Creating a Group
 
@@ -56,9 +64,7 @@ This way, when connecting to the file server:
 
 
 ## Summary ##
-Interplay between mechanisms  
-Design process
-
+Overall, we evaluated each threat on its own and determined how best to protect against it. Then we examined our existing protective measures and integrated our new solutions with them to ensure that we covered each new threat without compromising the integrity of previous threat-protective measures. With this in mind we have now to consider the previous four threats from phase 3.  
 
 With the addition of new threat models it is important to ensure that we the previous threats are still being protected against. No changes to our login protocol were necessary so T1 is not broken. With the introduction of T7, our token must change. This process does not interfere with measures put forth to counter threat model T2. Users still cannot modify tokens to enhance their privileges, we are simply expanding information stored in the token. The tokens are still being signed by the GroupServer after its creation, so any modifications to a token will invalidate it. The GroupServer's public key will still available to any third party so that they can verify any token for its validity. Now we are under the assumption that file servers are mostly untrusted and may leak files. However this does not change our registration process so T3 is still valid. This phase of the project assumes that a passive listener or active attacker can be involved in any messages. This means we must be careful to make sure that all necessary communication is encrypted. We also need to be sure to verify the integrity of things like tokens through private key signing.
 
