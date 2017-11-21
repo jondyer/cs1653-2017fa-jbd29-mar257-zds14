@@ -116,7 +116,7 @@ public class GroupList implements java.io.Serializable {
 
     private void genKey() {
       try{
-        KeyGenerator keyGenAES = KeyGenerator.getInstance("AES/GCM/NoPadding", "BC");
+        KeyGenerator keyGenAES = KeyGenerator.getInstance("AES", "BC");
         keyGenAES.init(128);
 
         baseKey = keyGenAES.generateKey();
@@ -134,7 +134,7 @@ public class GroupList implements java.io.Serializable {
       for (int i = 1; i < currentHashNum; i++) {
         hash = SymmetricKeyOps.hash(hash);
       }
-      currKey = new SecretKeySpec(hash, 0, 16, "AES/GCM/NoPadding");
+      currKey = new SecretKeySpec(hash, 0, 16, "AES");
     }
 
     public SecretKey getKey() {
