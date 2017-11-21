@@ -570,7 +570,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	 	try {
 			Envelope message = null, response = null;
-			//Tell the server to remove a user from the group
+
 			message = new Envelope("GROUPKEY");
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
@@ -591,7 +591,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			groupKey = (SecretKey)(SymmetricKeyOps.byte2obj(decrypt));
 
 			cipherText = (byte[])temp.get(2);
-			decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv); 
+			decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
 			hashNum = (int) (SymmetricKeyOps.byte2obj(decrypt));
 
 		} catch(Exception e) {
@@ -599,7 +599,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 			e.printStackTrace(System.err);
 		}
 
-	} 
+	}
 
 	public SecretKey getKey() {
 		return groupKey;
