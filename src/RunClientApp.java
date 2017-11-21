@@ -110,15 +110,18 @@ class ClientApp {
     Security.addProvider(new BouncyCastleProvider());
 
 
-    // Connect to Server
+    // Connect to Servers
     groupClient.connect(groupHost, GROUP_PORT);
     trentClient.connect(trentHost, TRENT_PORT);
-    PublicKey trentPublicKey = trentClient.getTrentPub();
+    PublicKey trentPublicKey = trentClient.getTrentPub(); // Arbitrary way to get Trent's public key - Dr. Lee said it was a fair assumption that everyone can know Trent's public key
     PublicKey groupServerPublicKey = trentClient.getPublicKey(groupHost, GROUP_PORT, trentPublicKey); // Get group server's public key
     groupClient.setGroupPubKey(groupServerPublicKey);
+    fileClient.setGroupPubKey(groupServerPublicKey);
     PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT, trentPublicKey); // Get selected File Server's public key from Trent to later use for verification
     fileClient.connect(fileHost, FILE_PORT);
     fileClient.keyExchange(fileServerPublicKey);
+
+    // TODO: Give GroupThread info about File Server's address so it can be included on tokens
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
@@ -193,8 +196,9 @@ class ClientApp {
       } else if (groupsOwned.contains(choice) && isAdmin)
           isOwner = true;
 
-      // update token --> retrieve new partial token!!!
+      // update token --> retrieve new partial token!!! + give signed hash of that partial token to FileClient
       token = groupClient.getToken(username,choice);
+      fileClient.setSignedHash(groupClient.getSignedHash());  // After groupClient has token, give GroupServer-signed hash of token identifier to file client to
 
       // Compile List of privileges for each level of usage
       ArrayList<String> adminList = new ArrayList<String>();

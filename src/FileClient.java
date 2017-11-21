@@ -22,8 +22,10 @@ public class FileClient extends Client implements FileClientInterface {
 
 	private SecretKey sessionKey;
 	private GCMParameterSpec spec;
-	private byte [] iv, encRemotePath, encToken, buf;
+	private byte[] iv, encRemotePath, encToken, buf, signedHash;
 	private int n;
+	private PublicKey groupServerPublicKey;
+
 
 	/**
 	 * MUST MUST MUST be run before any other method
@@ -56,8 +58,13 @@ public class FileClient extends Client implements FileClientInterface {
 			boolean match = pubSig.verify(serverSignedPubKey);
 
 			// Generate Symmetric key from Server Public Key and Client Private Key
-			if(match){ // Success
-				this.sessionKey = ECDH.calculateKey(serverPubKey, clientKeyPair.getPrivate());
+			if(match) { // Success
+				this.sessionKey = ECDH.calculateKey(serverPubKey, clientKeyPair.getPrivate()); //Generate Symmetric key from D-H results
+
+				//  TODO: Find different way to send Group Server Public Key
+				env = new Envelope("OK");
+				env.addObject(this.groupServerPublicKey); // Pass FileThread (FileServer) the group server's public key to verify token hash)
+				output.writeObject(env);
 				return true;
 			} else {
 				System.out.println("Failed to establish key with File Server, unable to verify signature.");
@@ -82,6 +89,8 @@ public class FileClient extends Client implements FileClientInterface {
 		env.addObject(SymmetricKeyOps.encrypt(remotePath.getBytes(), this.sessionKey, spec));
 		env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
 		env.addObject(spec.getIV());
+		env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
+
 			try {
 				output.writeObject(env);
 				env = (Envelope)input.readObject();
@@ -121,6 +130,8 @@ public class FileClient extends Client implements FileClientInterface {
 							env.addObject(SymmetricKeyOps.encrypt(sourceFile.getBytes(), this.sessionKey, spec));
 							env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
 							env.addObject(spec.getIV());
+							env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
+
 
 							output.writeObject(env);
 
@@ -179,6 +190,7 @@ public class FileClient extends Client implements FileClientInterface {
 			 spec = SymmetricKeyOps.getGCM();
 			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
 			 message.addObject(spec.getIV());
+			 message.addObject(SymmetricKeyOps.encrypt(this.signedHash, this.sessionKey, spec));
 			 output.writeObject(message);
 
 			 e = (Envelope)input.readObject();
@@ -217,6 +229,7 @@ public class FileClient extends Client implements FileClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), this.sessionKey, spec));
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
 			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(this.signedHash, this.sessionKey, spec));
 
 			output.writeObject(message);
 
@@ -287,5 +300,12 @@ public class FileClient extends Client implements FileClientInterface {
 				return false;
 		 }
 		return true;
+	}
+
+	public void setGroupPubKey(PublicKey pubKey) {
+		this.groupServerPublicKey = pubKey;
+	}
+	public void setSignedHash(byte[] signedHash) {
+		this.signedHash = signedHash;
 	}
 }

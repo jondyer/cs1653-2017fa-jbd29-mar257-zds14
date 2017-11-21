@@ -43,8 +43,6 @@ public class GroupThread extends Thread {
   }
 
 
-  // TODO: Encrypt/Decrypt EVERYTHING (AES/GCM/NoPadding)
-
   public void run() {
     boolean proceed = true;
 

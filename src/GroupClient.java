@@ -35,9 +35,10 @@ public class GroupClient extends Client implements GroupClientInterface {
   private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("000001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
+
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
-	private byte [] signedHash;
+	private byte[] signedHash;
 
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
@@ -152,6 +153,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				if(temp.size() == 3) {
 					byte[] iv = (byte[])temp.get(0);
 					byte[] cipherText = (byte[])temp.get(1);
+					this.signedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
 					byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
 					token = (UserToken)(SymmetricKeyOps.byte2obj(decrypt));
 					return token;
@@ -562,6 +564,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	 public void setGroupPubKey(PublicKey pubKey) {
 		 this.groupServerPublicKey = pubKey;
+	 }
+	 public byte[] getSignedHash() {
+		 return this.signedHash;
 	 }
 
 }
