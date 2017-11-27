@@ -1,5 +1,14 @@
 Page for To-do's that have no particular class or place
 
-// TODO: Send signed hash with token everywhere
-// TODO: Remove extraneous console output
-// TODO: Extra credit, password reset
+TODO: Send signed hash with token everywhere
+TODO: Remove extraneous console output
+TODO: Double-check code: token hash signature verification
+TODO: Figure out message sequencing
+TODO: Finish test script input
+BUG: After deleting group, app exits
+    GroupServer outputs "LGROUPS" then "Verifying User's Token.... false"
+BUG: After selecting "delete group (o3)", no matter what you select the app exits and token verification is false
+
+TODO: FileServer get GS pubkey from Trent on registration (don't send it from client)
+TODO: Extra credit, password reset
+TODO: Extra credit, timestamp T5
