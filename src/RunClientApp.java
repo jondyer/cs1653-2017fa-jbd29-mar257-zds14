@@ -34,6 +34,8 @@ class ClientApp {
   TrentClient trentClient = new TrentClient();
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
+
+  String choice = null;
   public ClientApp() throws Exception {
     // INTERACTIVE SETUP
     String temp;
@@ -182,7 +184,7 @@ class ClientApp {
       //   updateConnection(fileClient, fileHost, FILE_PORT);
       //   continue;
       }
-      String choice = groupsBelongedTo.get(Integer.parseInt(selection));
+      choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
 
       // Check if owner of selected group
@@ -531,8 +533,9 @@ class ClientApp {
     // Pick new filename
     System.out.print("Name of the destination file? >> ");
     String destinationFilename = console.next();
-    // TODO: Encrypt file before upload
-    boolean status = fileClient.upload(sourceFile, destinationFilename, group, myToken);
+
+    groupClient.getKeyAndHash(myToken.getSubject(), group, myToken);
+    boolean status = fileClient.upload(sourceFile, destinationFilename, group, myToken, groupClient.getKey(), groupClient.getHashNum());
     if(status)
       System.out.println("Successfully uploaded file '" + sourceFile + "'\n");
     else
@@ -551,7 +554,9 @@ class ClientApp {
     String sourceFile = console.next();
     System.out.print("What do you want to save it as? >> ");
     String destFile = console.next();
-    boolean status = fileClient.download(sourceFile, destFile, myToken);
+
+    groupClient.getKeyAndHash(myToken.getSubject(), choice, myToken);
+    boolean status = fileClient.download(sourceFile, destFile, myToken, groupClient.getKey(), groupClient.getHashNum());
     if(status)
       System.out.println("Successfully downloaded file '" + sourceFile + "'\n");
     else

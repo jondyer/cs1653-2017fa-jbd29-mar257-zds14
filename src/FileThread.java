@@ -149,6 +149,8 @@ public class FileThread extends Thread {
 							iv = (byte[]) temp.get(3);
 							signedHash = SymmetricKeyOps.decrypt((byte[])temp.get(4), this.sessionKey, iv);
 							UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt(encToken, this.sessionKey, iv));
+							int hashNum = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])e.getObjContents().get(5), this.sessionKey, iv)));
+							byte[] groupIV = (byte[]) temp.get(6);
 							if(!verifyToken((Token) yourToken, signedHash))
 								response = new Envelope("FAIL");
 							else {
@@ -188,7 +190,7 @@ public class FileThread extends Thread {
 
 									if(e.getMessage().compareTo("EOF")==0) {
 										System.out.printf("Transfer successful file %s\n", remotePath);
-										FileServer.fileList.addFile(yourToken.getSubject(), group, remotePath);
+										FileServer.fileList.addFile(yourToken.getSubject(), group, remotePath, groupIV, hashNum);
 										response = new Envelope("OK"); //Success
 									} else {
 										System.out.printf("Error reading file %s from client\n", remotePath);
@@ -262,6 +264,10 @@ public class FileThread extends Thread {
 									if(e.getMessage().compareTo("DOWNLOADF")==0) {
 
 										e = new Envelope("EOF");
+										ShareFile sFile = FileServer.fileList.getFile(remotePath);
+										System.out.println("\n\nPath: " + remotePath + "\n");
+										e.addObject(sFile.getIV());
+										e.addObject(sFile.getHashNum());
 										output.writeObject(e);
 
 										e = (Envelope)input.readObject();

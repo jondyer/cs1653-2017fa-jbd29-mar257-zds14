@@ -111,74 +111,97 @@ public class FileClient extends Client implements FileClientInterface {
 		return true;
 	}
 
-	public boolean download(String sourceFile, String destFile, UserToken token) {
-				if (sourceFile.charAt(0)=='/') {
-					sourceFile = sourceFile.substring(1);
+	public boolean download(String sourceFile, String destFile, UserToken token, SecretKey groupKey, int currHashNum) {
+		if (sourceFile.charAt(0)=='/') {
+			sourceFile = sourceFile.substring(1);
+		}
+
+		File file = new File(destFile);
+	    try {
+
+
+		    if (!file.exists()) {
+		    	file.createNewFile();
+			    FileOutputStream fos = new FileOutputStream(file);
+
+			    Envelope env = new Envelope("DOWNLOADF"); //Success
+
+				spec = SymmetricKeyOps.getGCM();
+				env.addObject(SymmetricKeyOps.encrypt(sourceFile.getBytes(), this.sessionKey, spec));
+				env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+				env.addObject(spec.getIV());
+				env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
+
+
+				output.writeObject(env);
+
+			    env = (Envelope)input.readObject();
+
+				while (env.getMessage().compareTo("CHUNK")==0) {
+					iv = (byte[]) env.getObjContents().get(2);
+					buf = SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(0), sessionKey, iv);
+					n = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
+
+					fos.write(buf, 0, n);
+					System.out.printf(".");
+					env = new Envelope("DOWNLOADF"); //Success
+					output.writeObject(env);
+					env = (Envelope)input.readObject();
 				}
 
-				File file = new File(destFile);
-			    try {
+				fos.close();
 
+				if(env.getMessage().compareTo("EOF")==0) {
+					System.out.printf("\nTransfer successful file %s\n", sourceFile);
+					env = new Envelope("OK"); //Success
 
-				    if (!file.exists()) {
-				    	file.createNewFile();
-					    FileOutputStream fos = new FileOutputStream(file);
+					byte[] groupIV = (byte[]) env.getObjContents().get(0);
+					int hashNum = (int) env.getObjContents().get(1);
 
-					    Envelope env = new Envelope("DOWNLOADF"); //Success
+					spec = SymmetricKeyOps.getGCM(groupIV);
+					// TODO: Setup hash difference
+					/*
+					int hashDiff = 
+					byte [] hash = SymmetricKeyOps.hash(SymmetricKeyOps.obj2byte(baseKey));
+					currentHashNum--;
+					for (int i = 1; i < currentHashNum; i++) {
+					  hash = SymmetricKeyOps.hash(hash);
+					}
+					currKey = new SecretKeySpec(hash, 0, 16, "AES");
+					*/
 
-							spec = SymmetricKeyOps.getGCM();
-							env.addObject(SymmetricKeyOps.encrypt(sourceFile.getBytes(), this.sessionKey, spec));
-							env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
-							env.addObject(spec.getIV());
-							env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
+					Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+		            cipher.init(Cipher.DECRYPT_MODE, groupKey, spec);
+		            File myFile = new File(destFile);
+					FileInputStream fis = new FileInputStream(myFile);
 
+					byte[] inputBytes = new byte[(int) myFile.length()];
+		            fis.read(inputBytes);           
+		            byte[] outputBytes = cipher.doFinal(inputBytes);
 
-							output.writeObject(env);
-
-					    env = (Envelope)input.readObject();
-
-						while (env.getMessage().compareTo("CHUNK")==0) {
-								iv = (byte[]) env.getObjContents().get(2);
-								buf = SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(0), sessionKey, iv);
-								n = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
-
-								fos.write(buf, 0, n);
-								System.out.printf(".");
-								env = new Envelope("DOWNLOADF"); //Success
-								output.writeObject(env);
-								env = (Envelope)input.readObject();
-						}
-						fos.close();
-
-						if(env.getMessage().compareTo("EOF")==0) {
-					    	 fos.close();
-								System.out.printf("\nTransfer successful file %s\n", sourceFile);
-								env = new Envelope("OK"); //Success
-								output.writeObject(env);
-						} else {
-								System.out.printf("Error reading file %s (%s)\n", sourceFile, env.getMessage());
-								file.delete();
-								return false;
-							}
-				    }
-
-				    else {
-						System.out.printf("Error couldn't create file %s\n", destFile);
-						return false;
-				    }
-
-
-					} catch (IOException e1) {
-
-			    	System.out.printf("Error couldn't create file %s\n", destFile);
-			    	return false;
-
-
+					output.writeObject(env);
+				} else {
+					System.out.printf("Error reading file %s (%s)\n", sourceFile, env.getMessage());
+					file.delete();
+					return false;
 				}
-			    catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				 return true;
+		    }
+
+		    else {
+				System.out.printf("Error couldn't create file %s\n", destFile);
+				return false;
+		    }
+
+
+			} catch (IOException e1) {
+
+		    	System.out.printf("Error couldn't create file %s\n", destFile);
+		    	return false;
+			}
+		    catch (	Exception e1) {
+				e1.printStackTrace();
+			}
+			return true;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -212,7 +235,7 @@ public class FileClient extends Client implements FileClientInterface {
 			}
 	}
 
-	public boolean upload(String sourceFile, String destFile, String group, UserToken token) {
+	public boolean upload(String sourceFile, String destFile, String group, UserToken token, SecretKey groupKey, int hashNum) {
 
 		if (destFile.charAt(0)!='/')
 			destFile = "/" + destFile;
@@ -231,10 +254,20 @@ public class FileClient extends Client implements FileClientInterface {
 			message.addObject(spec.getIV());
 			message.addObject(SymmetricKeyOps.encrypt(this.signedHash, this.sessionKey, spec));
 
+			message.addObject(SymmetricKeyOps.encrypt(new Integer(hashNum).toString().getBytes(), this.sessionKey, spec));
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+
 			output.writeObject(message);
 
+			Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+            cipher.init(Cipher.ENCRYPT_MODE, groupKey, spec);
+            File myFile = new File(sourceFile);
+			FileInputStream fis = new FileInputStream(myFile);
 
-			FileInputStream fis = new FileInputStream(sourceFile);
+			byte[] inputBytes = new byte[(int) myFile.length()];
+            fis.read(inputBytes);           
+            byte[] outputBytes = cipher.doFinal(inputBytes);
 
 			env = (Envelope)input.readObject();
 
@@ -246,7 +279,9 @@ public class FileClient extends Client implements FileClientInterface {
 				return false;
 			}
 
-
+			int index = 0;
+			int n = -1;
+			ByteArrayInputStream toChunk = new ByteArrayInputStream(outputBytes);
 			do {
 				byte[] buf = new byte[4096];
 				if (env.getMessage().compareTo("READY")!=0) {
@@ -254,23 +289,24 @@ public class FileClient extends Client implements FileClientInterface {
 					return false;
 				}
 				message = new Envelope("CHUNK");
-				int n = fis.read(buf); //can throw an IOException
+				n = toChunk.read(buf, index, buf.length); //can throw an IOException
+				index += buf.length;
 				if (n > 0) {
 					System.out.printf(".");
 				} else if (n < 0) {
-						System.out.println("Read error");
-						return false;
-					}
+					System.out.println("Read error");
+					return false;
+				}
 
-					// Encrypt and send chunk
-					spec = SymmetricKeyOps.getGCM();
-					message.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
-					message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
-					message.addObject(spec.getIV());
-					output.writeObject(message);
+				// Encrypt and send chunk
+				spec = SymmetricKeyOps.getGCM();
+				message.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
+				message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
+				message.addObject(spec.getIV());
+				output.writeObject(message);
 
 
-					env = (Envelope)input.readObject();
+				env = (Envelope)input.readObject();
 
 
 			 } while (fis.available()>0);

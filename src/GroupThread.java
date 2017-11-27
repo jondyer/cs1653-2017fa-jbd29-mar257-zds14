@@ -398,7 +398,6 @@ public class GroupThread extends Thread {
             output.writeObject(response);
         } else if(message.getMessage().equals("GROUPKEY")) {//Client wants to remove user from a group
             response = new Envelope("FAIL");
-
             if(message.getObjContents().size() >= 4) {
               if(message.getObjContents().get(0) != null) {
                 if(message.getObjContents().get(1) != null) {
@@ -409,6 +408,7 @@ public class GroupThread extends Thread {
                       String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
                       UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
                       byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
+                      
                       if(verifyToken((Token) yourToken, signedHash)) {
                         // verify it is the users token and the user is in the group
                         if (userName.equals(yourToken.getSubject()) && my_gs.groupList.getGroupUsers(groupName).contains(userName)){
@@ -420,7 +420,6 @@ public class GroupThread extends Thread {
                           response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(my_gs.groupList.getHashNum(groupName)), K, spec));
                         }
                       }
-                      response = new Envelope("FAIL"); //Success
                     } // missing token
                   } // missing groupName
                 } // missing userName

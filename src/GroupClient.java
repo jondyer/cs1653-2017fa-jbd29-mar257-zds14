@@ -586,8 +586,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 			output.writeObject(message);
 
 			response = (Envelope)input.readObject();
+
 			//If server indicates success, return true
 			if(!response.getMessage().equals("OK")) return;
+
 			ArrayList<Object> temp = response.getObjContents();
 			if(temp.size() != 3) return;
 			byte[] iv = (byte[])temp.get(0);

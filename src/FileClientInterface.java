@@ -54,8 +54,8 @@ public interface FileClientInterface {
      * @return true on success, false on failure
      *
      */
-    public boolean upload(final String sourceFile, final String destFile, final String group, final UserToken token);
-
+    //public boolean upload(final String sourceFile, final String destFile, final String group, final UserToken token);
+    // TODO: Check to make sure the interface can be modified. If not, refactor.
 
     /**
      * Downloads a file from the server.  The user must be a member of
@@ -68,7 +68,7 @@ public interface FileClientInterface {
      * @return true on success, false on failure
      *
      */
-    public boolean download(final String sourceFile, final String destFile, final UserToken token);
+    //public boolean download(final String sourceFile, final String destFile, final UserToken token);
 
 
     /**

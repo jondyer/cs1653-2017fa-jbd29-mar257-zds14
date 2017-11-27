@@ -13,8 +13,8 @@ import java.util.*;
 		list = new ArrayList<ShareFile>();
 	}
 
-	public synchronized void addFile(String owner, String group, String path) {
-		ShareFile newFile = new ShareFile(owner, group, path);
+	public synchronized void addFile(String owner, String group, String path, byte[] iv, int hashNum) {
+		ShareFile newFile = new ShareFile(owner, group, path, iv, hashNum);
 		if(!checkFile(path))
 			list.add(newFile);
 		else System.out.println("A file with that path already exists!");
