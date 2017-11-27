@@ -3,7 +3,7 @@
 
 This phase of the project is the second stage of hardening our Galactic File-Hosting Service (GFHS). We are still operating under the general assumption that the group server is entirely trustworthy--however, the group server is not assumed to share secrets with the file servers in the system. We accounted for this in our previous phase, having assumed no previous sharing between servers and establishing secure lines of communication before proceeding.  
 
-We use a variety of techniques and protocols to address the given threat models and keep our system secure. These are specified herewith, along with reasoning and justification for each. We also implemented a trusted public key infrastructure, called Trent. This server provides public keys for registered file servers. Trent's public key serves as a trust anchor.
+We use a variety of techniques and protocols to address the given threat models and keep our system secure. These are specified herewith, along with reasoning and justification for each. We also implemented a trusted public key infrastructure, called Trent. This server provides public keys for registered servers. Trent's public key serves as a trust anchor.
 
 *   Protocols:
     -   Key Update (KU) -- Our key update mechanism was inspired by the Leslie Lamport OTP scheme. The goal of this protocol is for a group to have access to N unique AES keys. We accomplish this by having the group server generate a unique AES key for each group, then that key is hashed using SHA-256 N times. The security of hashing the key can be trusted because it relies on the preimage resistance of SHA-256, which has not known to be compromised. When a key change needs to occur the group key is updated with the hash N-1. This is explained in full in T6.
