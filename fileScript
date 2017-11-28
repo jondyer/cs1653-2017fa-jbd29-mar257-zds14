@@ -1,0 +1,7 @@
+#!/bin/env bash
+jar_name=bcprov-jdk15on-158.jar
+
+echo "Starting FileServer..."
+pwd
+echo "Sleeping..."
+java -cp .:$jar_name RunFileServer

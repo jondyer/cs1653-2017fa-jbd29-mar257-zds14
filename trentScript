@@ -1,0 +1,6 @@
+#!/bin/env bash
+jar_name=bcprov-jdk15on-158.jar
+
+echo "Starting TrentServer..."
+pwd
+java -cp .:$jar_name RunTrentServer

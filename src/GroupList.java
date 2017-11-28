@@ -129,10 +129,12 @@ public class GroupList implements java.io.Serializable {
     }
 
     public void updateKey() {
-      byte [] hash = SymmetricKeyOps.hash(SymmetricKeyOps.obj2byte(baseKey));
+
+      byte [] hash = SymmetricKeyOps.hash(baseKey.getEncoded());
       currentHashNum--;
       for (int i = 1; i < currentHashNum; i++) {
-        hash = SymmetricKeyOps.hash(hash);
+        currKey = new SecretKeySpec(hash, 0, 16, "AES");
+        hash = SymmetricKeyOps.hash(currKey.getEncoded());
       }
       currKey = new SecretKeySpec(hash, 0, 16, "AES");
     }

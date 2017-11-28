@@ -1,0 +1,8 @@
+#!/bin/env bash
+jar_name=bcprov-jdk15on-158.jar
+
+echo "Starting GroupServer..."
+GSin="../GSinput"
+pwd
+echo "Sleeping..."
+java -cp .:$jar_name RunGroupServer < $GSin

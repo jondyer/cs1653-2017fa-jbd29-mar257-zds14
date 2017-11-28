@@ -9,13 +9,13 @@ TODO: Update keys/Leslie Lamport                                                
 TODO: Triple-check project description and reqs against writeup and code              @Everyone
 TODO: Update diagrams                                                                 @Zach
 TODO: Revise/update writeup                                                           @Everyone
-TODO: FileServer get GS pubkey from Trent on registration (don't send it from client) @Whoever
 
 
 /*****************************************************
  * EXTRA CREDIT SECTION                              *
  * Only do these if all of the above are complete!!! *
  *****************************************************/
+TODO: FileServer get GS pubkey from Trent on registration (don't send it from client) @Whoever
 TODO: Support selection of multiple groups at once for operation
 TODO: Extra credit, password reset
 TODO: Extra credit, timestamp T5
