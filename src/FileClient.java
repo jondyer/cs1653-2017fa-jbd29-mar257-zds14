@@ -127,86 +127,86 @@ public class FileClient extends Client implements FileClientInterface {
 
 			    Envelope env = new Envelope("DOWNLOADF"); //Success
 
-				spec = SymmetricKeyOps.getGCM();
-				env.addObject(SymmetricKeyOps.encrypt(sourceFile.getBytes(), this.sessionKey, spec));
-				env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
-				env.addObject(spec.getIV());
-				env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
+					spec = SymmetricKeyOps.getGCM();
+					env.addObject(SymmetricKeyOps.encrypt(sourceFile.getBytes(), this.sessionKey, spec));
+					env.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
+					env.addObject(spec.getIV());
+					env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
 
 
-				output.writeObject(env);
-
-			    env = (Envelope)input.readObject();
-
-				while (env.getMessage().compareTo("CHUNK")==0) {
-					iv = (byte[]) env.getObjContents().get(2);
-					buf = SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(0), sessionKey, iv);
-					n = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
-
-					fos.write(buf, 0, n);
-					System.out.printf(".");
-					env = new Envelope("DOWNLOADF"); //Success
 					output.writeObject(env);
+
 					env = (Envelope)input.readObject();
-				}
 
-				fos.close();
+					while (env.getMessage().compareTo("CHUNK")==0) {
+						iv = (byte[]) env.getObjContents().get(2);
+						buf = SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(0), sessionKey, iv);
+						n = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
 
-				if(env.getMessage().compareTo("EOF")==0) {
-					System.out.printf("\nTransfer successful file %s\n", sourceFile);
-
-					byte[] groupIV = (byte[]) env.getObjContents().get(0);
-					int hashNum = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
-
-					env = new Envelope("OK"); //Success
-
-					spec = SymmetricKeyOps.getGCM(groupIV);
-
-					int hashDiff = hashNum - currHashNum;
-
-					if(hashDiff > 0) {
-						byte [] hash = SymmetricKeyOps.hash(groupKey.getEncoded());
-						for (int i = 1; i < hashDiff; i++) {
-							// I know I can just hash a byte array, but the different method of
-        					// encoding breaks things so it needs to be kept consistent
-							groupKey = new SecretKeySpec(hash, 0, 16, "AES");
-						    hash = SymmetricKeyOps.hash(groupKey.getEncoded());
-						}
-						groupKey = new SecretKeySpec(hash, 0, 16, "AES");
+						fos.write(buf, 0, n);
+						System.out.printf(".");
+						env = new Envelope("DOWNLOADF"); //Success
+						output.writeObject(env);
+						env = (Envelope)input.readObject();
 					}
 
-					Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-		            cipher.init(Cipher.DECRYPT_MODE, groupKey, spec);
-		            File myFile = new File(destFile);
-					FileInputStream fis = new FileInputStream(myFile);
+					fos.close();
 
-					byte[] inputBytes = new byte[(int) myFile.length()];
-		            fis.read(inputBytes);
-		            byte[] outputBytes = cipher.doFinal(inputBytes);
+					if(env.getMessage().compareTo("EOF")==0) {
+						System.out.printf("\nTransfer successful file %s\n", sourceFile);
 
-		            fos = new FileOutputStream(myFile);
-		            fos.write(outputBytes);
+						byte[] groupIV = (byte[]) env.getObjContents().get(0);
+						int hashNum = (int) env.getObjContents().get(1);
 
-					output.writeObject(env);
-				} else {
-					System.out.printf("Error reading file %s (%s)\n", sourceFile, env.getMessage());
-					file.delete();
+						env = new Envelope("OK"); //Success
+
+						spec = SymmetricKeyOps.getGCM(groupIV);
+
+						int hashDiff = hashNum - currHashNum;
+
+						if(hashDiff > 0) {
+							byte [] hash = SymmetricKeyOps.hash(groupKey.getEncoded());
+							for (int i = 1; i < hashDiff; i++) {
+								// I know I can just hash a byte array, but the different method of
+								// encoding breaks things so it needs to be kept consistent
+								groupKey = new SecretKeySpec(hash, 0, 16, "AES");
+								hash = SymmetricKeyOps.hash(groupKey.getEncoded());
+							}
+							groupKey = new SecretKeySpec(hash, 0, 16, "AES");
+						}
+
+						Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+						cipher.init(Cipher.DECRYPT_MODE, groupKey, spec);
+						File myFile = new File(destFile);
+						FileInputStream fis = new FileInputStream(myFile);
+
+						byte[] inputBytes = new byte[(int) myFile.length()];
+						fis.read(inputBytes);
+						byte[] outputBytes = cipher.doFinal(inputBytes);
+
+						fos = new FileOutputStream(myFile);
+						fos.write(outputBytes);
+
+						output.writeObject(env);
+					} else {
+						System.out.printf("Error reading file %s (%s)\n", sourceFile, env.getMessage());
+						file.delete();
+						return false;
+					}
+				}
+
+				else {
+					System.out.printf("Error couldn't create file %s\n", destFile);
 					return false;
 				}
-		    }
-
-		    else {
-				System.out.printf("Error couldn't create file %s\n", destFile);
-				return false;
-		    }
 
 
 			} catch (IOException e1) {
 
-		    	System.out.printf("Error couldn't create file %s\n", destFile);
-		    	return false;
+				System.out.printf("Error couldn't create file %s\n", destFile);
+				return false;
 			}
-		    catch (	Exception e1) {
+			catch (	Exception e1) {
 				e1.printStackTrace();
 			}
 			return true;

@@ -5,5 +5,5 @@ participant GS
 
 Bob -> GS: CGROUP || IV || {Group name || \npToken || [H(pToken)]k<sub>G</sub><sup>-1</sup>}K<sub>GB</sub>
 GS -> GS: Create group and K<sub>Gn</sub> \nH<sup>1000</sup>(K<sub>Gn</sub>) \nStore <GroupName, K<sub>Gn</sub>, c, H<sup>c</sup>(K<sub>Gn</sub>)>
-GS -> Bob: {c || H<sup>c</sup>(K<sub>Gn</sub>)}K<sub>GB</sub>
+GS -> Bob: OK
 @enduml

@@ -17,4 +17,4 @@ TODO: FileServer get GS pubkey from Trent on registration (don't send it from cl
 TODO: Support selection of multiple groups at once for operation
 TODO: Extra credit, password reset
 TODO: Extra credit, timestamp T5
-TODO: Make sure IP address can't be spoofed when registering server
+TODO: Send IP with a nonce and response to eliminate false server registration

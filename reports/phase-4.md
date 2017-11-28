@@ -14,6 +14,7 @@ We use a variety of techniques and protocols to address the given threat models 
 	  -   RSA-2048 -- We use RSA signatures to guarantee the validity of a token and to sign public keys issued by Trent. RSA-2048 is approved by NIST for generation/verification of digital signatures and keys,<sup id="a2">[2](#f2)</sup> which is exactly what we are using it for.  
 
 *   Bonus:
+    - @jondyer made a super duper awesome script that autolaunches all of the necessary servers and client application on your local machine and added flags for different system functionalities.
 
 ## Threat Models ##
 ### T5: Message Reorder, Replay, Modification ###

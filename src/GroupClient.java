@@ -233,8 +233,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(spec.getIV());
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
-				message.addObject(SymmetricKeyOps.encrypt(fileServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
-				// increment sequence number first
+
+				if(this.fileServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.fileServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+
 				this.sequence++;
 				message.setSeq(this.sequence);
 				output.writeObject(message);
