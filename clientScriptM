@@ -6,9 +6,10 @@ cd /Users/maxreno/school/cs1653/cs1653-2017fa-jbd29-mar257-zds14/src
 pwd
 
 echo "Sleeping..."
+$clientCmd
+
 if test "$testing" == "True"
 then
   $clientCmd < $clientIn
 else
-  $clientCmd
 fi
