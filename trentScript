@@ -2,5 +2,8 @@
 jar_name=bcprov-jdk15on-158.jar
 
 echo "Starting TrentServer..."
+if [[ $PWD != *"$thePath"* ]]; then
+  cd ./src/
+fi
 pwd
 java -cp .:$jar_name RunTrentServer

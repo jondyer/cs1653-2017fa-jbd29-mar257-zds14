@@ -2,6 +2,9 @@
 jar_name=bcprov-jdk15on-158.jar
 
 echo "Starting ClientApp..."
+if [[ $PWD != *"$thePath"* ]]; then
+  cd ./src/
+fi
 pwd
 echo "Sleeping..."
 if [[ $testing =~ "True" ]]; then

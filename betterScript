@@ -120,6 +120,7 @@ do_All_Mac() {
 export jar_name
 export testing
 export keep
+export thePath
 export clientIn
 export clientCmd
 export sleep1
