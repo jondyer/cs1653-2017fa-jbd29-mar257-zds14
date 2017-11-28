@@ -1,0 +1,11 @@
+#!/bin/env bash
+jar_name=bcprov-jdk15on-158.jar
+
+echo "Starting ClientApp..."
+pwd
+echo "Sleeping..."
+if [[ $testing =~ "True" ]]; then
+  $clientCmd < $clientIn
+elif [ -z "$testing" ]; then
+  $clientCmd
+fi
