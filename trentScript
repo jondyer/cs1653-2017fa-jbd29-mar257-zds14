@@ -3,8 +3,8 @@ jar_name=bcprov-jdk15on-158.jar
 thePath="cs1653-2017fa-jbd29-mar257-zds14"
 
 echo "Starting TrentServer..."
-if [[ $PWD != *"$thePath"* ]]; then
-  cd ./src/
-fi
+# if [[ $PWD != *"$thePath"* ]]; then
+#   cd ./src/
+# fi
 pwd
 java -cp .:$jar_name RunTrentServer
