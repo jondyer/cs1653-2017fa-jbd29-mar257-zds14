@@ -17,7 +17,6 @@ myTerm="terminator"
 macTerm="open -a Terminal.app"
 myFun="do_All"
 macFun="do_All_Mac"
-Max="False"
 fresh="echo"
 remove="rm *.bin"
 sleep1="sleep 2s"
@@ -33,7 +32,6 @@ while getopts ":fmt" opt; do
       echo "Mac mode (or MAX mode) activated"
       myTerm=$macTerm
       myFun=$macFun
-      Max="True"
       ;;
     f)
       echo "Fresh start..."
@@ -112,16 +110,15 @@ do_All() {
 }
 
 do_All_Mac() {
-  $myTerm ../trentScript & $sleep1
-  $myTerm ../groupScript & $sleep2
-  $myTerm ../fileScript & $sleep3
-  $myTerm ../clientScript; $keep
+  $myTerm ../trentScriptM & $sleep1
+  $myTerm ../groupScriptM & $sleep2
+  $myTerm ../fileScriptM & $sleep3
+  $myTerm ../clientScriptM; $keep
 }
 
 ## Export vars and functions
 export jar_name
 export testing
-export Max
 export keep
 export thePath
 export clientIn

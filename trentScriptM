@@ -1,0 +1,9 @@
+#!/bin/bash
+jar_name=bcprov-jdk15on-158.jar
+
+echo "Starting TrentServer..."
+cd /Users/maxreno/school/cs1653/cs1653-2017fa-jbd29-mar257-zds14
+
+
+pwd
+java -cp .:$jar_name RunTrentServer
