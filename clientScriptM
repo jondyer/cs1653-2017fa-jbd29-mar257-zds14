@@ -9,11 +9,11 @@ pwd
 
 echo "Auto test? (1/0)"
 read tt
+echo "Sleeping..."
 
 if test "$tt" == "1"
 then
-  $clientCmd = "$clientCmd < $clientIn"
+  $clientCmd < $clientIn
+else
+  $clientCmd
 fi
-
-echo "Sleeping..."
-$clientCmd
