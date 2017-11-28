@@ -1,0 +1,8 @@
+@startuml
+title __Create Group__
+actor Bob
+participant GS
+
+Bob -> GS: GROUPKEY || IV || {UserName || GroupName || \npToken || [H(pToken)]k<sub>G</sub><sup>-1</sup>}K<sub>GB</sub>
+GS -> Bob: IV || {H<sup>c</sup>(K<sub>Gn</sub>) || c}K<sub>GB</sub>
+@enduml
