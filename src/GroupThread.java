@@ -388,8 +388,7 @@ public class GroupThread extends Thread {
                         response = new Envelope("FAIL");
                       else if(deleteUserFromGroup(userName, groupName, yourToken)) {
                         response = new Envelope("OK"); //Success
-                        //my_gs.groupList.updateKey(groupName);
-                        // TODO: uncomment this
+                        my_gs.groupList.updateKey(groupName);
                       }
                     } // missing token
                   } // missing groupName

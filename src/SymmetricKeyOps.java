@@ -184,6 +184,7 @@ public class SymmetricKeyOps {
       MessageDigest hashed = MessageDigest.getInstance("SHA-256", "BC");
       hashed.update(text); // Change this to "UTF-16" if needed
       hash = hashed.digest();
+      hashed.reset();
     } catch(Exception e) {
       e.printStackTrace();
     }

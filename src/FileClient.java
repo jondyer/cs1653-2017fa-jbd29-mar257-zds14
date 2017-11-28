@@ -12,6 +12,7 @@ import java.security.*;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Base64;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -160,21 +161,18 @@ public class FileClient extends Client implements FileClientInterface {
 					env = new Envelope("OK"); //Success
 
 					spec = SymmetricKeyOps.getGCM(groupIV);
-					/*
+					
 					int hashDiff = hashNum - currHashNum;
 
-					System.out.println("CurrHashNum: " + currHashNum);
-
 					if(hashDiff > 0) {
-						byte [] hash = SymmetricKeyOps.hash(SymmetricKeyOps.obj2byte(groupKey));
+						byte [] hash = SymmetricKeyOps.hash(groupKey.getEncoded());
 						for (int i = 1; i < hashDiff; i++) {
-						  hash = SymmetricKeyOps.hash(hash);
+							groupKey = new SecretKeySpec(hash, 0, 16, "AES");
+						    hash = SymmetricKeyOps.hash(groupKey.getEncoded());
 						}
 						groupKey = new SecretKeySpec(hash, 0, 16, "AES");
 					}
-					
-					System.out.println("GroupKey: " new String(groupKey));
-					*/
+				
 					Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
 		            cipher.init(Cipher.DECRYPT_MODE, groupKey, spec);
 		            File myFile = new File(destFile);
@@ -265,8 +263,6 @@ public class FileClient extends Client implements FileClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(new Integer(hashNum).toString().getBytes(), this.sessionKey, spec));
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
-
-			System.out.printf("\n\nHashNum: %d\nIV: %s\n\n", hashNum, new String(spec.getIV()));
 
 			output.writeObject(message);
 
