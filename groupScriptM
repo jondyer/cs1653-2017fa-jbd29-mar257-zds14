@@ -1,13 +1,11 @@
 #!/bin/bash
 jar_name=bcprov-jdk15on-158.jar
-thePath="cs1653-2017fa-jbd29-mar257-zds14"
 
 echo "Starting GroupServer..."
-if [[ $Max =~ "True" ]]; then
-  cd /Users/maxreno/school/cs1653/cs1653-2017fa-jbd29-mar257-zds14
-fi
+cd /Users/maxreno/school/cs1653/cs1653-2017fa-jbd29-mar257-zds14/src
 pwd
+
 GSin="../GSinput"
-pwd
+
 echo "Sleeping..."
 java -cp .:$jar_name RunGroupServer < $GSin
