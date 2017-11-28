@@ -4,7 +4,7 @@ thePath="cs1653-2017fa-jbd29-mar257-zds14"
 
 
 echo "Starting ClientApp..."
-if [[ $PWD != *"$thePath/src/"* ]]; then
+if [[ $PWD != *"$thePath"* ]]; then
   cd ./src/
 fi
 pwd
