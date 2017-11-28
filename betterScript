@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/bash
 ############################################################################################################
 ## The flag '-f' removes binaries for a fresh start.
 ## The flag '-t' runs the script with the file "ClientInput" as the input to the ClientApp. Each line in
