@@ -14,9 +14,10 @@ jar_name=bcprov-jdk15on-158.jar
 thePath="cs1653-2017fa-jbd29-mar257-zds14"
 clientIn="../ClientInput"
 myTerm="terminator"
-macTerm="open -a Terminal.app . -e"
+macTerm="open -a Terminal.app"
 myFun="do_All"
 macFun="do_All_Mac"
+Max="False"
 fresh="echo"
 remove="rm *.bin"
 sleep1="sleep 2s"
@@ -32,6 +33,7 @@ while getopts ":fmt" opt; do
       echo "Mac mode (or MAX mode) activated"
       myTerm=$macTerm
       myFun=$macFun
+      Max="True"
       ;;
     f)
       echo "Fresh start..."
@@ -119,6 +121,7 @@ do_All_Mac() {
 ## Export vars and functions
 export jar_name
 export testing
+export Max
 export keep
 export thePath
 export clientIn
