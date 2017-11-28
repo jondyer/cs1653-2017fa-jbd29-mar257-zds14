@@ -77,6 +77,9 @@ public class FileThread extends Thread {
 						response = new Envelope("OK");
 						response.addObject(signedDHPubKey);	// Send Hashed D-H public key signed by RSA private key
 						response.addObject(serverKeyPair.getPublic()); // Send plaintext D-H public key
+						// increment sequence number first
+						my_fs.sequence++;
+						response.setSeq(my_fs.sequence);
 						output.writeObject(response);
 
 
@@ -127,6 +130,10 @@ public class FileThread extends Thread {
 								}
 							}
 					}
+
+					// increment sequence number first
+					my_fs.sequence++;
+					response.setSeq(my_fs.sequence);
 					output.writeObject(response);
 				}
 				if(e.getMessage().equals("UPLOADF")) {
@@ -175,6 +182,9 @@ public class FileThread extends Thread {
 									System.out.printf("Successfully created file %s\n", remotePath.replace('/', '_'));
 
 									response = new Envelope("READY"); //Success
+									// increment sequence number first
+									my_fs.sequence++;
+									response.setSeq(my_fs.sequence);
 									output.writeObject(response);
 
 									e = (Envelope)input.readObject();
@@ -186,6 +196,9 @@ public class FileThread extends Thread {
 									while (e.getMessage().compareTo("CHUNK")==0) {
 										fos.write(buf, 0, (Integer) n);
 										response = new Envelope("READY"); //Success
+										// increment sequence number first
+										my_fs.sequence++;
+										response.setSeq(my_fs.sequence);
 										output.writeObject(response);
 										e = (Envelope)input.readObject();
 									}
@@ -203,6 +216,9 @@ public class FileThread extends Thread {
 							}
 						}
 					}
+					// increment sequence number first
+					my_fs.sequence++;
+					response.setSeq(my_fs.sequence);
 					output.writeObject(response);
 				}
 				else if (e.getMessage().compareTo("DOWNLOADF")==0) {
@@ -222,10 +238,16 @@ public class FileThread extends Thread {
 						if (sf == null) {
 							System.out.printf("Error: File %s doesn't exist\n", remotePath);
 							e = new Envelope("ERROR_FILEMISSING");
+							// increment sequence number first
+							my_fs.sequence++;
+							e.setSeq(my_fs.sequence);
 							output.writeObject(e);
 						} else if (!t.getGroups().contains(sf.getGroup())){
 							System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
 							e = new Envelope("ERROR_PERMISSION");
+							// increment sequence number first
+							my_fs.sequence++;
+							e.setSeq(my_fs.sequence);
 							output.writeObject(e);
 						} else {
 
@@ -234,6 +256,9 @@ public class FileThread extends Thread {
 								if (!f.exists()) {
 									System.out.printf("Error file %s missing from disk\n", "_"+remotePath.replace('/', '_'));
 									e = new Envelope("ERROR_NOTONDISK");
+									// increment sequence number first
+									my_fs.sequence++;
+									e.setSeq(my_fs.sequence);
 									output.writeObject(e);
 								} else {
 									FileInputStream fis = new FileInputStream(f);
@@ -257,6 +282,9 @@ public class FileThread extends Thread {
 										e.addObject(SymmetricKeyOps.encrypt(buf, this.sessionKey, spec));
 										e.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), this.sessionKey, spec));
 										e.addObject(spec.getIV());
+										// increment sequence number first
+										my_fs.sequence++;
+										e.setSeq(my_fs.sequence);
 										output.writeObject(e);
 
 										e = (Envelope)input.readObject();
@@ -269,6 +297,9 @@ public class FileThread extends Thread {
 
 										e.addObject(sf.getIV());
 										e.addObject(SymmetricKeyOps.encrypt(new Integer(sf.getHashNum()).toString().getBytes(), this.sessionKey, spec));
+										// increment sequence number first
+										my_fs.sequence++;
+										e.setSeq(my_fs.sequence);
 										output.writeObject(e);
 
 										e = (Envelope)input.readObject();
@@ -341,6 +372,9 @@ public class FileThread extends Thread {
 							}
 						}
 					}
+					// increment sequence number first
+					my_fs.sequence++;
+					e.setSeq(my_fs.sequence);
 					output.writeObject(e);
 
 				}

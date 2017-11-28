@@ -44,6 +44,12 @@ public class FileClient extends Client implements FileClientInterface {
 		try {
 			output.writeObject(env);
 			env = (Envelope)input.readObject();
+			this.sequence++;
+			if(env.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			// Get Server's D-H public key signed by its RSA private key and get plaintext D-H public key
 			byte [] serverSignedPubKey = (byte []) env.getObjContents().get(0);
@@ -95,6 +101,12 @@ public class FileClient extends Client implements FileClientInterface {
 			try {
 				output.writeObject(env);
 				env = (Envelope)input.readObject();
+				this.sequence++;
+				if(env.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 			if (env.getMessage().compareTo("OK")==0) {
 				System.out.printf("File %s deleted successfully\n", filename);
@@ -137,6 +149,12 @@ public class FileClient extends Client implements FileClientInterface {
 					output.writeObject(env);
 
 					env = (Envelope)input.readObject();
+					this.sequence++;
+					if(env.getSeq() != this.sequence) {
+						System.out.println("Invalid sequence number!");
+						sock.close(); //Close the socket
+						disconnect(); //End this communication loop
+					}
 
 					while (env.getMessage().compareTo("CHUNK")==0) {
 						iv = (byte[]) env.getObjContents().get(2);
@@ -148,6 +166,12 @@ public class FileClient extends Client implements FileClientInterface {
 						env = new Envelope("DOWNLOADF"); //Success
 						output.writeObject(env);
 						env = (Envelope)input.readObject();
+						this.sequence++;
+						if(env.getSeq() != this.sequence) {
+							System.out.println("Invalid sequence number!");
+							sock.close(); //Close the socket
+							disconnect(); //End this communication loop
+						}
 					}
 
 					fos.close();
@@ -224,7 +248,13 @@ public class FileClient extends Client implements FileClientInterface {
 			 message.addObject(SymmetricKeyOps.encrypt(this.signedHash, this.sessionKey, spec));
 			 output.writeObject(message);
 
-			 e = (Envelope)input.readObject();
+			e = (Envelope)input.readObject();
+			this.sequence++;
+ 			if(e.getSeq() != this.sequence) {
+ 				System.out.println("Invalid sequence number!");
+ 				sock.close(); //Close the socket
+ 				disconnect(); //End this communication loop
+ 			}
 
 			 //If server indicates success, return the member list
 			 if(e.getMessage().equals("OK")){
@@ -278,6 +308,12 @@ public class FileClient extends Client implements FileClientInterface {
             byte[] outputBytes = cipher.doFinal(inputBytes);
 
 			env = (Envelope)input.readObject();
+			this.sequence++;
+			if(env.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//If server indicates success, return the member list
 			if(env.getMessage().equals("READY"))
@@ -314,6 +350,12 @@ public class FileClient extends Client implements FileClientInterface {
 				output.writeObject(message);
 
 				env = (Envelope)input.readObject();
+				this.sequence++;
+				if(env.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 
 			 } while (fis.available()>0);
@@ -325,6 +367,12 @@ public class FileClient extends Client implements FileClientInterface {
 				output.writeObject(message);
 
 				env = (Envelope)input.readObject();
+				this.sequence++;
+				if(env.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 				if(env.getMessage().compareTo("OK")==0)
 					System.out.printf("\nFile data upload successful\n");
 				else {
