@@ -153,23 +153,28 @@ public class FileClient extends Client implements FileClientInterface {
 
 				if(env.getMessage().compareTo("EOF")==0) {
 					System.out.printf("\nTransfer successful file %s\n", sourceFile);
-					env = new Envelope("OK"); //Success
 
 					byte[] groupIV = (byte[]) env.getObjContents().get(0);
 					int hashNum = (int) env.getObjContents().get(1);
 
-					spec = SymmetricKeyOps.getGCM(groupIV);
-					// TODO: Setup hash difference
-					/*
-					int hashDiff = 
-					byte [] hash = SymmetricKeyOps.hash(SymmetricKeyOps.obj2byte(baseKey));
-					currentHashNum--;
-					for (int i = 1; i < currentHashNum; i++) {
-					  hash = SymmetricKeyOps.hash(hash);
-					}
-					currKey = new SecretKeySpec(hash, 0, 16, "AES");
-					*/
+					env = new Envelope("OK"); //Success
 
+					spec = SymmetricKeyOps.getGCM(groupIV);
+					/*
+					int hashDiff = hashNum - currHashNum;
+
+					System.out.println("CurrHashNum: " + currHashNum);
+
+					if(hashDiff > 0) {
+						byte [] hash = SymmetricKeyOps.hash(SymmetricKeyOps.obj2byte(groupKey));
+						for (int i = 1; i < hashDiff; i++) {
+						  hash = SymmetricKeyOps.hash(hash);
+						}
+						groupKey = new SecretKeySpec(hash, 0, 16, "AES");
+					}
+					
+					System.out.println("GroupKey: " new String(groupKey));
+					*/
 					Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
 		            cipher.init(Cipher.DECRYPT_MODE, groupKey, spec);
 		            File myFile = new File(destFile);
@@ -178,6 +183,9 @@ public class FileClient extends Client implements FileClientInterface {
 					byte[] inputBytes = new byte[(int) myFile.length()];
 		            fis.read(inputBytes);           
 		            byte[] outputBytes = cipher.doFinal(inputBytes);
+
+		            fos = new FileOutputStream(myFile);
+		            fos.write(outputBytes);
 
 					output.writeObject(env);
 				} else {
@@ -258,6 +266,8 @@ public class FileClient extends Client implements FileClientInterface {
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
 
+			System.out.printf("\n\nHashNum: %d\nIV: %s\n\n", hashNum, new String(spec.getIV()));
+
 			output.writeObject(message);
 
 			Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
@@ -304,7 +314,6 @@ public class FileClient extends Client implements FileClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
 				message.addObject(spec.getIV());
 				output.writeObject(message);
-
 
 				env = (Envelope)input.readObject();
 

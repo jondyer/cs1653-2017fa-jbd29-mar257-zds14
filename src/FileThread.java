@@ -264,10 +264,9 @@ public class FileThread extends Thread {
 									if(e.getMessage().compareTo("DOWNLOADF")==0) {
 
 										e = new Envelope("EOF");
-										ShareFile sFile = FileServer.fileList.getFile(remotePath);
-										System.out.println("\n\nPath: " + remotePath + "\n");
-										e.addObject(sFile.getIV());
-										e.addObject(sFile.getHashNum());
+
+										e.addObject(sf.getIV());
+										e.addObject(sf.getHashNum());
 										output.writeObject(e);
 
 										e = (Envelope)input.readObject();

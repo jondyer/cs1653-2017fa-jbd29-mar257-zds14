@@ -12,7 +12,7 @@
 ## useful vars
 jar_name=bcprov-jdk15on-158.jar
 thePath="cs1653-2017fa-jbd29-mar257-zds14"
-clientIn="../ClientInput"
+clientIn="../DownloadFile"
 myTerm="terminator"
 macTerm="open -a terminal ."
 fresh="echo"

@@ -549,7 +549,6 @@ class ClientApp {
    * @return           Sucess of operation.
    */
   private boolean downloadFile(UserToken myToken){
-    // TODO: Decrypt file with GroupKey
     System.out.print("What file do you want to download? >> ");
     String sourceFile = console.next();
     System.out.print("What do you want to save it as? >> ");
