@@ -1,9 +1,15 @@
 /******************************
  * Global TODO tracking page  *
  ******************************/
-TODO: Remove extraneous console output
-TODO: Double-check code: token hash signature verification
-TODO: Figure out message sequencing
+TODO: Remove extraneous console output                                                @Everyone
+TODO: Double-check code: token hash signature verification                            @Jon/Zach
+TODO: Figure out message sequencing                                                   @Jon
+TODO: Add server info (IP, Port) to Token Identifier                                  @Max
+TODO: Update keys/Leslie Lamport                                                      @Zach
+TODO: Triple-check project description and reqs against writeup and code              @Everyone
+TODO: Update diagrams                                                                 @Zach
+TODO: Revise/update writeup                                                           @Everyone
+TODO: FileServer get GS pubkey from Trent on registration (don't send it from client) @Whoever
 
 
 /*****************************************************
@@ -11,6 +17,5 @@ TODO: Figure out message sequencing
  * Only do these if all of the above are complete!!! *
  *****************************************************/
 TODO: Support selection of multiple groups at once for operation
-TODO: FileServer get GS pubkey from Trent on registration (don't send it from client)
 TODO: Extra credit, password reset
 TODO: Extra credit, timestamp T5
