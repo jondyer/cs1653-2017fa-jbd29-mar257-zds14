@@ -43,6 +43,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private byte[] signedHash;
 	private String fileServerAddress;
 
+
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
 		BigInteger A = null;
@@ -61,8 +62,21 @@ public class GroupClient extends Client implements GroupClientInterface {
 	        mes2.addObject(user);
 	        mes2.addObject(A);
 
+					// increment sequence number first
+					this.sequence++;
+					mes2.setSeq(this.sequence);
 	        output.writeObject(mes2);
-	        resp2 = (Envelope)input.readObject();
+
+					resp2 = (Envelope)input.readObject();
+					// check sequence number
+	        this.sequence++;
+	        if(resp2.getSeq() != this.sequence) {
+	          System.out.println("Invalid sequence number!");
+	          sock.close(); //Close the socket
+	          disconnect(); //End this communication loop
+	        }
+
+
         } catch (IOException io) {
         	System.out.println(io.getMessage());
         } catch (ClassNotFoundException cl) {
@@ -89,8 +103,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 
         try {
 	        mes1.addObject(user);
+					// increment sequence number first
+					this.sequence++;
+					mes1.setSeq(this.sequence);
 	        output.writeObject(mes1);
-	        resp1 = (Envelope)input.readObject();
+
+					resp1 = (Envelope)input.readObject();
+					this.sequence++;
+					if(resp1.getSeq() != this.sequence) {
+						System.out.println("Invalid sequence number!");
+						sock.close(); //Close the socket
+						disconnect(); //End this communication loop
+					}
+
 	        salt = (byte [])resp1.getObjContents().get(0);
         } catch (IOException io) {
         	System.out.println(io.getMessage());
@@ -115,8 +140,19 @@ public class GroupClient extends Client implements GroupClientInterface {
         mes.addObject(c2);
 
         try{
+					// increment sequence number first
+					this.sequence++;
+					mes.setSeq(this.sequence);
 	        output.writeObject(mes);
-		    resp = (Envelope)input.readObject();
+
+		    	resp = (Envelope)input.readObject();
+					this.sequence++;
+	        if(resp.getSeq() != this.sequence) {
+	          System.out.println("Invalid sequence number!");
+	          sock.close(); //Close the socket
+	          disconnect(); //End this communication loop
+	        }
+
 		} catch (IOException io) {
 			System.out.println(io.getMessage());
 		} catch (ClassNotFoundException cl) {
@@ -142,10 +178,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
 			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			//Get the response from the server
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//Successful response
 			if(response.getMessage().equals("OK")) {
@@ -188,11 +233,21 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(spec.getIV());
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
+
 				if(this.fileServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.fileServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				//Get the response from the server
 				response = (Envelope)input.readObject();
+				this.sequence++;
+				if(response.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 				//Successful response
 				if(response.getMessage().equals("OK")) {
@@ -258,10 +313,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(v.toByteArray(), K, spec)); // add encrypted secret
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 
 				response = (Envelope)input.readObject();
+				this.sequence++;
+				if(response.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
@@ -287,10 +351,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//If server indicates success, return true
 			if(response.getMessage().equals("OK"))
@@ -315,9 +388,18 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//If server indicates success, return true
 			if(response.getMessage().equals("OK"))
@@ -341,10 +423,20 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
+
 			//If server indicates success, return true
 			if(response.getMessage().equals("OK"))
 				return true;
@@ -368,10 +460,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 		  message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), K, spec));	// add encrypted username
 		  message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 		  message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-		  output.writeObject(message);
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
 
 		  response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 		  //If server indicates success, return the member list
 		  if(response.getMessage().equals("OK")) {
@@ -399,10 +500,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(user.getBytes(), K, spec));	// add encrypted username
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//If server indicates success, return the member list
 			if(response.getMessage().equals("OK"))
@@ -430,9 +540,18 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(spec.getIV());
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//If server indicates success, return the group list
 			if(response.getMessage().equals("OK"))
@@ -460,9 +579,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(spec.getIV());
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec)); //Add requester's token
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
+
 			spec = SymmetricKeyOps.getGCM((byte[]) response.getObjContents().get(0));
 			List<String> allUsers = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec));
 			//If server indicates success, return the user list
@@ -492,9 +621,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				response = (Envelope)input.readObject();
+				this.sequence++;
+				if(response.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 					return true;
@@ -518,9 +657,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
+
 			//If server indicates success, return true
 			if(response.getMessage().equals("OK"))
 				return true;
@@ -552,9 +701,18 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//If server indicates success, return true
 			if(!response.getMessage().equals("OK")) return;
