@@ -6,8 +6,8 @@ cd /Users/maxreno/school/cs1653/cs1653-2017fa-jbd29-mar257-zds14/src
 pwd
 
 echo "Sleeping..."
-if [ $testing = "True" ]; then
+if [[ $testing == "True" ]]; then
   $clientCmd < $clientIn
-elif [ -z "$testing" ]; then
+else
   $clientCmd
 fi
