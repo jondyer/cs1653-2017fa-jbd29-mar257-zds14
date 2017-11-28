@@ -167,7 +167,7 @@ public class FileClient extends Client implements FileClientInterface {
 					if(hashDiff > 0) {
 						byte [] hash = SymmetricKeyOps.hash(groupKey.getEncoded());
 						for (int i = 1; i < hashDiff; i++) {
-							// I know I can just hash a byte array, but the different method of 
+							// I know I can just hash a byte array, but the different method of
         					// encoding breaks things so it needs to be kept consistent
 							groupKey = new SecretKeySpec(hash, 0, 16, "AES");
 						    hash = SymmetricKeyOps.hash(groupKey.getEncoded());

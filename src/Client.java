@@ -10,7 +10,7 @@ public abstract class Client {
 	protected Socket sock;
 	protected ObjectOutputStream output;
 	protected ObjectInputStream input;
-	protected Integer sequence;
+	protected int sequence = 0;
 
 	public boolean connect(final String server, final int port) {
 		System.out.println("Attempting to connect...");

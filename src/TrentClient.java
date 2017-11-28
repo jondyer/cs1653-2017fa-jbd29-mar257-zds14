@@ -21,6 +21,7 @@ public class TrentClient extends Client {
 
   private SecretKey sessionKey;
 
+
   @SuppressWarnings("all")
   public PublicKey getPublicKey(String ipaddress, int port, PublicKey trentPubKey) throws Exception {
     Security.addProvider(new BouncyCastleProvider());

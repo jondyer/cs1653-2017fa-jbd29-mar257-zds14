@@ -29,7 +29,7 @@ public class FileThread extends Thread {
 	private Token t;
 	private PublicKey groupServerPublicKey;
 	ArrayList<Object> temp = null;
-
+	private int sequence = 0;
 
 
 	public FileThread(Socket _socket, FileServer _fs) {
