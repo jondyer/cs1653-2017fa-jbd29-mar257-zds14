@@ -16,8 +16,8 @@ public abstract class Server {
 	public String name;
 
 	protected Socket sock;
-    protected ObjectOutputStream output;
-    protected ObjectInputStream input;
+  protected ObjectOutputStream output;
+  protected ObjectInputStream input;
 
 	protected KeyPairGenerator keyGenRSA;
 	protected KeyPair keyPairRSA;

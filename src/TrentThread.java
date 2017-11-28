@@ -75,6 +75,11 @@ public class TrentThread extends Thread {
           response = new Envelope("OK"); // Success
           response.addObject(my_ts.pub);
           output.writeObject(response);
+        } else if(e.getMessage().equals("GROUP")) {  // GET GROUPSERVER PUBLIC KEY
+          String add = (String) e.getObjContents().get(0);     // get address of desired groupserver
+          response = new Envelope("OK"); // Success
+          response.addObject(my_ts.serverList.getPubKey(add));  // add the groupserver's public key
+          output.writeObject(response);
         } else {
           response = new Envelope("FAIL"); //Server does not understand client request
           output.writeObject(response);

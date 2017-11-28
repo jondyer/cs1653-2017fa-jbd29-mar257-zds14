@@ -10,9 +10,10 @@ import java.util.Collections;
 public class Token implements UserToken, java.io.Serializable {
 
     private static final long serialVersionUID = -5699986336399821572L;
-    private String issuer;
-    private String subject;
-    private List<String> groups;
+    private String issuer;        // GroupServer
+    private String subject;       // Person whom the token belongs to
+    private List<String> groups;  // Groups belonged to (for a full token) || Groups requested for the session (partial token)
+    private String address;       // Address ("ipadress:port") of the fileserver to which token will be presented to
 
     public Token(String issuer, String subject) {
         this.issuer = issuer;
@@ -35,6 +36,14 @@ public class Token implements UserToken, java.io.Serializable {
       return subject;
     }
 
+    public String getAddress() {
+      return this.address;
+    }
+
+    public void setAddress(String address) {
+      this.address = address;
+    }
+
     public List<String> getGroups() {
       List<String> gr = new ArrayList<String>(groups);
       return gr;
@@ -45,13 +54,18 @@ public class Token implements UserToken, java.io.Serializable {
       Collections.sort(groups, String.CASE_INSENSITIVE_ORDER);
     }
 
+    /**
+     * Builds a unique identifier of the issuer, subject, groups, and fileserver address used for verifying signature in other classes, where the order of groups in the token (should be) arbitrary
+     * @return String identifier of token.
+     */
     public String getIdentifier() {
       StringBuilder b = new StringBuilder();
-      b.append(issuer + ":");
-      b.append(subject + ":");
-      for(String s : groups)
+      b.append(this.issuer + ":");
+      b.append(this.subject + ":");
+      for(String s : this.groups)
         b.append(s + ":");
-      return b.substring(0, b.length() - 1);
+      b.append(this.address);
+      return b.toString();
     }
 
 }

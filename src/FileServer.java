@@ -19,6 +19,8 @@ public class FileServer extends Server {
 	public static int TRENT_PORT = 4444;
 	public static String TRENT_IP = "127.0.0.1";
 	public static FileList fileList;
+	public PublicKey groupServerPublicKey;
+
 
 	public FileServer() {
 		super(SERVER_PORT, "FilePile");
