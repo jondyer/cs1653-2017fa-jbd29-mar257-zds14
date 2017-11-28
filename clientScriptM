@@ -11,5 +11,4 @@ $clientCmd
 if test "$testing" == "True"
 then
   $clientCmd < $clientIn
-else
 fi
