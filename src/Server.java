@@ -26,7 +26,6 @@ public abstract class Server {
 	protected PrivateKey priv;
 
 	protected String keyFile;
-  protected int sequence;
 
 
 	public Server(int _SERVER_PORT, String _serverName) {

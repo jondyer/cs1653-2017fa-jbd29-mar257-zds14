@@ -42,8 +42,17 @@ public class FileClient extends Client implements FileClientInterface {
 		env.addObject(clientKeyPair.getPublic());
 		env.addObject(iv);
 		try {
+			// increment sequence number first
+			this.sequence++;
+			env.setSeq(this.sequence);
 			output.writeObject(env);
 			env = (Envelope)input.readObject();
+			this.sequence++;
+			if(env.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			// Get Server's D-H public key signed by its RSA private key and get plaintext D-H public key
 			byte [] serverSignedPubKey = (byte []) env.getObjContents().get(0);
@@ -65,6 +74,9 @@ public class FileClient extends Client implements FileClientInterface {
 				//  TODO: Find different way to send Group Server Public Key
 				env = new Envelope("OK");
 				env.addObject(this.groupServerPublicKey); // Pass FileThread (FileServer) the group server's public key to verify token hash)
+				// increment sequence number first
+				this.sequence++;
+				env.setSeq(this.sequence);
 				output.writeObject(env);
 				return true;
 			} else {
@@ -93,8 +105,17 @@ public class FileClient extends Client implements FileClientInterface {
 		env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
 
 			try {
+				// increment sequence number first
+				this.sequence++;
+				env.setSeq(this.sequence);
 				output.writeObject(env);
 				env = (Envelope)input.readObject();
+				this.sequence++;
+				if(env.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 			if (env.getMessage().compareTo("OK")==0) {
 				System.out.printf("File %s deleted successfully\n", filename);
@@ -133,10 +154,18 @@ public class FileClient extends Client implements FileClientInterface {
 					env.addObject(spec.getIV());
 					env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
 
-
+					// increment sequence number first
+					this.sequence++;
+					env.setSeq(this.sequence);
 					output.writeObject(env);
 
 					env = (Envelope)input.readObject();
+					this.sequence++;
+					if(env.getSeq() != this.sequence) {
+						System.out.println("Invalid sequence number!");
+						sock.close(); //Close the socket
+						disconnect(); //End this communication loop
+					}
 
 					while (env.getMessage().compareTo("CHUNK")==0) {
 						iv = (byte[]) env.getObjContents().get(2);
@@ -146,8 +175,17 @@ public class FileClient extends Client implements FileClientInterface {
 						fos.write(buf, 0, n);
 						System.out.printf(".");
 						env = new Envelope("DOWNLOADF"); //Success
+						// increment sequence number first
+						this.sequence++;
+						env.setSeq(this.sequence);
 						output.writeObject(env);
 						env = (Envelope)input.readObject();
+						this.sequence++;
+						if(env.getSeq() != this.sequence) {
+							System.out.println("Invalid sequence number!");
+							sock.close(); //Close the socket
+							disconnect(); //End this communication loop
+						}
 					}
 
 					fos.close();
@@ -187,6 +225,9 @@ public class FileClient extends Client implements FileClientInterface {
 						fos = new FileOutputStream(myFile);
 						fos.write(outputBytes);
 
+						// increment sequence number first
+						this.sequence++;
+						env.setSeq(this.sequence);
 						output.writeObject(env);
 					} else {
 						System.out.printf("Error reading file %s (%s)\n", sourceFile, env.getMessage());
@@ -222,9 +263,18 @@ public class FileClient extends Client implements FileClientInterface {
 			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
 			 message.addObject(spec.getIV());
 			 message.addObject(SymmetricKeyOps.encrypt(this.signedHash, this.sessionKey, spec));
-			 output.writeObject(message);
+			 // increment sequence number first
+ 			this.sequence++;
+ 			message.setSeq(this.sequence);
+			output.writeObject(message);
 
-			 e = (Envelope)input.readObject();
+			e = (Envelope)input.readObject();
+			this.sequence++;
+ 			if(e.getSeq() != this.sequence) {
+ 				System.out.println("Invalid sequence number!");
+ 				sock.close(); //Close the socket
+ 				disconnect(); //End this communication loop
+ 			}
 
 			 //If server indicates success, return the member list
 			 if(e.getMessage().equals("OK")){
@@ -266,6 +316,9 @@ public class FileClient extends Client implements FileClientInterface {
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
 
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
@@ -278,6 +331,12 @@ public class FileClient extends Client implements FileClientInterface {
             byte[] outputBytes = cipher.doFinal(inputBytes);
 
 			env = (Envelope)input.readObject();
+			this.sequence++;
+			if(env.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//If server indicates success, return the member list
 			if(env.getMessage().equals("READY"))
@@ -311,9 +370,19 @@ public class FileClient extends Client implements FileClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
 				message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
 				message.addObject(spec.getIV());
+
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				env = (Envelope)input.readObject();
+				this.sequence++;
+				if(env.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 
 			 } while (fis.available()>0);
@@ -322,9 +391,18 @@ public class FileClient extends Client implements FileClientInterface {
 			 if(env.getMessage().compareTo("READY")==0) {
 
 				message = new Envelope("EOF");
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				env = (Envelope)input.readObject();
+				this.sequence++;
+				if(env.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 				if(env.getMessage().compareTo("OK")==0)
 					System.out.printf("\nFile data upload successful\n");
 				else {

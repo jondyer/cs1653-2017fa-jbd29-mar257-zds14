@@ -59,8 +59,8 @@ public class GroupThread extends Thread {
         Envelope message = (Envelope)input.readObject();
 
         // check sequence number
-        my_gs.sequence++;
-        if(message.getSeq() != my_gs.sequence) {
+        this.sequence++;
+        if(message.getSeq() != this.sequence) {
           System.out.println("Invalid sequence number!");
           socket.close(); //Close the socket
           proceed = false; //End this communication loop
@@ -90,8 +90,8 @@ public class GroupThread extends Thread {
                   response.addObject(c1);
 
                   // increment sequence number first
-                  my_gs.sequence++;
-                  response.setSeq(my_gs.sequence);
+                  this.sequence++;
+                  response.setSeq(this.sequence);
                   output.writeObject(response);
                 }
               }
@@ -110,8 +110,8 @@ public class GroupThread extends Thread {
             }
           }
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("CHAL")) {
           if(message.getObjContents().size() < 3)
@@ -127,8 +127,8 @@ public class GroupThread extends Thread {
               byte[] c1_dec = SymmetricKeyOps.decrypt(c1Cipher, K, iv);
               if(!Arrays.equals(c1, c1_dec)) {
                 // increment sequence number first
-                my_gs.sequence++;
-                response.setSeq(my_gs.sequence);
+                this.sequence++;
+                response.setSeq(this.sequence);
                 output.writeObject(response);
                 System.out.println("Error: Challenge did not match!");
                 //System.exit(0);
@@ -139,8 +139,8 @@ public class GroupThread extends Thread {
               response.addObject(gcm.getIV());
               response.addObject(SymmetricKeyOps.encrypt(c2, K, gcm));
               // increment sequence number first
-              my_gs.sequence++;
-              response.setSeq(my_gs.sequence);
+              this.sequence++;
+              response.setSeq(this.sequence);
               output.writeObject(response);
             }
           }
@@ -156,8 +156,8 @@ public class GroupThread extends Thread {
             response = new Envelope("FAIL");
             response.addObject(null);
             // increment sequence number first
-            my_gs.sequence++;
-            response.setSeq(my_gs.sequence);
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
           } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
             String groupname;
@@ -176,8 +176,8 @@ public class GroupThread extends Thread {
             }
 
             // increment sequence number first
-            my_gs.sequence++;
-            response.setSeq(my_gs.sequence);
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
           } else {
             UserToken yourToken = createToken(username); //Create a token
@@ -189,8 +189,8 @@ public class GroupThread extends Thread {
             response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
             response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
             // increment sequence number first
-            my_gs.sequence++;
-            response.setSeq(my_gs.sequence);
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
           }
         } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
@@ -219,8 +219,8 @@ public class GroupThread extends Thread {
             }
           }
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("DUSER")) { //Client wants to delete a user
           response = new Envelope("FAIL");
@@ -241,8 +241,8 @@ public class GroupThread extends Thread {
             }
           }
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("CGROUP")) {//Client wants to create a group
           response = new Envelope("FAIL");
@@ -263,8 +263,8 @@ public class GroupThread extends Thread {
             }
           }
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("DGROUP")) { //Client wants to delete a group
             response = new Envelope("FAIL");
@@ -288,8 +288,8 @@ public class GroupThread extends Thread {
             }
 
             // increment sequence number first
-            my_gs.sequence++;
-            response.setSeq(my_gs.sequence);
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
         } else if(message.getMessage().equals("LMEMBERS")) { //Client wants a list of members in a group
             response = new Envelope("FAIL");
@@ -318,8 +318,8 @@ public class GroupThread extends Thread {
             }
 
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("LGROUPS")) { //Client wants a list of members in a group
             response = new Envelope("FAIL");
@@ -349,8 +349,8 @@ public class GroupThread extends Thread {
             }
 
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("LAGROUPS")) { //Client wants a list of all groups
             response = new Envelope("FAIL");
@@ -378,8 +378,8 @@ public class GroupThread extends Thread {
             }
 
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("LAUSERS")) { //Client wants a list of all users
             response = new Envelope("FAIL");
@@ -404,8 +404,8 @@ public class GroupThread extends Thread {
             }
 
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("AUSERTOGROUP")) {//Client wants to add user to a group
           response = new Envelope("FAIL");
@@ -430,8 +430,8 @@ public class GroupThread extends Thread {
             } // missing iv
           } // missing something!
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("RUSERFROMGROUP")) {//Client wants to remove user from a group
             response = new Envelope("FAIL");
@@ -458,8 +458,8 @@ public class GroupThread extends Thread {
               } // missing iv
             } // missing something!
             // increment sequence number first
-            my_gs.sequence++;
-            response.setSeq(my_gs.sequence);
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
         } else if(message.getMessage().equals("GROUPKEY")) {//Client wants to remove user from a group
             response = new Envelope("FAIL");
@@ -491,8 +491,8 @@ public class GroupThread extends Thread {
               } // missing iv
             } // missing something!
             // increment sequence number first
-            my_gs.sequence++;
-            response.setSeq(my_gs.sequence);
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
         } else if(message.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
           socket.close(); //Close the socket
@@ -500,8 +500,8 @@ public class GroupThread extends Thread {
         } else {
           response = new Envelope("FAIL"); //Server does not understand client request
           // increment sequence number first
-          my_gs.sequence++;
-          response.setSeq(my_gs.sequence);
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         }
       } while(proceed);
