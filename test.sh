@@ -60,6 +60,9 @@ fi
 ## Remove binaries if flag is set
 $fresh
 
+## Remove any test files with '.file' at the end
+rm *.file 
+
 ## Compile everything
 javac -cp .:$jar_name *.java
 

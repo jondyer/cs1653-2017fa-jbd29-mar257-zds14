@@ -9,6 +9,7 @@ BUG: After deleting group, app exits
     GroupServer outputs "LGROUPS" then "Verifying User's Token.... false"
 BUG: After selecting "delete group (o3)", no matter what you select the app exits and token verification is false
 
+TODO: Support selection of multiple groups at once for operation
 TODO: FileServer get GS pubkey from Trent on registration (don't send it from client)
 TODO: Extra credit, password reset
 TODO: Extra credit, timestamp T5

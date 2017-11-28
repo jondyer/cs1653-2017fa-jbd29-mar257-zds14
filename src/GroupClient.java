@@ -265,8 +265,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	}
 
-	 // Overload for password
-	 public boolean createUser(String username, String pw, UserToken token) {
+	// Overload for password
+	public boolean createUser(String username, String pw, UserToken token) {
 		 try {
 				Envelope message = null, response = null;
 				//Tell the server to create a user
@@ -304,211 +304,211 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 
-	 public boolean deleteUser(String username, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
+	public boolean deleteUser(String username, UserToken token) {
+		try {
+			Envelope message = null, response = null;
 
-				//Tell the server to delete a user
-				message = new Envelope("DUSER");
+			//Tell the server to delete a user
+			message = new Envelope("DUSER");
 
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
-
-
-				response = (Envelope)input.readObject();
-
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
-			}
-	 }
-
-	 public boolean createGroup(String groupname, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to create a group
-				message = new Envelope("CGROUP");
-
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
-
-				// TODO: Send signed hash with token
-
-				response = (Envelope)input.readObject();
-
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
-			}
-	 }
-
-	 public boolean deleteGroup(String groupname, UserToken token){
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to delete a group
-				message = new Envelope("DGROUP");
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
 
 
-				response = (Envelope)input.readObject();
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
+			response = (Envelope)input.readObject();
 
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
-			}
-	 }
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
 
-	 @SuppressWarnings("unchecked")
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+
+	public boolean createGroup(String groupname, UserToken token) {
+	 try {
+			Envelope message = null, response = null;
+			//Tell the server to create a group
+			message = new Envelope("CGROUP");
+
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
+
+			// TODO: Send signed hash with token
+
+			response = (Envelope)input.readObject();
+
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
+
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+
+	public boolean deleteGroup(String groupname, UserToken token){
+	 try {
+			Envelope message = null, response = null;
+			//Tell the server to delete a group
+			message = new Envelope("DGROUP");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
+
+
+			response = (Envelope)input.readObject();
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
+
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<String> listMembers(String group, UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the member list
-			 message = new Envelope("LMEMBERS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), K, spec));	// add encrypted username
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
+		try {
+		  Envelope message = null, response = null;
+		  //Tell the server to return the member list
+		  message = new Envelope("LMEMBERS");
+		  spec = SymmetricKeyOps.getGCM();
+		  message.addObject(spec.getIV());
+		  message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), K, spec));	// add encrypted username
+		  message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+		  message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+		  output.writeObject(message);
 
 
-			 response = (Envelope)input.readObject();
+		  response = (Envelope)input.readObject();
 
-			 //If server indicates success, return the member list
-			 if(response.getMessage().equals("OK")) {
-				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
-			  return (List<String>)SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the token
+		  //If server indicates success, return the member list
+		  if(response.getMessage().equals("OK")) {
+			  spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
+		    return (List<String>)SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the token
 			}
 
-			 return null;
+		  return null;
 
-		 } catch(Exception e) {
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public ArrayList<ArrayList<String>> listGroups(String user, UserToken token) {
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to return the member list
+			message = new Envelope("LGROUPS");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(user.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
+
+
+			response = (Envelope)input.readObject();
+
+			//If server indicates success, return the member list
+			if(response.getMessage().equals("OK"))
+			{
+				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
+				return (ArrayList<ArrayList<String>>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list of lists
+			}
+
+			return null;
+
+		} catch(Exception e) {
 				System.err.println("Error: " + e.getMessage());
 				e.printStackTrace(System.err);
 				return null;
-			}
+		}
 	 }
 
-	 @SuppressWarnings("unchecked")
-	public List<List<String>> listGroups(String user, UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the member list
-			 message = new Envelope("LGROUPS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(user.getBytes(), K, spec));	// add encrypted username
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
-
-
-			 response = (Envelope)input.readObject();
-
-			 //If server indicates success, return the member list
-			 if(response.getMessage().equals("OK"))
-			 {
-				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
-				return (List<List<String>>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list of lists
-			 }
-
-			 return null;
-
-		 } catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return null;
-			}
-	 }
-
-	 @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	public List<String> listAllGroups(UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the group list
-			 message = new Envelope("LAGROUPS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to return the group list
+			message = new Envelope("LAGROUPS");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
 
-			 response = (Envelope)input.readObject();
+			response = (Envelope)input.readObject();
 
-			 //If server indicates success, return the group list
-			 if(response.getMessage().equals("OK"))
-			 {
+			//If server indicates success, return the group list
+			if(response.getMessage().equals("OK"))
+			{
 				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
 				return (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list
-			 }
-
-			 return null;
-
-		 } catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return null;
 			}
-	 }
 
-	 @SuppressWarnings("unchecked")
+			return null;
+
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<String> listAllUsers(UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the group list
-			 message = new Envelope("LAUSERS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec)); //Add requester's token
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to return the group list
+			message = new Envelope("LAUSERS");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec)); //Add requester's token
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			output.writeObject(message);
 
-			 response = (Envelope)input.readObject();
-			 spec = SymmetricKeyOps.getGCM((byte[]) response.getObjContents().get(0));
-			 List<String> allUsers = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec));
-			 //If server indicates success, return the user list
-			 if(response.getMessage().equals("OK"))
-			 {
+			response = (Envelope)input.readObject();
+			spec = SymmetricKeyOps.getGCM((byte[]) response.getObjContents().get(0));
+			List<String> allUsers = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec));
+			//If server indicates success, return the user list
+			if(response.getMessage().equals("OK"))
+			{
 				return allUsers; //This cast creates compiler warnings. Sorry.
-			 }
-
-			 return null;
-
-		 } catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return null;
 			}
+
+			return null;
+
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return null;
+		}
 	 }
 
 
