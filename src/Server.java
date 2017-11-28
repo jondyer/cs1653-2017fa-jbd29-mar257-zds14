@@ -14,6 +14,7 @@ public abstract class Server {
 
 	protected int port;
 	public String name;
+	protected String ip;
 
 	protected Socket sock;
   protected ObjectOutputStream output;
@@ -32,6 +33,10 @@ public abstract class Server {
 		port = _SERVER_PORT;
 		name = _serverName;
 		keyFile = "KeyPair-" + port + ".bin";
+	}
+
+	public String getIP() {
+		return ip;
 	}
 
 	public int getPort() {
@@ -94,6 +99,7 @@ public abstract class Server {
 
 		  if (envelope.getMessage().compareTo("OK")==0) {
 		    System.out.printf("Server created successfully\n");
+		    ip = (String) envelope.getObjContents().get(0);
 		  }
 		  else {
 		    System.out.printf("Server already exists...\n");
