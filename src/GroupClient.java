@@ -236,37 +236,6 @@ public class GroupClient extends Client implements GroupClientInterface {
     return (getToken(username, "ADMIN") != null);
   }
 
-
-	// Deprecated I think?
-	public boolean createUser(String username, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to create a user
-				//If no password is given, initialize to empty
-				String pw = "";
-				message = new Envelope("CUSER");
-
-
-				message.addObject(username); //Add user name string
-				message.addObject(pw); //Add user password
-				message.addObject(token); //Add the requester's token
-				message.addObject(signedHash);
-				output.writeObject(message);
-
-				response = (Envelope)input.readObject();
-
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
-			}
-	}
-
 	// Overload for password
 	public boolean createUser(String username, String pw, UserToken token) {
 		 try {
@@ -347,8 +316,6 @@ public class GroupClient extends Client implements GroupClientInterface {
 			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
 			output.writeObject(message);
-
-			// TODO: Send signed hash with token
 
 			response = (Envelope)input.readObject();
 
