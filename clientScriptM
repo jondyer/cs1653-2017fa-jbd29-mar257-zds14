@@ -1,5 +1,7 @@
 #!/bin/bash
 jar_name=bcprov-jdk15on-158.jar
+clientCmd="java -cp .:$jar_name RunClientApp"
+
 
 echo "Starting ClientApp..."
 cd /Users/maxreno/school/cs1653/cs1653-2017fa-jbd29-mar257-zds14/src
@@ -7,8 +9,8 @@ pwd
 
 echo "Sleeping..."
 $clientCmd
-
-if test "$testing" == "True"
-then
-  $clientCmd < $clientIn
-fi
+# 
+# if test "$testing" == "True"
+# then
+#   $clientCmd < $clientIn
+# fi
