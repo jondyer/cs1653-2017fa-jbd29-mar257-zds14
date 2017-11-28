@@ -26,7 +26,7 @@ public class FileClient extends Client implements FileClientInterface {
 	private byte[] iv, encRemotePath, encToken, buf, signedHash;
 	private int n;
 	private PublicKey groupServerPublicKey;
-
+	private String fileServerAddress;
 
 	/**
 	 * MUST MUST MUST be run before any other method
@@ -161,7 +161,7 @@ public class FileClient extends Client implements FileClientInterface {
 					env = new Envelope("OK"); //Success
 
 					spec = SymmetricKeyOps.getGCM(groupIV);
-					
+
 					int hashDiff = hashNum - currHashNum;
 
 					if(hashDiff > 0) {
@@ -172,14 +172,14 @@ public class FileClient extends Client implements FileClientInterface {
 						}
 						groupKey = new SecretKeySpec(hash, 0, 16, "AES");
 					}
-				
+
 					Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
 		            cipher.init(Cipher.DECRYPT_MODE, groupKey, spec);
 		            File myFile = new File(destFile);
 					FileInputStream fis = new FileInputStream(myFile);
 
 					byte[] inputBytes = new byte[(int) myFile.length()];
-		            fis.read(inputBytes);           
+		            fis.read(inputBytes);
 		            byte[] outputBytes = cipher.doFinal(inputBytes);
 
 		            fos = new FileOutputStream(myFile);
@@ -272,7 +272,7 @@ public class FileClient extends Client implements FileClientInterface {
 			FileInputStream fis = new FileInputStream(myFile);
 
 			byte[] inputBytes = new byte[(int) myFile.length()];
-            fis.read(inputBytes);           
+            fis.read(inputBytes);
             byte[] outputBytes = cipher.doFinal(inputBytes);
 
 			env = (Envelope)input.readObject();
@@ -348,5 +348,8 @@ public class FileClient extends Client implements FileClientInterface {
 	}
 	public void setSignedHash(byte[] signedHash) {
 		this.signedHash = signedHash;
+	}
+	public void setFileServerAddress(String address){
+		this.fileServerAddress = address;
 	}
 }

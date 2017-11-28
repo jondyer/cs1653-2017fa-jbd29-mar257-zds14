@@ -41,6 +41,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
 	private byte[] signedHash;
+	private String fileServerAddress;
 
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
@@ -187,6 +188,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(spec.getIV());
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
+				message.addObject(SymmetricKeyOps.encrypt(fileServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
 				output.writeObject(message);
 
 				//Get the response from the server
@@ -614,6 +616,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	public int getHashNum() {
 		return hashNum;
+	}
+
+	public void setFileServerAddress(String address){
+		this.fileServerAddress = address;
 	}
 
 }
