@@ -140,6 +140,10 @@ class ClientApp {
 
     UserToken token = groupClient.getToken(username);
 
+    ArrayList<ArrayList<String>> groupLists = null;
+    ArrayList<String> groupsBelongedTo = null;
+    ArrayList<String> groupsOwned = null;
+
     // Check to make sure token exists
     if(token == null) {
       System.out.println("Account not valid.");
@@ -158,17 +162,19 @@ class ClientApp {
           isAdmin = true;
       }
 
+      token = groupClient.getToken(username);
+
+
       // Get groups belonged to
-      List<List<String>> groupLists = groupClient.listGroups(username, token);
-      ArrayList<String> groupsBelongedTo = (ArrayList<String>) groupLists.get(0);
-      ArrayList<String> groupsOwned = (ArrayList<String>) groupLists.get(1);
+      groupLists = new ArrayList<ArrayList<String>>(groupClient.listGroups(username, token));
+      groupsBelongedTo = new ArrayList<String>(groupLists.get(0));
+      groupsOwned = new ArrayList<String>(groupLists.get(1));
 
       // List groups
       System.out.println("These are the groups you belong to: ");
       for(int i=0; i<groupsBelongedTo.size(); i++)
       System.out.println(i + ") " + groupsBelongedTo.get(i));
 
-      // TODO: Support selection of multiple groups at once for operation
       // Select a group
       System.out.print("Please select a group you wish to access ('q' to quit, 'c' to create a new group) >> ");
       String selection = console.next();
@@ -177,19 +183,14 @@ class ClientApp {
         break;
       } else if(selection.equals("c")) {
         createGroup(token);
-        //updateConnection(groupClient, groupHost, GROUP_PORT);
         continue;
-      // } else if(selection.equals("r")) {
-      //   updateConnection(groupClient, groupHost, GROUP_PORT);
-      //   updateConnection(fileClient, fileHost, FILE_PORT);
-      //   continue;
       }
       choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
 
       // Check if owner of selected group
       if(groupsOwned.contains(choice) && !isAdmin) {
-        System.out.print("Would you to perform owner actions? (y/n) >> ");
+        System.out.print("Would you like to perform owner actions? (y/n) >> ");
         String response = console.next();
 
         // Wanna be a big boy?
@@ -302,8 +303,8 @@ class ClientApp {
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
-            //updateConnection(groupClient, groupHost, GROUP_PORT);
-            //updateConnection(fileClient, fileHost, FILE_PORT);
+            // now update mega-token so we have a fresh list of groups
+            //token = groupClient.getToken(username);
             doAgain = false;
             break;
 
@@ -334,20 +335,13 @@ class ClientApp {
           case "4":
             // Create a group
             createGroup(token);
-            //updateConnection(groupClient, groupHost, GROUP_PORT);
-            //updateConnection(fileClient, fileHost, FILE_PORT);
+            //token = groupClient.getToken(username);
             break;
 
           //quit
           case "q":
             doAgain = false;
             break;
-
-          //refresh
-          // case "r":
-          //   updateConnection(groupClient, groupHost, GROUP_PORT);
-          //   updateConnection(fileClient, fileHost, FILE_PORT);
-          //   break;
 
           // Invalid choice
           default:

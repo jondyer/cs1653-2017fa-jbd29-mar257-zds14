@@ -286,7 +286,7 @@ public class GroupThread extends Thread {
                   if(!verifyToken((Token) yourToken, signedHash))
                     response = new Envelope("FAIL");
                   else {
-                    List<List<String>> resp = listGroups(userName, yourToken);
+                    ArrayList<ArrayList<String>> resp = listGroups(userName, yourToken);
 
 
                     response = new Envelope("OK"); //Success
@@ -628,8 +628,8 @@ public class GroupThread extends Thread {
    * @param  UserToken token         Token of member
    * @return           List of two lists: 1st has membership, 2nd has ownership
    */
-  private List<List<String>> listGroups(String user, UserToken token) {
-    List<List<String>> groups = new ArrayList<List<String>>();
+  private ArrayList<ArrayList<String>> listGroups(String user, UserToken token) {
+    ArrayList<ArrayList<String>> groups = new ArrayList<ArrayList<String>>();
     String requester = token.getSubject();
 
     //Does requester exist?
@@ -638,7 +638,13 @@ public class GroupThread extends Thread {
       if (requester.equals(user)) {
         groups.add(my_gs.userList.getUserGroups(user));
         groups.add(my_gs.userList.getUserOwnership(user));
+      } else {
+        System.out.println("Requester does not own token");
+        return null;
       }
+    } else {
+      System.out.println("Requester does not exist");
+      return null;
     }
 
     return groups;
