@@ -110,10 +110,10 @@ do_All() {
 }
 
 do_All_Mac() {
-  $myTerm trentScript & $sleep1
-  $myTerm groupScript & $sleep2
-  $myTerm fileScript & $sleep3
-  $myTerm clientScript; $keep
+  $myTerm ../trentScript & $sleep1
+  $myTerm ../groupScript & $sleep2
+  $myTerm ../fileScript & $sleep3
+  $myTerm ../clientScript; $keep
 }
 
 ## Export vars and functions
