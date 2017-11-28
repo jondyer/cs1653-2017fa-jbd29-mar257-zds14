@@ -268,7 +268,7 @@ public class FileThread extends Thread {
 										e = new Envelope("EOF");
 
 										e.addObject(sf.getIV());
-										e.addObject(sf.getHashNum());
+										e.addObject(SymmetricKeyOps.encrypt(new Integer(sf.getHashNum()).toString().getBytes(), this.sessionKey, spec));
 										output.writeObject(e);
 
 										e = (Envelope)input.readObject();

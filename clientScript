@@ -2,8 +2,8 @@
 jar_name=bcprov-jdk15on-158.jar
 
 echo "Starting ClientApp..."
-if [[ $Max =~ "True" ]]; then
-  cd /Users/maxreno/school/cs1653/cs1653-2017fa-jbd29-mar257-zds14
+if [[ $PWD != *"$thePath/src"* ]]; then
+  cd ./src
 fi
 pwd
 echo "Sleeping..."
