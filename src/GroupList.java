@@ -133,6 +133,8 @@ public class GroupList implements java.io.Serializable {
       byte [] hash = SymmetricKeyOps.hash(baseKey.getEncoded());
       currentHashNum--;
       for (int i = 1; i < currentHashNum; i++) {
+        // I know I can just hash a byte array, but the different method of 
+        // encoding breaks things so it needs to be kept consistent
         currKey = new SecretKeySpec(hash, 0, 16, "AES");
         hash = SymmetricKeyOps.hash(currKey.getEncoded());
       }
