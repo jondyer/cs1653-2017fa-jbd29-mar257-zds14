@@ -1,7 +1,6 @@
 /******************************
  * Global TODO tracking page  *
  ******************************/
-TODO: Send signed hash with token everywhere
 TODO: Remove extraneous console output
 TODO: Double-check code: token hash signature verification
 TODO: Figure out message sequencing
