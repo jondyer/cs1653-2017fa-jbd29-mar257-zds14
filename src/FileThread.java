@@ -83,6 +83,8 @@ public class FileThread extends Thread {
 						// Receive GroupServer pubKey and verify
 						Envelope env = (Envelope)input.readObject();
 						this.groupServerPublicKey = (PublicKey) env.getObjContents().get(0);
+
+						// TODO: Move token verification up here instead of repeating it all over the place
 					}
 				}
 
@@ -379,6 +381,17 @@ public class FileThread extends Thread {
 
 	    } catch (Exception e){}
 	      return false;
+	  }
+
+
+
+		public boolean getGSPub(String grAddress) throws Exception {
+	    Envelope env = new Envelope("GROUP");
+      // ??????? HOW to establish connection with correct Trent (maybe get address of Trent as param as well?)
+	    // output.writeObject(env);
+	    // env = (Envelope)input.readObject();
+	    // return (PublicKey) env.getObjContents().get(0);
+	    return false;
 	  }
 
 }
