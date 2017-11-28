@@ -156,7 +156,7 @@ public class FileClient extends Client implements FileClientInterface {
 						System.out.printf("\nTransfer successful file %s\n", sourceFile);
 
 						byte[] groupIV = (byte[]) env.getObjContents().get(0);
-						int hashNum = (int) env.getObjContents().get(1);
+						int hashNum = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
 
 						env = new Envelope("OK"); //Success
 
