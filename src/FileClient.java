@@ -42,6 +42,9 @@ public class FileClient extends Client implements FileClientInterface {
 		env.addObject(clientKeyPair.getPublic());
 		env.addObject(iv);
 		try {
+			// increment sequence number first
+			this.sequence++;
+			env.setSeq(this.sequence);
 			output.writeObject(env);
 			env = (Envelope)input.readObject();
 			this.sequence++;
@@ -71,6 +74,9 @@ public class FileClient extends Client implements FileClientInterface {
 				//  TODO: Find different way to send Group Server Public Key
 				env = new Envelope("OK");
 				env.addObject(this.groupServerPublicKey); // Pass FileThread (FileServer) the group server's public key to verify token hash)
+				// increment sequence number first
+				this.sequence++;
+				env.setSeq(this.sequence);
 				output.writeObject(env);
 				return true;
 			} else {
@@ -99,6 +105,9 @@ public class FileClient extends Client implements FileClientInterface {
 		env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
 
 			try {
+				// increment sequence number first
+				this.sequence++;
+				env.setSeq(this.sequence);
 				output.writeObject(env);
 				env = (Envelope)input.readObject();
 				this.sequence++;
@@ -145,7 +154,9 @@ public class FileClient extends Client implements FileClientInterface {
 					env.addObject(spec.getIV());
 					env.addObject(SymmetricKeyOps.encrypt(signedHash, this.sessionKey, spec));
 
-
+					// increment sequence number first
+					this.sequence++;
+					env.setSeq(this.sequence);
 					output.writeObject(env);
 
 					env = (Envelope)input.readObject();
@@ -164,6 +175,9 @@ public class FileClient extends Client implements FileClientInterface {
 						fos.write(buf, 0, n);
 						System.out.printf(".");
 						env = new Envelope("DOWNLOADF"); //Success
+						// increment sequence number first
+						this.sequence++;
+						env.setSeq(this.sequence);
 						output.writeObject(env);
 						env = (Envelope)input.readObject();
 						this.sequence++;
@@ -180,7 +194,7 @@ public class FileClient extends Client implements FileClientInterface {
 						System.out.printf("\nTransfer successful file %s\n", sourceFile);
 
 						byte[] groupIV = (byte[]) env.getObjContents().get(0);
-						int hashNum = (int) env.getObjContents().get(1);
+						int hashNum = Integer.parseInt(new String(SymmetricKeyOps.decrypt((byte[])env.getObjContents().get(1), sessionKey, iv)));
 
 						env = new Envelope("OK"); //Success
 
@@ -211,6 +225,9 @@ public class FileClient extends Client implements FileClientInterface {
 						fos = new FileOutputStream(myFile);
 						fos.write(outputBytes);
 
+						// increment sequence number first
+						this.sequence++;
+						env.setSeq(this.sequence);
 						output.writeObject(env);
 					} else {
 						System.out.printf("Error reading file %s (%s)\n", sourceFile, env.getMessage());
@@ -246,7 +263,10 @@ public class FileClient extends Client implements FileClientInterface {
 			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), this.sessionKey, spec));
 			 message.addObject(spec.getIV());
 			 message.addObject(SymmetricKeyOps.encrypt(this.signedHash, this.sessionKey, spec));
-			 output.writeObject(message);
+			 // increment sequence number first
+ 			this.sequence++;
+ 			message.setSeq(this.sequence);
+			output.writeObject(message);
 
 			e = (Envelope)input.readObject();
 			this.sequence++;
@@ -296,6 +316,9 @@ public class FileClient extends Client implements FileClientInterface {
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
 
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
@@ -347,6 +370,10 @@ public class FileClient extends Client implements FileClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
 				message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
 				message.addObject(spec.getIV());
+
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				env = (Envelope)input.readObject();
@@ -364,6 +391,9 @@ public class FileClient extends Client implements FileClientInterface {
 			 if(env.getMessage().compareTo("READY")==0) {
 
 				message = new Envelope("EOF");
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				env = (Envelope)input.readObject();

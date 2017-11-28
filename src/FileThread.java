@@ -48,6 +48,14 @@ public class FileThread extends Thread {
 
 			do {
 				Envelope e = (Envelope)input.readObject();
+				// check sequence number
+				this.sequence++;
+				if(e.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					socket.close(); //Close the socket
+					proceed = false; //End this communication loop
+				}
+
 				System.out.println("Request received: " + e.getMessage());
 
 				//Handler to establish session key between Client and FileServer
@@ -78,13 +86,20 @@ public class FileThread extends Thread {
 						response.addObject(signedDHPubKey);	// Send Hashed D-H public key signed by RSA private key
 						response.addObject(serverKeyPair.getPublic()); // Send plaintext D-H public key
 						// increment sequence number first
-						my_fs.sequence++;
-						response.setSeq(my_fs.sequence);
+						this.sequence++;
+						response.setSeq(this.sequence);
 						output.writeObject(response);
 
 
 						// Receive GroupServer pubKey and verify
 						Envelope env = (Envelope)input.readObject();
+						// check sequence number
+		        this.sequence++;
+		        if(env.getSeq() != this.sequence) {
+		          System.out.println("Invalid sequence number!");
+		          socket.close(); //Close the socket
+		          proceed = false; //End this communication loop
+		        }
 						this.groupServerPublicKey = (PublicKey) env.getObjContents().get(0);
 
 						// TODO: Move token verification up here instead of repeating it all over the place
@@ -132,8 +147,8 @@ public class FileThread extends Thread {
 					}
 
 					// increment sequence number first
-					my_fs.sequence++;
-					response.setSeq(my_fs.sequence);
+					this.sequence++;
+					response.setSeq(this.sequence);
 					output.writeObject(response);
 				}
 				if(e.getMessage().equals("UPLOADF")) {
@@ -183,11 +198,18 @@ public class FileThread extends Thread {
 
 									response = new Envelope("READY"); //Success
 									// increment sequence number first
-									my_fs.sequence++;
-									response.setSeq(my_fs.sequence);
+									this.sequence++;
+									response.setSeq(this.sequence);
 									output.writeObject(response);
 
 									e = (Envelope)input.readObject();
+									// check sequence number
+					        this.sequence++;
+					        if(e.getSeq() != this.sequence) {
+					          System.out.println("Invalid sequence number!");
+					          socket.close(); //Close the socket
+					          proceed = false; //End this communication loop
+					        }
 
 									iv = (byte[]) e.getObjContents().get(2);
 									byte []buf = SymmetricKeyOps.decrypt((byte[])e.getObjContents().get(0), this.sessionKey, iv);
@@ -197,10 +219,17 @@ public class FileThread extends Thread {
 										fos.write(buf, 0, (Integer) n);
 										response = new Envelope("READY"); //Success
 										// increment sequence number first
-										my_fs.sequence++;
-										response.setSeq(my_fs.sequence);
+										this.sequence++;
+										response.setSeq(this.sequence);
 										output.writeObject(response);
 										e = (Envelope)input.readObject();
+										// check sequence number
+						        this.sequence++;
+						        if(e.getSeq() != this.sequence) {
+						          System.out.println("Invalid sequence number!");
+						          socket.close(); //Close the socket
+						          proceed = false; //End this communication loop
+						        }
 									}
 
 									if(e.getMessage().compareTo("EOF")==0) {
@@ -217,8 +246,8 @@ public class FileThread extends Thread {
 						}
 					}
 					// increment sequence number first
-					my_fs.sequence++;
-					response.setSeq(my_fs.sequence);
+					this.sequence++;
+					response.setSeq(this.sequence);
 					output.writeObject(response);
 				}
 				else if (e.getMessage().compareTo("DOWNLOADF")==0) {
@@ -239,15 +268,15 @@ public class FileThread extends Thread {
 							System.out.printf("Error: File %s doesn't exist\n", remotePath);
 							e = new Envelope("ERROR_FILEMISSING");
 							// increment sequence number first
-							my_fs.sequence++;
-							e.setSeq(my_fs.sequence);
+							this.sequence++;
+							e.setSeq(this.sequence);
 							output.writeObject(e);
 						} else if (!t.getGroups().contains(sf.getGroup())){
 							System.out.printf("Error user %s doesn't have permission\n", t.getSubject());
 							e = new Envelope("ERROR_PERMISSION");
 							// increment sequence number first
-							my_fs.sequence++;
-							e.setSeq(my_fs.sequence);
+							this.sequence++;
+							e.setSeq(this.sequence);
 							output.writeObject(e);
 						} else {
 
@@ -257,8 +286,8 @@ public class FileThread extends Thread {
 									System.out.printf("Error file %s missing from disk\n", "_"+remotePath.replace('/', '_'));
 									e = new Envelope("ERROR_NOTONDISK");
 									// increment sequence number first
-									my_fs.sequence++;
-									e.setSeq(my_fs.sequence);
+									this.sequence++;
+									e.setSeq(this.sequence);
 									output.writeObject(e);
 								} else {
 									FileInputStream fis = new FileInputStream(f);
@@ -283,11 +312,19 @@ public class FileThread extends Thread {
 										e.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), this.sessionKey, spec));
 										e.addObject(spec.getIV());
 										// increment sequence number first
-										my_fs.sequence++;
-										e.setSeq(my_fs.sequence);
+										this.sequence++;
+										e.setSeq(this.sequence);
 										output.writeObject(e);
 
 										e = (Envelope)input.readObject();
+										// check sequence number
+						        this.sequence++;
+						        if(e.getSeq() != this.sequence) {
+						          System.out.println("Invalid sequence number!");
+						          socket.close(); //Close the socket
+						          proceed = false; //End this communication loop
+						        }
+
 									} while (fis.available()>0);
 
 									//If server indicates success, return the member list
@@ -298,11 +335,18 @@ public class FileThread extends Thread {
 										e.addObject(sf.getIV());
 										e.addObject(SymmetricKeyOps.encrypt(new Integer(sf.getHashNum()).toString().getBytes(), this.sessionKey, spec));
 										// increment sequence number first
-										my_fs.sequence++;
-										e.setSeq(my_fs.sequence);
+										this.sequence++;
+										e.setSeq(this.sequence);
 										output.writeObject(e);
 
 										e = (Envelope)input.readObject();
+										// check sequence number
+						        this.sequence++;
+						        if(e.getSeq() != this.sequence) {
+						          System.out.println("Invalid sequence number!");
+						          socket.close(); //Close the socket
+						          proceed = false; //End this communication loop
+						        }
 										if(e.getMessage().compareTo("OK")==0) {
 											System.out.printf("File data upload successful\n");
 										}
@@ -373,8 +417,8 @@ public class FileThread extends Thread {
 						}
 					}
 					// increment sequence number first
-					my_fs.sequence++;
-					e.setSeq(my_fs.sequence);
+					this.sequence++;
+					e.setSeq(this.sequence);
 					output.writeObject(e);
 
 				}
