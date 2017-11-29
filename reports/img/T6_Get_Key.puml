@@ -1,5 +1,5 @@
 @startuml
-title __Create Group__
+title __Get Key__
 actor Bob
 participant GS
 

@@ -45,20 +45,11 @@ Managing and distributing these group keys is a task that can easily be carried 
 -   Even if an attacker intercepts the message from the GroupServer where this key is being issued, it will be encrypted (just like everything else) using the 128-bit AES session key that was established during the SRP protocol, so there is no chance the attacker will be able to figure out the group-key.  
 -   When groups change, that change is recorded and dealt with by the GroupServer already, so it will be straightforward to have the GroupServer update the group-key while only issuing it to current or new members.  
 
-We chose to base our key update mechanism off of the Leslie Lamport OTP scheme. This will allow us to easily update keys without having to batch re-encrypt all files. When a group is created, the group server will generate a 128-bit AES key and hash that key 1000 times. The server will store the original key, the current hash number, and the current key. When a user is removed from a group, the group server will decrement the hash number and update the current key. All new or updated material will be encrypted with this new key. If a user wishes to decrypt a file they simply take the difference between the hash number, which is stored with the file, and the current hash number of the key, which is provided by the group server. They then hash the current key that number of times. This ensures forward secrecy while allowing for backward compatibility.  
-
-<p align="center">
-Creating a Group</p>
-
 ![Creating a Group](./img/T6_Create_Group.png)
 
-<p align="center">
-Getting the Key</p>
+We chose to base our key update mechanism off of the Leslie Lamport OTP scheme. This will allow us to easily update keys without having to batch re-encrypt all files. When a group is created, the group server will generate a 128-bit AES key and hash that key 1000 times. The server will store the original key, the current hash number, and the current key. When a user is removed from a group, the group server will decrement the hash number and update the current key. All new or updated material will be encrypted with this new key. If a user wishes to decrypt a file they simply take the difference between the hash number, which is stored in the ShareFile, and the current hash number of the key, which is provided by the group server. They then hash the current key that number of times. This ensures forward secrecy while allowing for backward compatibility.  
 
 ![Getting the Key](./img/T6_Get_Key.png)
-
-<p align="center">
-Removing a User</p>
 
 ![Removing a User](./img/T6_Remove_User.png)  
 
