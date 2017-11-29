@@ -2,11 +2,6 @@
  * Global TODO tracking page  *
  ******************************/
 TODO: Remove extraneous console output                                                @Everyone
-TODO: Figure out message sequencing                                                   @Jon
-TODO: Add server info (IP, Port) to Token Identifier                                  @Max
-TODO: Triple-check project description and reqs against writeup and code              @Everyone
-TODO: Update diagrams                                                                 @Zach
-TODO: Revise/update writeup                                                           @Everyone
 
 
 /*****************************************************
