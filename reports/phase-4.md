@@ -20,17 +20,22 @@ We use a variety of techniques and protocols to address the given threat models 
 ### T5: Message Reorder, Replay, Modification ###
 This threat has to do with the constant potential threat of a man in the middle (MiTM) attack, which could come in the form of message reorder, replay, or modification. A MiTM attack could potentially allow the attacker to assume the identity of the user or the server, and could use this position to access information or cause either party to leak information.
 
-We took steps in the previous phase of the project to defend against these threats. Firstly, we authenticate each requested server to the user by signing essential messages in the D-H exchange using the server's private key. Only the server has access to that key, so if a malicious party poses as that server then its messages won't be verified. Even if an attacker intercepts and resends an old response from the server, they won't have access to either party's private D-H number, and thus will not be able to figure out the symmetric key.  
+We took steps in the previous phase of the project to defend against these threats. Firstly, we authenticate each requested server to the user by signing essential messages in the D-H exchange using the server's private key. Only the server has access to that key, so if a malicious party poses as that server then its messages won't be verified. Even if an attacker intercepts and resends an old response from the server, they won't have access to either party's private D-H number, and thus will not be able to figure out the symmetric key. See the following images for details of those protocols:
 
-Generating Symmetric Key
+Generating Symmetric Key  
+![Generating Symmetric Key](./img/T3.png)  
 
-![Generating Symmetric Key](./img/T3.png)
+Token Signing  
+![Token Signing](./img/T2.png)  
 
-Token Signing
 
-![Token Signing](./img/T2.png)
+To ensure that none of these attacks would work on our system, we (1) encrypted all communications (not including public keys) with 128-bit AES keys, operating in Galois-Counter-Mode (GCM), and (2) provided message sequence numbers on every communication.  
 
-Further, we encrypted all communications (not including public keys) with 128-bit AES keys, operating in Galois-Counter-Mode (GCM). GCM includes built-in authentication tags that are tamper evident. Should any part of the message be modified, the ciphertext will no longer match the tag, and in this way we know that the message has been modified. We will also expand the tag's AAD (Additional Authenticated Data) field to include a timestamp and sequence number to defend from replay and reorder attacks. This field is also validated using the GCM tag, even though it is not encrypted. Looking at the timestamp, we can distinguish between a fresh message and an old one that is being resent from a MiTM and therefore prevent this message from being accepted if it is not legitimate. As an added measure of security, the sequence number can be used to distinguish the order of each message (Message 1 in the process labeled with a "1", Message 2 with a "2", etc.) so that any message sent by a MiTM not in the correct sequence will be disregarded. This also helps to ensure that, for example, Message 1 isn't replayed by the MiTM. Although the timestamp will be in place, differences in the clock of the client and server could leave a window large enough for a malicious MiTM to act. The server will know it has already received Message 1, so it will know not to accept another Message 1 in the protocol.
+1) GCM includes built-in authentication tags that are tamper evident. Should any part of the message be modified, the ciphertext will no longer match the tag, and in this way we know that the message has been modified. An error will be thrown on message decryption that indicates that the ciphertext has been modified (or that an error has corrupted it), making modification no longer a viable attack vector. This includes modifications that simply rearrange the ciphertext that is already present.
+
+2) We also expanded the message fields to include a sequence number that is reset every session, to defend from replay and reorder attacks. The sequence number can be used to distinguish the order of each message (Message 1 in the process labeled with a "1", Message 2 with a "2", etc.) so that any message sent by a MiTM not in the correct sequence will immediately be recognized as fraudulent and the session will terminate. Both parties (client and server) keep track of the sequence for their session together, so regardless of who receives the replayed or reordered message, that party knows it is invalid.
+
+Note also that because we use a D-H exchange to generate each session key uniquely, it is impossible to replay an entire session since the new key will be different and the to-be-tricked party will not recognize it.
 
 
 ### T6: File Leakage ###
