@@ -165,8 +165,8 @@ public class GroupThread extends Thread {
             groupname = new String(namebytes); //Convert to String
             String address = new String(SymmetricKeyOps.decrypt((byte[])temp.get(3), K,spec));
             Token yourToken = (Token) createToken(username, groupname); // Create a token with the specified group
-            yourToken.setAddress(address);  // Set address of fileserver in token object
             if(yourToken != null) {
+              yourToken.setAddress(address);  // Set address of fileserver in token object
               //Respond to the client. On error, the client will receive a null token
               response = new Envelope("OK");
               spec = SymmetricKeyOps.getGCM();

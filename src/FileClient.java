@@ -12,7 +12,6 @@ import java.security.*;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Base64;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.ECNamedCurveTable;

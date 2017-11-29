@@ -78,7 +78,9 @@ In all, our several protocols and mechanisms blend and support each other in pre
 
 
 ### Nice bonus features: ###
-
+See `extraCredit.md` for full details.
+-   TestScript -- regression-testing user input script for quickly testing all functions
+-   Token-Theft on any server -- no theft will allow usage on any other server (even GroupServers)
 
 
 

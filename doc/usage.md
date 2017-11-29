@@ -41,7 +41,7 @@ To start the Client Application:
 -   or `java -cp .:bcprov-jdk15on-158.jar RunClientApp [file_serv host] [file_serv port] [group_serv host] [group_serv port]`
 -   or `java -cp .:bcprov-jdk15on-158.jar RunClientApp [file_serv host] [file_serv port] [group_serv host] [group_serv port] [trent_serv host] [trent_serv port]`  
 
-Any arguments used are optional. If run with no arguments the client will default to interactive mode, guiding the user to fill in the IP and port options or leave them as their default values. Each of the other options allow you to specify the values at the command line. If a port is not specified, it will assume to use that respective server's default port. If an IP address is not specified, it will assume to be located on the "localhost".  
+Any arguments used are optional. If run with no arguments the client will default to **interactive** mode, guiding the user to fill in the IP and port options or leave them as their default values. Each of the other options allow you to specify the values at the command line. If a port is not specified, it will assume to use that respective server's default port. If an IP address is not specified, it will assume to be located on the "localhost".  
 
 Once started, the client will attempt to connect to the servers specified earlier. If successful, the user will be prompted to enter their username and their password. Our implementation puts the least privilege principal into practice, so users will be asked which group they would like to modify and what types of operations they would like to perform during their session.  
 
@@ -74,7 +74,9 @@ If the user would like to switch to operate on a different group they can enter 
 
 
 ## Resetting the Group or File Server ##
+To restart everything, simply type `rm *.bin` before restarting all servers and ClientApp.
 
-To reset the Group Server, delete the file 'ServerList.bin' and any assosciated KeyPair files.
-To reset the Group Server, delete the files 'UserList.bin' and 'GroupList.bin' and any assosciated KeyPair files.  
-To reset a File Server, delete the 'FileList.bin' file and the 'shared_files/' directory and any assosciated KeyPair files.  
+To reset the Group Server, delete the file **ServerList.bin** and any assosciated KeyPair files.
+To reset the Group Server, delete the files **UserList.bin** and **GroupList.bin** and any assosciated KeyPair files.  
+
+To reset a File Server, delete the **FileList.bin** file and the **shared_files/** directory and any associated KeyPair files.  
