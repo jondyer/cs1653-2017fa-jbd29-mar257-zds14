@@ -36,7 +36,7 @@ Note also that because we use a D-H exchange to generate each session key unique
 
 See below for updated diagrams:
 
-
+![Message Reorder/Replay Prevention](./img/T5.png)  
 
 
 ### T6: File Leakage ###
