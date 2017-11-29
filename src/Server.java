@@ -35,11 +35,11 @@ public abstract class Server {
 	}
 
 	public String getIP() {
-		return ip;
+		return this.ip;
 	}
 
 	public int getPort() {
-		return port;
+		return this.port;
 	}
 
 	public String getName() {
