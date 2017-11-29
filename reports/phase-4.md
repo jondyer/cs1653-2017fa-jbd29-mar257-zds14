@@ -52,11 +52,18 @@ Managing and distributing these group keys is a task that can easily be carried 
 
 We chose to base our key update mechanism off of the Leslie Lamport OTP scheme. This will allow us to easily update keys without having to batch re-encrypt all files. When a group is created, the group server will generate a 128-bit AES key and hash that key 1000 times. The server will store the original key, the current hash number, and the current key. When a user is removed from a group, the group server will decrement the hash number and update the current key. All new or updated material will be encrypted with this new key. If a user wishes to decrypt a file they simply take the difference between the hash number, which is stored with the file, and the current hash number of the key, which is provided by the group server. They then hash the current key that number of times. This ensures forward secrecy while allowing for backward compatibility.  
 
-Creating a Group
+<p align="center">
+Creating a Group</p>
 
 ![Creating a Group](./img/T6_Create_Group.png)
 
-Removing a User
+<p align="center">
+Getting the Key</p>
+
+![Getting the Key](./img/T6_Get_Key.png)
+
+<p align="center">
+Removing a User</p>
 
 ![Removing a User](./img/T6_Remove_User.png)  
 
