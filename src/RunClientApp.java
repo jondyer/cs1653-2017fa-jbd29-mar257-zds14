@@ -111,7 +111,8 @@ class ClientApp {
   public void run() throws Exception {
     Security.addProvider(new BouncyCastleProvider());
 
-    String fileServerAddress = new String(fileHost + ":" + FILE_PORT);
+    String fileServerAddress = new String(fileHost + "^" + FILE_PORT);
+    String groupServerAddress = new String(groupHost + "^" + GROUP_PORT);
 
     // Connect to Servers, setup
     groupClient.connect(groupHost, GROUP_PORT);
@@ -120,6 +121,7 @@ class ClientApp {
     PublicKey groupServerPublicKey = trentClient.getPublicKey(groupHost, GROUP_PORT, trentPublicKey); // Get group server's public key
     groupClient.setGroupPubKey(groupServerPublicKey);
     groupClient.setFileServerAddress(fileServerAddress);
+    groupClient.setGroupServerAddress(groupServerAddress);
     fileClient.setGroupPubKey(groupServerPublicKey);
     PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT, trentPublicKey); // Get selected File Server's public key from Trent to later use for verification
     fileClient.connect(fileHost, FILE_PORT);
@@ -315,22 +317,26 @@ class ClientApp {
           // USER ACTIONS -----------------
           // List files
           case "0":
+            token = groupClient.getFileToken(username, choice);
             listFiles(token);
             break;
 
           // Upload files
           case "1":
+            token = groupClient.getFileToken(username, choice);
             uploadFile(choice, token);
             break;
 
           // Download files
           case "2":
+            token = groupClient.getFileToken(username, choice);
             downloadFile(token);
             break;
 
           // Delete files
           case "3":
             // Delete files
+            token = groupClient.getFileToken(username, choice);
             deleteFile(token);
             break;
 

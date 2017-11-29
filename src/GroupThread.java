@@ -193,6 +193,55 @@ public class GroupThread extends Thread {
             response.setSeq(this.sequence);
             output.writeObject(response);
           }
+        } else if(message.getMessage().equals("GETF")) { // Client wants a token
+          temp = message.getObjContents();
+          iv = (byte[])temp.get(0);   // Get the IV
+          spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
+          byte[] namebytes = SymmetricKeyOps.decrypt((byte[])temp.get(1), K, spec); //Decrypt the username
+          String username;
+          username = new String(namebytes); // Convert to String
+
+          if(username == null) {
+            response = new Envelope("FAIL");
+            response.addObject(null);
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
+            output.writeObject(response);
+          } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
+            String groupname;
+            namebytes = SymmetricKeyOps.decrypt((byte[])temp.get(2), K, spec); // Decrypt the groupname
+            groupname = new String(namebytes); //Convert to String
+            String address = new String(SymmetricKeyOps.decrypt((byte[])temp.get(3), K,spec));
+            Token yourToken = (Token) createToken(username, groupname); // Create a token with the specified group
+            yourToken.setAddress(address);  // Set address of fileserver in token object
+            if(yourToken != null) {
+              //Respond to the client. On error, the client will receive a null token
+              response = new Envelope("OK");
+              spec = SymmetricKeyOps.getGCM();
+              response.addObject(spec.getIV());
+              response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
+              response.addObject(my_gs.signAndHash(yourToken.getIdentifier()));
+            }
+
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
+            output.writeObject(response);
+          } else {
+            UserToken yourToken = createToken(username); //Create a token
+
+            //Respond to the client. On error, the client will receive a null token
+            response = new Envelope("OK");
+            spec = SymmetricKeyOps.getGCM();
+            response.addObject(spec.getIV());
+            response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
+            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
+            output.writeObject(response);
+          }
         } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
           if(message.getObjContents().size() < 4)
             response = new Envelope("FAIL");

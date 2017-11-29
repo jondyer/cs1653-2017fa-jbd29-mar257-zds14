@@ -42,7 +42,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private SecretKey K;
 	private byte[] signedHash;
 	private String fileServerAddress;
-
+  private String groupServerAddress;
 
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
@@ -234,7 +234,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
 
-				if(this.fileServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.fileServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+				if(this.groupServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.groupServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
 
 				this.sequence++;
 				message.setSeq(this.sequence);
@@ -286,6 +286,80 @@ public class GroupClient extends Client implements GroupClientInterface {
 				return null;
 			}
 	 }
+
+
+	 /**
+	 * Overloaded method for retrieving partial tokens (for group-specific operations)
+	 * @param  String username      Owner of the token
+	 * @param  String groupname     The group they want to operate in
+	 * @return        The newly constructed partial token
+	 */
+	 public UserToken getFileToken(String username, String groupname) {
+	 	try {
+	 		Token token = null;
+	 		Envelope message = null, response = null;
+
+	 		//Tell the server to return a token.
+	 		message = new Envelope("GETF");
+	 		spec = SymmetricKeyOps.getGCM();
+	 		message.addObject(spec.getIV());
+	 		message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+	 		message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
+
+	 		if(this.fileServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.fileServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+
+	 		this.sequence++;
+	 		message.setSeq(this.sequence);
+	 		output.writeObject(message);
+
+	 		//Get the response from the server
+	 		response = (Envelope)input.readObject();
+	 		this.sequence++;
+	 		if(response.getSeq() != this.sequence) {
+	 			System.out.println("Invalid sequence number!");
+	 			sock.close(); //Close the socket
+	 			disconnect(); //End this communication loop
+	 		}
+
+	 		//Successful response
+	 		if(response.getMessage().equals("OK")) {
+	 			//If there is a token in the Envelope, return it
+	 			ArrayList<Object> temp = null;
+	 			temp = response.getObjContents();
+
+	 			if(temp.size() == 3) {
+	 				// Get IV, cipherText, use to recover encrypted token
+	 				byte[] iv = (byte[])temp.get(0);
+	 				byte[] cipherText = (byte[])temp.get(1);
+	 				byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
+	 				token = (Token)(SymmetricKeyOps.byte2obj(decrypt));
+
+	 				// Hash identifier of recovered token
+	 				String identifier = token.getIdentifier();
+	 				byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
+
+	 				// Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
+	 				Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
+	 				this.signedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
+	 				pubSig.initVerify(this.groupServerPublicKey);
+	 				pubSig.update(hashedIdentifier);
+	 				boolean match = pubSig.verify(signedHash);
+
+	 				if(match)
+	 					return token;
+	 				System.out.println("Error verifing GroupServer signature");
+	 				return null;
+	 			}
+	 		}
+	 		return null;
+	 	} catch(Exception e) {
+	 		System.err.println("Error: " + e.getMessage());
+	 		e.printStackTrace(System.err);
+	 		return null;
+	 	}
+	 }
+
+
 
   public boolean isAdmin(String username) {
     return (getToken(username, "ADMIN") != null);
@@ -745,6 +819,10 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	public void setFileServerAddress(String address){
 		this.fileServerAddress = address;
+	}
+
+	public void setGroupServerAddress(String address){
+		this.groupServerAddress = address;
 	}
 
 }
