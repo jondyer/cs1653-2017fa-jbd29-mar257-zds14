@@ -8,7 +8,7 @@ To start the Trent:
 
 Note that the port number argument to **RunTrentServer** is optional.  This argument specifies the port that the Trent will listen to.  If unspecified, it defaults to port 4444.  Trent must either run on his own machine or all servers must run on the same machine (allowed for testing purposes).
 
-When the Trent is first started, there are no users or groups. Trent should be the first server of the group that is started. If other servers start first, they won't be able to regster their public keys with Trent.
+When the Trent is first started, there are no users or groups. Trent should be the first server of the group that is started. If other servers start first, they won't be able to register their public keys with Trent.
 
 ## Running the Group Server ##
 
@@ -75,6 +75,6 @@ If the user would like to switch to operate on a different group they can enter 
 
 ## Resetting the Group or File Server ##
 
-To reset the Group Server, delete the file 'ServerList.bin' and any assosciated KeyPair files.
-To reset the Group Server, delete the files 'UserList.bin' and 'GroupList.bin' and any assosciated KeyPair files.  
-To reset a File Server, delete the 'FileList.bin' file and the 'shared_files/' directory and any assosciated KeyPair files.  
+To reset the Group Server, delete the file 'ServerList.bin' and any associated KeyPair files.
+To reset the Group Server, delete the files 'UserList.bin' and 'GroupList.bin' and any associated KeyPair files.  
+To reset a File Server, delete the 'FileList.bin' file and the 'shared_files/' directory and any associated KeyPair files.  

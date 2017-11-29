@@ -53,7 +53,7 @@ public class TrentClient extends Client {
 
     if(match)
       return fileServerPublicKey;
-    System.out.println("Error verifing Trent's public key");
+    System.out.println("Error verifying Trent's public key");
     return null;
   }
 

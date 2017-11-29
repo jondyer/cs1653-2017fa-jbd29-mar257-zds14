@@ -819,7 +819,6 @@ public class GroupThread extends Thread {
       // Verify that IP Address & Port from token match the Server's own IP and port to prevent token theft (and use on a different server)
       String tokenAddress = tokenToVerify.getAddress();
       String serverAddress = new String(my_gs.getIP() + "^" + my_gs.getPort());
-      System.out.println("token- " + tokenAddress + " server- " + serverAddress);
       if(!tokenAddress.equals(serverAddress)) {
         System.out.println("Token Address didn't match Server Address!");
         return false;
@@ -834,7 +833,6 @@ public class GroupThread extends Thread {
       if(match) return true;
 
     } catch (Exception e){}
-      System.out.println("RETURNING FALSE...");
       return false;
   }
 }

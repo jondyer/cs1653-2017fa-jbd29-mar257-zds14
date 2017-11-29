@@ -452,7 +452,6 @@ public class FileThread extends Thread {
 				// Verify that IP Address & Port from token match the Server's own IP and port to prevent token theft (and use on a different server)
 				String tokenAddress = tokenToVerify.getAddress();
 				String serverAddress = new String(my_fs.getIP() + "^" + my_fs.getPort());
-				System.out.println("token- " + tokenAddress + " server- " + serverAddress);
 				if(!tokenAddress.equals(serverAddress)) {
 					System.out.println("Token Address didn't match Server Address!");
 					return false;
