@@ -46,7 +46,7 @@ public class TrentThread extends Thread {
                 int port = (int)e.getObjContents().get(1);
 
                 String ip = registerServer(pub, port);
-                if(!ip.equals(null)){
+                if(ip!=null) {
                   response = new Envelope("OK"); //Success
                   response.addObject(ip);
                 }

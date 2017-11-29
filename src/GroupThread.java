@@ -159,7 +159,7 @@ public class GroupThread extends Thread {
             this.sequence++;
             response.setSeq(this.sequence);
             output.writeObject(response);
-          } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
+          } else if(message.getObjContents().size() > 3) {  // this is for partial tokens
             String groupname;
             namebytes = SymmetricKeyOps.decrypt((byte[])temp.get(2), K, spec); // Decrypt the groupname
             groupname = new String(namebytes); //Convert to String
@@ -180,63 +180,16 @@ public class GroupThread extends Thread {
             response.setSeq(this.sequence);
             output.writeObject(response);
           } else {
-            UserToken yourToken = createToken(username); //Create a token
-
-            //Respond to the client. On error, the client will receive a null token
-            response = new Envelope("OK");
-            spec = SymmetricKeyOps.getGCM();
-            response.addObject(spec.getIV());
-            response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
-            // increment sequence number first
-            this.sequence++;
-            response.setSeq(this.sequence);
-            output.writeObject(response);
-          }
-        } else if(message.getMessage().equals("GETF")) { // Client wants a token
-          temp = message.getObjContents();
-          iv = (byte[])temp.get(0);   // Get the IV
-          spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
-          byte[] namebytes = SymmetricKeyOps.decrypt((byte[])temp.get(1), K, spec); //Decrypt the username
-          String username;
-          username = new String(namebytes); // Convert to String
-
-          if(username == null) {
-            response = new Envelope("FAIL");
-            response.addObject(null);
-            // increment sequence number first
-            this.sequence++;
-            response.setSeq(this.sequence);
-            output.writeObject(response);
-          } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
-            String groupname;
-            namebytes = SymmetricKeyOps.decrypt((byte[])temp.get(2), K, spec); // Decrypt the groupname
-            groupname = new String(namebytes); //Convert to String
-            String address = new String(SymmetricKeyOps.decrypt((byte[])temp.get(3), K,spec));
-            Token yourToken = (Token) createToken(username, groupname); // Create a token with the specified group
+            Token yourToken = (Token) createToken(username); //Create a token
+            String address = new String(SymmetricKeyOps.decrypt((byte[])temp.get(2), K,spec));
             yourToken.setAddress(address);  // Set address of fileserver in token object
-            if(yourToken != null) {
-              //Respond to the client. On error, the client will receive a null token
-              response = new Envelope("OK");
-              spec = SymmetricKeyOps.getGCM();
-              response.addObject(spec.getIV());
-              response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-              response.addObject(my_gs.signAndHash(yourToken.getIdentifier()));
-            }
-
-            // increment sequence number first
-            this.sequence++;
-            response.setSeq(this.sequence);
-            output.writeObject(response);
-          } else {
-            UserToken yourToken = createToken(username); //Create a token
 
             //Respond to the client. On error, the client will receive a null token
             response = new Envelope("OK");
             spec = SymmetricKeyOps.getGCM();
             response.addObject(spec.getIV());
             response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+            response.addObject(my_gs.signAndHash(yourToken.getIdentifier()));
             // increment sequence number first
             this.sequence++;
             response.setSeq(this.sequence);
@@ -863,6 +816,15 @@ public class GroupThread extends Thread {
       String identifier = tokenToVerify.getIdentifier();
       byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
 
+      // Verify that IP Address & Port from token match the Server's own IP and port to prevent token theft (and use on a different server)
+      String tokenAddress = tokenToVerify.getAddress();
+      String serverAddress = new String(my_gs.getIP() + "^" + my_gs.getPort());
+      System.out.println("token- " + tokenAddress + " server- " + serverAddress);
+      if(!tokenAddress.equals(serverAddress)) {
+        System.out.println("Token Address didn't match Server Address!");
+        return false;
+      }
+
       // Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
       Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
       pubSig.initVerify(this.my_gs.pub);
@@ -872,6 +834,7 @@ public class GroupThread extends Thread {
       if(match) return true;
 
     } catch (Exception e){}
+      System.out.println("RETURNING FALSE...");
       return false;
   }
 }

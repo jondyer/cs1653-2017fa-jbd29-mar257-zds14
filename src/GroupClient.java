@@ -40,7 +40,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
-	private byte[] signedHash;
+	private byte[] signedHash, fileSignedHash;
 	private String fileServerAddress;
   private String groupServerAddress;
 
@@ -178,6 +178,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
 			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			if(this.groupServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.groupServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+
 			// increment sequence number first
 			this.sequence++;
 			message.setSeq(this.sequence);
@@ -275,7 +277,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 						if(match)
 							return token;
-						System.out.println("Error verifing GroupServer signature");
+						System.out.println("Error verifying GroupServer signature");
 						return null;
 					}
 				}
@@ -300,7 +302,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 		Envelope message = null, response = null;
 
 	 		//Tell the server to return a token.
-	 		message = new Envelope("GETF");
+	 		message = new Envelope("GET");
 	 		spec = SymmetricKeyOps.getGCM();
 	 		message.addObject(spec.getIV());
 	 		message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
@@ -340,14 +342,14 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	 				// Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
 	 				Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
-	 				this.signedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
+	 				this.fileSignedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
 	 				pubSig.initVerify(this.groupServerPublicKey);
 	 				pubSig.update(hashedIdentifier);
-	 				boolean match = pubSig.verify(signedHash);
+	 				boolean match = pubSig.verify(fileSignedHash);
 
 	 				if(match)
 	 					return token;
-	 				System.out.println("Error verifing GroupServer signature");
+	 				System.out.println("Error verifying GroupServer signature");
 	 				return null;
 	 			}
 	 		}
@@ -762,6 +764,9 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 public byte[] getSignedHash() {
 		 return this.signedHash;
 	 }
+	 public byte[] getFileSignedHash() {
+		return this.fileSignedHash;
+	}
 
 	 public void getKeyAndHash(String username, String groupname, UserToken token) {
 

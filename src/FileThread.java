@@ -449,6 +449,15 @@ public class FileThread extends Thread {
 	      String identifier = tokenToVerify.getIdentifier();
 	      byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
 
+				// Verify that IP Address & Port from token match the Server's own IP and port to prevent token theft (and use on a different server)
+				String tokenAddress = tokenToVerify.getAddress();
+				String serverAddress = new String(my_fs.getIP() + "^" + my_fs.getPort());
+				System.out.println("token- " + tokenAddress + " server- " + serverAddress);
+				if(!tokenAddress.equals(serverAddress)) {
+					System.out.println("Token Address didn't match Server Address!");
+					return false;
+				}
+
 	      // Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
 	      Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
 	      pubSig.initVerify(this.groupServerPublicKey);

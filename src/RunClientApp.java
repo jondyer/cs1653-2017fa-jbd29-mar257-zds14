@@ -114,6 +114,7 @@ class ClientApp {
     String fileServerAddress = new String(fileHost + "^" + FILE_PORT);
     String groupServerAddress = new String(groupHost + "^" + GROUP_PORT);
 
+
     // Connect to Servers, setup
     groupClient.connect(groupHost, GROUP_PORT);
     trentClient.connect(trentHost, TRENT_PORT);
@@ -206,7 +207,9 @@ class ClientApp {
 
       // update token --> retrieve new partial token!!! + give signed hash of that partial token to FileClient
       token = groupClient.getToken(username,choice);
-      fileClient.setSignedHash(groupClient.getSignedHash());  // After groupClient has token, give GroupServer-signed hash of token identifier to file client to
+      Token fileToken = (Token) groupClient.getFileToken(username, choice);
+      System.out.println("FILETOKEN IDENTIFIER - " +fileToken.getIdentifier());
+      fileClient.setSignedHash(groupClient.getFileSignedHash());  // After groupClient has token, give GroupServer-signed hash of token identifier to file client to
 
       // Compile List of privileges for each level of usage
       ArrayList<String> adminList = new ArrayList<String>();
@@ -317,27 +320,23 @@ class ClientApp {
           // USER ACTIONS -----------------
           // List files
           case "0":
-            token = groupClient.getFileToken(username, choice);
-            listFiles(token);
+            listFiles(fileToken);
             break;
 
           // Upload files
           case "1":
-            token = groupClient.getFileToken(username, choice);
-            uploadFile(choice, token);
+            uploadFile(choice, fileToken, token); // needs fileToken and groupToken
             break;
 
           // Download files
           case "2":
-            token = groupClient.getFileToken(username, choice);
-            downloadFile(token);
+            downloadFile(fileToken, token); // needs fileToken and groupToken
             break;
 
           // Delete files
           case "3":
             // Delete files
-            token = groupClient.getFileToken(username, choice);
-            deleteFile(token);
+            deleteFile(fileToken);
             break;
 
           // Create a group=
@@ -521,7 +520,7 @@ class ClientApp {
    * @param  UserToken myToken       Token of the user uploading the file
    * @return           Success of operation.
    */
-  private boolean uploadFile(String group, UserToken myToken) {
+  private boolean uploadFile(String group, UserToken fileToken, UserToken groupToken) {
     // Get file to be uploaded
     System.out.print("Path of the source file? >> ");
     String sourceFile = console.next();
@@ -537,8 +536,8 @@ class ClientApp {
     System.out.print("Name of the destination file? >> ");
     String destinationFilename = console.next();
 
-    groupClient.getKeyAndHash(myToken.getSubject(), group, myToken);
-    boolean status = fileClient.upload(sourceFile, destinationFilename, group, myToken, groupClient.getKey(), groupClient.getHashNum());
+    groupClient.getKeyAndHash(groupToken.getSubject(), group, groupToken);
+    boolean status = fileClient.upload(sourceFile, destinationFilename, group, fileToken, groupClient.getKey(), groupClient.getHashNum());
     if(status)
       System.out.println("Successfully uploaded file '" + sourceFile + "'\n");
     else
@@ -551,14 +550,14 @@ class ClientApp {
    * @param  UserToken myToken       Token of the user downloading the file
    * @return           Sucess of operation.
    */
-  private boolean downloadFile(UserToken myToken){
+  private boolean downloadFile(UserToken fileToken, UserToken groupToken){
     System.out.print("What file do you want to download? >> ");
     String sourceFile = console.next();
     System.out.print("What do you want to save it as? >> ");
     String destFile = console.next();
 
-    groupClient.getKeyAndHash(myToken.getSubject(), choice, myToken);
-    boolean status = fileClient.download(sourceFile, destFile, myToken, groupClient.getKey(), groupClient.getHashNum());
+    groupClient.getKeyAndHash(groupToken.getSubject(), choice, groupToken);
+    boolean status = fileClient.download(sourceFile, destFile, fileToken, groupClient.getKey(), groupClient.getHashNum());
     if(status)
       System.out.println("Successfully downloaded file '" + sourceFile + "'\n");
     else
