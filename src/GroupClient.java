@@ -25,6 +25,8 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 	private PublicKey groupServerPublicKey;
 	private GCMParameterSpec spec;
+	private SecretKey groupKey = null;
+	private int hashNum = -1;
 
 	// We selected group 21 a.k.a. group p-521 (elliptic curve) for our system
 	private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
@@ -35,9 +37,12 @@ public class GroupClient extends Client implements GroupClientInterface {
   private static final BigInteger N_1024 = new BigInteger(1, Hex.decode("000001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
+
 	private final SecureRandom random = new SecureRandom();
 	private SecretKey K;
-	private byte [] signedHash;
+	private byte[] signedHash, fileSignedHash;
+	private String fileServerAddress;
+  private String groupServerAddress;
 
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());
@@ -57,8 +62,21 @@ public class GroupClient extends Client implements GroupClientInterface {
 	        mes2.addObject(user);
 	        mes2.addObject(A);
 
+					// increment sequence number first
+					this.sequence++;
+					mes2.setSeq(this.sequence);
 	        output.writeObject(mes2);
-	        resp2 = (Envelope)input.readObject();
+
+					resp2 = (Envelope)input.readObject();
+					// check sequence number
+	        this.sequence++;
+	        if(resp2.getSeq() != this.sequence) {
+	          System.out.println("Invalid sequence number!");
+	          sock.close(); //Close the socket
+	          disconnect(); //End this communication loop
+	        }
+
+
         } catch (IOException io) {
         	System.out.println(io.getMessage());
         } catch (ClassNotFoundException cl) {
@@ -85,8 +103,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 
         try {
 	        mes1.addObject(user);
+					// increment sequence number first
+					this.sequence++;
+					mes1.setSeq(this.sequence);
 	        output.writeObject(mes1);
-	        resp1 = (Envelope)input.readObject();
+
+					resp1 = (Envelope)input.readObject();
+					this.sequence++;
+					if(resp1.getSeq() != this.sequence) {
+						System.out.println("Invalid sequence number!");
+						sock.close(); //Close the socket
+						disconnect(); //End this communication loop
+					}
+
 	        salt = (byte [])resp1.getObjContents().get(0);
         } catch (IOException io) {
         	System.out.println(io.getMessage());
@@ -111,8 +140,19 @@ public class GroupClient extends Client implements GroupClientInterface {
         mes.addObject(c2);
 
         try{
+					// increment sequence number first
+					this.sequence++;
+					mes.setSeq(this.sequence);
 	        output.writeObject(mes);
-		    resp = (Envelope)input.readObject();
+
+		    	resp = (Envelope)input.readObject();
+					this.sequence++;
+	        if(resp.getSeq() != this.sequence) {
+	          System.out.println("Invalid sequence number!");
+	          sock.close(); //Close the socket
+	          disconnect(); //End this communication loop
+	        }
+
 		} catch (IOException io) {
 			System.out.println(io.getMessage());
 		} catch (ClassNotFoundException cl) {
@@ -138,10 +178,21 @@ public class GroupClient extends Client implements GroupClientInterface {
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
 			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			if(this.groupServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.groupServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
 			output.writeObject(message);
 
 			//Get the response from the server
 			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
 			//Successful response
 			if(response.getMessage().equals("OK")) {
@@ -152,6 +203,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 				if(temp.size() == 3) {
 					byte[] iv = (byte[])temp.get(0);
 					byte[] cipherText = (byte[])temp.get(1);
+					this.signedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
 					byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
 					token = (UserToken)(SymmetricKeyOps.byte2obj(decrypt));
 					return token;
@@ -183,10 +235,21 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(spec.getIV());
 				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
+
+				if(this.groupServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.groupServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				//Get the response from the server
 				response = (Envelope)input.readObject();
+				this.sequence++;
+				if(response.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 				//Successful response
 				if(response.getMessage().equals("OK")) {
@@ -214,7 +277,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 
 						if(match)
 							return token;
-						System.out.println("Error verifing GroupServer signature");
+						System.out.println("Error verifying GroupServer signature");
 						return null;
 					}
 				}
@@ -226,43 +289,86 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 
+
+	 /**
+	 * Overloaded method for retrieving partial tokens (for group-specific operations)
+	 * @param  String username      Owner of the token
+	 * @param  String groupname     The group they want to operate in
+	 * @return        The newly constructed partial token
+	 */
+	 public UserToken getFileToken(String username, String groupname) {
+	 	try {
+	 		Token token = null;
+	 		Envelope message = null, response = null;
+
+	 		//Tell the server to return a token.
+	 		message = new Envelope("GET");
+	 		spec = SymmetricKeyOps.getGCM();
+	 		message.addObject(spec.getIV());
+	 		message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+	 		message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
+
+	 		if(this.fileServerAddress!=null) message.addObject(SymmetricKeyOps.encrypt(this.fileServerAddress.getBytes(), K, spec));	// add encrypted fileserver address
+
+	 		this.sequence++;
+	 		message.setSeq(this.sequence);
+	 		output.writeObject(message);
+
+	 		//Get the response from the server
+	 		response = (Envelope)input.readObject();
+	 		this.sequence++;
+	 		if(response.getSeq() != this.sequence) {
+	 			System.out.println("Invalid sequence number!");
+	 			sock.close(); //Close the socket
+	 			disconnect(); //End this communication loop
+	 		}
+
+	 		//Successful response
+	 		if(response.getMessage().equals("OK")) {
+	 			//If there is a token in the Envelope, return it
+	 			ArrayList<Object> temp = null;
+	 			temp = response.getObjContents();
+
+	 			if(temp.size() == 3) {
+	 				// Get IV, cipherText, use to recover encrypted token
+	 				byte[] iv = (byte[])temp.get(0);
+	 				byte[] cipherText = (byte[])temp.get(1);
+	 				byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
+	 				token = (Token)(SymmetricKeyOps.byte2obj(decrypt));
+
+	 				// Hash identifier of recovered token
+	 				String identifier = token.getIdentifier();
+	 				byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
+
+	 				// Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
+	 				Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");
+	 				this.fileSignedHash = (byte[])temp.get(2);	// GroupServer-Signed hash of token
+	 				pubSig.initVerify(this.groupServerPublicKey);
+	 				pubSig.update(hashedIdentifier);
+	 				boolean match = pubSig.verify(fileSignedHash);
+
+	 				if(match)
+	 					return token;
+	 				System.out.println("Error verifying GroupServer signature");
+	 				return null;
+	 			}
+	 		}
+	 		return null;
+	 	} catch(Exception e) {
+	 		System.err.println("Error: " + e.getMessage());
+	 		e.printStackTrace(System.err);
+	 		return null;
+	 	}
+	 }
+
+
+
   public boolean isAdmin(String username) {
     return (getToken(username, "ADMIN") != null);
   }
 
-
-	// Deprecated I think?
-	public boolean createUser(String username, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to create a user
-				//If no password is given, initialize to empty
-				String pw = "";
-				message = new Envelope("CUSER");
-
-
-				message.addObject(username); //Add user name string
-				message.addObject(pw); //Add user password
-				message.addObject(token); //Add the requester's token
-				message.addObject(signedHash);
-				output.writeObject(message);
-
-				response = (Envelope)input.readObject();
-
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
-			}
-	}
-
-	 // Overload for password
-	 public boolean createUser(String username, String pw, UserToken token) {
+	// Overload for password
+	public boolean createUser(String username, String pw, UserToken token) {
 		 try {
 				Envelope message = null, response = null;
 				//Tell the server to create a user
@@ -283,10 +389,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(v.toByteArray(), K, spec)); // add encrypted secret
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 
 				response = (Envelope)input.readObject();
+				this.sequence++;
+				if(response.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
 
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
@@ -300,211 +415,274 @@ public class GroupClient extends Client implements GroupClientInterface {
 			}
 	 }
 
-	 public boolean deleteUser(String username, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
+	public boolean deleteUser(String username, UserToken token) {
+		try {
+			Envelope message = null, response = null;
 
-				//Tell the server to delete a user
-				message = new Envelope("DUSER");
+			//Tell the server to delete a user
+			message = new Envelope("DUSER");
 
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
 
-				response = (Envelope)input.readObject();
-
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
 			}
-	 }
 
-	 public boolean createGroup(String groupname, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to create a group
-				message = new Envelope("CGROUP");
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
 
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
 
+	public boolean createGroup(String groupname, UserToken token) {
+	 try {
+			Envelope message = null, response = null;
+			//Tell the server to create a group
+			message = new Envelope("CGROUP");
 
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
-				response = (Envelope)input.readObject();
-
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
 			}
-	 }
 
-	 public boolean deleteGroup(String groupname, UserToken token){
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to delete a group
-				message = new Envelope("DGROUP");
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
+
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+
+	public boolean deleteGroup(String groupname, UserToken token){
+	 try {
+			Envelope message = null, response = null;
+			//Tell the server to delete a group
+			message = new Envelope("DGROUP");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
 
-				response = (Envelope)input.readObject();
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
 			}
-	 }
 
-	 @SuppressWarnings("unchecked")
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
+
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<String> listMembers(String group, UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the member list
-			 message = new Envelope("LMEMBERS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), K, spec));	// add encrypted username
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
+		try {
+		  Envelope message = null, response = null;
+		  //Tell the server to return the member list
+		  message = new Envelope("LMEMBERS");
+		  spec = SymmetricKeyOps.getGCM();
+		  message.addObject(spec.getIV());
+		  message.addObject(SymmetricKeyOps.encrypt(group.getBytes(), K, spec));	// add encrypted username
+		  message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+		  message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
 
-			 response = (Envelope)input.readObject();
-
-			 //If server indicates success, return the member list
-			 if(response.getMessage().equals("OK")) {
-				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
-			  return (List<String>)SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the token
+		  response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
 			}
 
-			 return null;
+		  //If server indicates success, return the member list
+		  if(response.getMessage().equals("OK")) {
+			  spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
+		    return (List<String>)SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the token
+			}
 
-		 } catch(Exception e) {
+		  return null;
+
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public ArrayList<ArrayList<String>> listGroups(String user, UserToken token) {
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to return the member list
+			message = new Envelope("LGROUPS");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(user.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
+
+
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
+
+			//If server indicates success, return the member list
+			if(response.getMessage().equals("OK"))
+			{
+				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
+				return (ArrayList<ArrayList<String>>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list of lists
+			}
+
+			return null;
+
+		} catch(Exception e) {
 				System.err.println("Error: " + e.getMessage());
 				e.printStackTrace(System.err);
 				return null;
-			}
+		}
 	 }
 
-	 @SuppressWarnings("unchecked")
-	public List<List<String>> listGroups(String user, UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the member list
-			 message = new Envelope("LGROUPS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(user.getBytes(), K, spec));	// add encrypted username
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
-
-
-			 response = (Envelope)input.readObject();
-
-			 //If server indicates success, return the member list
-			 if(response.getMessage().equals("OK"))
-			 {
-				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
-				return (List<List<String>>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list of lists
-			 }
-
-			 return null;
-
-		 } catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return null;
-			}
-	 }
-
-	 @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	public List<String> listAllGroups(UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the group list
-			 message = new Envelope("LAGROUPS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to return the group list
+			message = new Envelope("LAGROUPS");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
-			 response = (Envelope)input.readObject();
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
 
-			 //If server indicates success, return the group list
-			 if(response.getMessage().equals("OK"))
-			 {
+			//If server indicates success, return the group list
+			if(response.getMessage().equals("OK"))
+			{
 				spec = SymmetricKeyOps.getGCM((byte[])response.getObjContents().get(0));
 				return (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec)); //Extract the list
-			 }
-
-			 return null;
-
-		 } catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return null;
 			}
-	 }
 
-	 @SuppressWarnings("unchecked")
+			return null;
+
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<String> listAllUsers(UserToken token) {
-		 try {
-			 Envelope message = null, response = null;
-			 //Tell the server to return the group list
-			 message = new Envelope("LAUSERS");
-			 spec = SymmetricKeyOps.getGCM();
-			 message.addObject(spec.getIV());
-			 message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec)); //Add requester's token
-			 message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-			 output.writeObject(message);
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to return the group list
+			message = new Envelope("LAUSERS");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec)); //Add requester's token
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
-			 response = (Envelope)input.readObject();
-			 spec = SymmetricKeyOps.getGCM((byte[]) response.getObjContents().get(0));
-			 List<String> allUsers = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec));
-			 //If server indicates success, return the user list
-			 if(response.getMessage().equals("OK"))
-			 {
-				return allUsers; //This cast creates compiler warnings. Sorry.
-			 }
-
-			 return null;
-
-		 } catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return null;
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
 			}
+
+			spec = SymmetricKeyOps.getGCM((byte[]) response.getObjContents().get(0));
+			List<String> allUsers = (List<String>) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])response.getObjContents().get(1), K, spec));
+			//If server indicates success, return the user list
+			if(response.getMessage().equals("OK"))
+			{
+				return allUsers; //This cast creates compiler warnings. Sorry.
+			}
+
+			return null;
+
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return null;
+		}
 	 }
 
 
@@ -519,9 +697,19 @@ public class GroupClient extends Client implements GroupClientInterface {
 				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
 				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
 				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+				// increment sequence number first
+				this.sequence++;
+				message.setSeq(this.sequence);
 				output.writeObject(message);
 
 				response = (Envelope)input.readObject();
+				this.sequence++;
+				if(response.getSeq() != this.sequence) {
+					System.out.println("Invalid sequence number!");
+					sock.close(); //Close the socket
+					disconnect(); //End this communication loop
+				}
+
 				//If server indicates success, return true
 				if(response.getMessage().equals("OK"))
 					return true;
@@ -535,33 +723,111 @@ public class GroupClient extends Client implements GroupClientInterface {
 	 }
 
 	 public boolean deleteUserFromGroup(String username, String groupname, UserToken token) {
-		 try {
-				Envelope message = null, response = null;
-				//Tell the server to remove a user from the group
-				message = new Envelope("RUSERFROMGROUP");
-				spec = SymmetricKeyOps.getGCM();
-				message.addObject(spec.getIV());
-				message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
-				message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
-				message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
-				output.writeObject(message);
+		try {
+			Envelope message = null, response = null;
+			//Tell the server to remove a user from the group
+			message = new Envelope("RUSERFROMGROUP");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
 
-				response = (Envelope)input.readObject();
-				//If server indicates success, return true
-				if(response.getMessage().equals("OK"))
-					return true;
-
-				return false;
-			} catch(Exception e) {
-				System.err.println("Error: " + e.getMessage());
-				e.printStackTrace(System.err);
-				return false;
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
 			}
+
+			//If server indicates success, return true
+			if(response.getMessage().equals("OK"))
+				return true;
+
+			return false;
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+			return false;
+		}
 	 }
 
 	 public void setGroupPubKey(PublicKey pubKey) {
 		 this.groupServerPublicKey = pubKey;
 	 }
+	 public byte[] getSignedHash() {
+		 return this.signedHash;
+	 }
+	 public byte[] getFileSignedHash() {
+		return this.fileSignedHash;
+	}
+
+	 public void getKeyAndHash(String username, String groupname, UserToken token) {
+
+	 	try {
+			Envelope message = null, response = null;
+
+			message = new Envelope("GROUPKEY");
+			spec = SymmetricKeyOps.getGCM();
+			message.addObject(spec.getIV());
+			message.addObject(SymmetricKeyOps.encrypt(username.getBytes(), K, spec));	// add encrypted username
+			message.addObject(SymmetricKeyOps.encrypt(groupname.getBytes(), K, spec));	// add encrypted groupname
+			message.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(token), K, spec));  // add encrypted token array
+			message.addObject(SymmetricKeyOps.encrypt(signedHash, K, spec));
+			// increment sequence number first
+			this.sequence++;
+			message.setSeq(this.sequence);
+			output.writeObject(message);
+
+			response = (Envelope)input.readObject();
+			this.sequence++;
+			if(response.getSeq() != this.sequence) {
+				System.out.println("Invalid sequence number!");
+				sock.close(); //Close the socket
+				disconnect(); //End this communication loop
+			}
+
+			//If server indicates success, return true
+			if(!response.getMessage().equals("OK")) return;
+
+			ArrayList<Object> temp = response.getObjContents();
+			if(temp.size() != 3) return;
+			byte[] iv = (byte[])temp.get(0);
+			byte[] cipherText = (byte[])temp.get(1);
+			byte[] decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
+			groupKey = (SecretKey)(SymmetricKeyOps.byte2obj(decrypt));
+
+			cipherText = (byte[])temp.get(2);
+			decrypt = SymmetricKeyOps.decrypt(cipherText, K, iv);
+			hashNum = (int) (SymmetricKeyOps.byte2obj(decrypt));
+
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+			e.printStackTrace(System.err);
+		}
+
+	}
+
+	public SecretKey getKey() {
+		return groupKey;
+	}
+
+	public int getHashNum() {
+		return hashNum;
+	}
+
+	public void setFileServerAddress(String address){
+		this.fileServerAddress = address;
+	}
+
+	public void setGroupServerAddress(String address){
+		this.groupServerAddress = address;
+	}
 
 }

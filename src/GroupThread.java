@@ -27,6 +27,8 @@ public class GroupThread extends Thread {
   private SecretKey K;
   private GCMParameterSpec spec;
   private byte[] iv;
+  private ArrayList<Object> temp = null;
+  private int sequence = 0;
 
   private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
         + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
@@ -43,8 +45,6 @@ public class GroupThread extends Thread {
   }
 
 
-  // TODO: Encrypt/Decrypt EVERYTHING (AES/GCM/NoPadding)
-
   public void run() {
     boolean proceed = true;
 
@@ -57,6 +57,15 @@ public class GroupThread extends Thread {
 
       do {
         Envelope message = (Envelope)input.readObject();
+
+        // check sequence number
+        this.sequence++;
+        if(message.getSeq() != this.sequence) {
+          System.out.println("Invalid sequence number!");
+          socket.close(); //Close the socket
+          proceed = false; //End this communication loop
+        }
+
         System.out.println("Request received: " + message.getMessage());
         Envelope response = new Envelope("FAIL");
 
@@ -79,6 +88,10 @@ public class GroupThread extends Thread {
                   response = new Envelope("OK");
                   response.addObject(B);
                   response.addObject(c1);
+
+                  // increment sequence number first
+                  this.sequence++;
+                  response.setSeq(this.sequence);
                   output.writeObject(response);
                 }
               }
@@ -96,6 +109,9 @@ public class GroupThread extends Thread {
               response.addObject(my_gs.userList.getSalt(username));
             }
           }
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("CHAL")) {
           if(message.getObjContents().size() < 3)
@@ -110,6 +126,9 @@ public class GroupThread extends Thread {
 
               byte[] c1_dec = SymmetricKeyOps.decrypt(c1Cipher, K, iv);
               if(!Arrays.equals(c1, c1_dec)) {
+                // increment sequence number first
+                this.sequence++;
+                response.setSeq(this.sequence);
                 output.writeObject(response);
                 System.out.println("Error: Challenge did not match!");
                 //System.exit(0);
@@ -119,45 +138,61 @@ public class GroupThread extends Thread {
               response = new Envelope("OK");
               response.addObject(gcm.getIV());
               response.addObject(SymmetricKeyOps.encrypt(c2, K, gcm));
+              // increment sequence number first
+              this.sequence++;
+              response.setSeq(this.sequence);
               output.writeObject(response);
             }
           }
-        } else if(message.getMessage().equals("GET")) { //Client wants a token
-          iv = (byte[])message.getObjContents().get(0);   // Get the IV
+        } else if(message.getMessage().equals("GET")) { // Client wants a token
+          temp = message.getObjContents();
+          iv = (byte[])temp.get(0);   // Get the IV
           spec = SymmetricKeyOps.getGCM(iv);    // Get GCM Spec
-          byte[] namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec); //Decrypt the username
+          byte[] namebytes = SymmetricKeyOps.decrypt((byte[])temp.get(1), K, spec); //Decrypt the username
           String username;
-          username = new String(namebytes); //Convert to String
+          username = new String(namebytes); // Convert to String
 
           if(username == null) {
             response = new Envelope("FAIL");
             response.addObject(null);
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
-          } else if(message.getObjContents().size() > 2) {  // this is for partial tokens
+          } else if(message.getObjContents().size() > 3) {  // this is for partial tokens
             String groupname;
-            namebytes = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec); //Decrypt the groupname
+            namebytes = SymmetricKeyOps.decrypt((byte[])temp.get(2), K, spec); // Decrypt the groupname
             groupname = new String(namebytes); //Convert to String
-            UserToken yourToken = createToken(username, groupname); //Create a token with the specified group
-
+            String address = new String(SymmetricKeyOps.decrypt((byte[])temp.get(3), K,spec));
+            Token yourToken = (Token) createToken(username, groupname); // Create a token with the specified group
             if(yourToken != null) {
+              yourToken.setAddress(address);  // Set address of fileserver in token object
               //Respond to the client. On error, the client will receive a null token
               response = new Envelope("OK");
               spec = SymmetricKeyOps.getGCM();
               response.addObject(spec.getIV());
               response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-              response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+              response.addObject(my_gs.signAndHash(yourToken.getIdentifier()));
             }
 
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
           } else {
-            UserToken yourToken = createToken(username); //Create a token
+            Token yourToken = (Token) createToken(username); //Create a token
+            String address = new String(SymmetricKeyOps.decrypt((byte[])temp.get(2), K,spec));
+            yourToken.setAddress(address);  // Set address of fileserver in token object
 
             //Respond to the client. On error, the client will receive a null token
             response = new Envelope("OK");
             spec = SymmetricKeyOps.getGCM();
             response.addObject(spec.getIV());
             response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(yourToken), K, spec));
-            response.addObject(my_gs.signAndHash(((Token)yourToken).getIdentifier()));
+            response.addObject(my_gs.signAndHash(yourToken.getIdentifier()));
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
           }
         } else if(message.getMessage().equals("CUSER")){ //Client wants to create a user
@@ -185,6 +220,9 @@ public class GroupThread extends Thread {
               }
             }
           }
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("DUSER")) { //Client wants to delete a user
           response = new Envelope("FAIL");
@@ -204,6 +242,9 @@ public class GroupThread extends Thread {
               }
             }
           }
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("CGROUP")) {//Client wants to create a group
           response = new Envelope("FAIL");
@@ -223,6 +264,9 @@ public class GroupThread extends Thread {
               }
             }
           }
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("DGROUP")) { //Client wants to delete a group
             response = new Envelope("FAIL");
@@ -245,6 +289,9 @@ public class GroupThread extends Thread {
               }
             }
 
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
         } else if(message.getMessage().equals("LMEMBERS")) { //Client wants a list of members in a group
             response = new Envelope("FAIL");
@@ -272,6 +319,9 @@ public class GroupThread extends Thread {
               }
             }
 
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("LGROUPS")) { //Client wants a list of members in a group
             response = new Envelope("FAIL");
@@ -288,7 +338,7 @@ public class GroupThread extends Thread {
                   if(!verifyToken((Token) yourToken, signedHash))
                     response = new Envelope("FAIL");
                   else {
-                    List<List<String>> resp = listGroups(userName, yourToken);
+                    ArrayList<ArrayList<String>> resp = listGroups(userName, yourToken);
 
 
                     response = new Envelope("OK"); //Success
@@ -300,6 +350,9 @@ public class GroupThread extends Thread {
               }
             }
 
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("LAGROUPS")) { //Client wants a list of all groups
             response = new Envelope("FAIL");
@@ -326,6 +379,9 @@ public class GroupThread extends Thread {
               }
             }
 
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("LAUSERS")) { //Client wants a list of all users
             response = new Envelope("FAIL");
@@ -349,6 +405,9 @@ public class GroupThread extends Thread {
               }
             }
 
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("AUSERTOGROUP")) {//Client wants to add user to a group
           response = new Envelope("FAIL");
@@ -372,6 +431,9 @@ public class GroupThread extends Thread {
               } // missing userName
             } // missing iv
           } // missing something!
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         } else if(message.getMessage().equals("RUSERFROMGROUP")) {//Client wants to remove user from a group
             response = new Envelope("FAIL");
@@ -388,19 +450,60 @@ public class GroupThread extends Thread {
                       byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
                       if(!verifyToken((Token) yourToken, signedHash))
                         response = new Envelope("FAIL");
-                      else if(deleteUserFromGroup(userName, groupName, yourToken))
-                      response = new Envelope("OK"); //Success
+                      else if(deleteUserFromGroup(userName, groupName, yourToken)) {
+                        response = new Envelope("OK"); //Success
+                        my_gs.groupList.updateKey(groupName);
+                      }
                     } // missing token
                   } // missing groupName
                 } // missing userName
               } // missing iv
             } // missing something!
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
+            output.writeObject(response);
+        } else if(message.getMessage().equals("GROUPKEY")) {//Client wants to remove user from a group
+            response = new Envelope("FAIL");
+            if(message.getObjContents().size() >= 4) {
+              if(message.getObjContents().get(0) != null) {
+                if(message.getObjContents().get(1) != null) {
+                  if(message.getObjContents().get(2) != null) {
+                    if(message.getObjContents().get(3) != null) {
+                      spec = SymmetricKeyOps.getGCM((byte[]) message.getObjContents().get(0));
+                      String userName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(1), K, spec)); // Extract the username
+                      String groupName = new String(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(2), K, spec)); // Extract the groupName
+                      UserToken yourToken = (UserToken) SymmetricKeyOps.byte2obj(SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(3), K, spec)); // Extract the token
+                      byte [] signedHash = SymmetricKeyOps.decrypt((byte[])message.getObjContents().get(4), K, spec);
+
+                      if(verifyToken((Token) yourToken, signedHash)) {
+                        // verify it is the users token and the user is in the group
+                        if (userName.equals(yourToken.getSubject()) && my_gs.groupList.getGroupUsers(groupName).contains(userName)){
+                          response = new Envelope("OK");
+                          // add key and hashNum
+                          spec = SymmetricKeyOps.getGCM();
+                          response.addObject(spec.getIV());
+                          response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(my_gs.groupList.getKey(groupName)), K, spec));
+                          response.addObject(SymmetricKeyOps.encrypt(SymmetricKeyOps.obj2byte(my_gs.groupList.getHashNum(groupName)), K, spec));
+                        }
+                      }
+                    } // missing token
+                  } // missing groupName
+                } // missing userName
+              } // missing iv
+            } // missing something!
+            // increment sequence number first
+            this.sequence++;
+            response.setSeq(this.sequence);
             output.writeObject(response);
         } else if(message.getMessage().equals("DISCONNECT")) { //Client wants to disconnect
           socket.close(); //Close the socket
           proceed = false; //End this communication loop
         } else {
           response = new Envelope("FAIL"); //Server does not understand client request
+          // increment sequence number first
+          this.sequence++;
+          response.setSeq(this.sequence);
           output.writeObject(response);
         }
       } while(proceed);
@@ -597,8 +700,8 @@ public class GroupThread extends Thread {
    * @param  UserToken token         Token of member
    * @return           List of two lists: 1st has membership, 2nd has ownership
    */
-  private List<List<String>> listGroups(String user, UserToken token) {
-    List<List<String>> groups = new ArrayList<List<String>>();
+  private ArrayList<ArrayList<String>> listGroups(String user, UserToken token) {
+    ArrayList<ArrayList<String>> groups = new ArrayList<ArrayList<String>>();
     String requester = token.getSubject();
 
     //Does requester exist?
@@ -607,7 +710,13 @@ public class GroupThread extends Thread {
       if (requester.equals(user)) {
         groups.add(my_gs.userList.getUserGroups(user));
         groups.add(my_gs.userList.getUserOwnership(user));
+      } else {
+        System.out.println("Requester does not own token");
+        return null;
       }
+    } else {
+      System.out.println("Requester does not exist");
+      return null;
     }
 
     return groups;
@@ -706,6 +815,14 @@ public class GroupThread extends Thread {
       // Hash identifier of recovered token
       String identifier = tokenToVerify.getIdentifier();
       byte [] hashedIdentifier = SymmetricKeyOps.hash(identifier);
+
+      // Verify that IP Address & Port from token match the Server's own IP and port to prevent token theft (and use on a different server)
+      String tokenAddress = tokenToVerify.getAddress();
+      String serverAddress = new String(my_gs.getIP() + "^" + my_gs.getPort());
+      if(!tokenAddress.equals(serverAddress)) {
+        System.out.println("Token Address didn't match Server Address!");
+        return false;
+      }
 
       // Verify contents of GroupServer-Signed hash using recovered hash and Group Server's Public Key
       Signature pubSig = Signature.getInstance("SHA256withRSA", "BC");

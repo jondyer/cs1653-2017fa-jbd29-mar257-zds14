@@ -1,8 +1,18 @@
-## Extra Credit additions ##
-### GroupList ###
-  We added a class called `GroupList` (along with accompanying `Group` class) which is analogous to the `UserList` class that was already included. This class facilitates greater efficiency in certain operations, such as listing all members of a given group or determining quickly if a group exists (can simply ask the GroupList or Group object instead of iterating over all Users--especially helpful if there are more users than groups).  
+# Extra Credit additions #
+## Phase 4 ##
+### Test Script ###
+We felt that it would be useful to have a script that tested all possible operations a user can perform. The result (`betterScript`) automatically starts an instance each of TrentServer, GroupServer, and FileServer, and then runs a ClientApp for your testing convenience. If run with the '-f' flag, it will remove any previous binaries in the `src` folder and start fresh, while the '-t' flag will run every command in the `clientInput` file (each on a separate line, can be modified as desired). Note that this script currently only supports Linux (and Mac OS when run with the '-m' flag). However, it was extremely useful (not to mention educational) and well worth the time.
 
-  This class also provides the framework for planned future additions, such as easily allowing Admins to list all groups or find the owner of every group, etc.  
+
+### Token Theft-Resistance ###
+In T7, our tokens are split between FileServer and GroupServer tokens, so a theft of a token from one will not provide access to the other type. This was not clearly specified in the threat description, so seems worthy of extra credit.
+
+
+## Phase 3 and prior ##
+### GroupList ###
+We added a class called `GroupList` (along with accompanying `Group` class) which is analogous to the `UserList` class that was already included. This class facilitates greater efficiency in certain operations, such as listing all members of a given group or determining quickly if a group exists (can simply ask the GroupList or Group object instead of iterating over all Users--especially helpful if there are more users than groups).  
+
+This class also provides the framework for planned future additions, such as easily allowing Admins to list all groups or find the owner of every group, etc.  
 
 ### Principle of least privilege ###
 We attempted to enforce this principle in a couple of ways:  

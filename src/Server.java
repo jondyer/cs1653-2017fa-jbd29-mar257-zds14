@@ -14,10 +14,11 @@ public abstract class Server {
 
 	protected int port;
 	public String name;
+	protected String ip;
 
 	protected Socket sock;
-    protected ObjectOutputStream output;
-    protected ObjectInputStream input;
+  protected ObjectOutputStream output;
+  protected ObjectInputStream input;
 
 	protected KeyPairGenerator keyGenRSA;
 	protected KeyPair keyPairRSA;
@@ -27,15 +28,18 @@ public abstract class Server {
 	protected String keyFile;
 
 
-
 	public Server(int _SERVER_PORT, String _serverName) {
 		port = _SERVER_PORT;
 		name = _serverName;
 		keyFile = "KeyPair-" + port + ".bin";
 	}
 
+	public String getIP() {
+		return this.ip;
+	}
+
 	public int getPort() {
-		return port;
+		return this.port;
 	}
 
 	public String getName() {
@@ -94,6 +98,7 @@ public abstract class Server {
 
 		  if (envelope.getMessage().compareTo("OK")==0) {
 		    System.out.printf("Server created successfully\n");
+		    ip = (String) envelope.getObjContents().get(0);
 		  }
 		  else {
 		    System.out.printf("Server already exists...\n");

@@ -1,0 +1,20 @@
+@startuml
+title __T5: Message Reorder/Replay Prevention__
+actor Bob
+participant Server
+
+Bob -> Server: Bob || FileServer_X || g<sup>b</sup> mod q
+note left: Seq 1
+
+Server -> Bob: Server<sub>X</sub> || [Bob || g<sup>s</sup> mod q]k<sub>S</sub><sup>-1</sup>
+note right: Seq 2
+Bob -> Server: {M<sub>1</sub>}K<sub>BS</sub>
+note left: Seq 3
+Server -> Bob: {M<sub>2</sub>}K<sub>BS</sub>
+note right: Seq 4
+
+|||
+
+Bob <--> Server: Continues on
+
+@enduml

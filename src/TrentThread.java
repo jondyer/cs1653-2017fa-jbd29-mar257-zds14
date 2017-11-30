@@ -45,8 +45,11 @@ public class TrentThread extends Thread {
                 PublicKey pub = (PublicKey)e.getObjContents().get(0); //Extract public key
                 int port = (int)e.getObjContents().get(1);
 
-                if(registerServer(pub, port))
+                String ip = registerServer(pub, port);
+                if(ip!=null) {
                   response = new Envelope("OK"); //Success
+                  response.addObject(ip);
+                }
               }
           }
           output.writeObject(response);
@@ -75,6 +78,11 @@ public class TrentThread extends Thread {
           response = new Envelope("OK"); // Success
           response.addObject(my_ts.pub);
           output.writeObject(response);
+        } else if(e.getMessage().equals("GROUP")) {  // GET GROUPSERVER PUBLIC KEY
+          String add = (String) e.getObjContents().get(0);     // get address of desired groupserver
+          response = new Envelope("OK"); // Success
+          response.addObject(my_ts.serverList.getPubKey(add));  // add the groupserver's public key
+          output.writeObject(response);
         } else {
           response = new Envelope("FAIL"); //Server does not understand client request
           output.writeObject(response);
@@ -89,11 +97,11 @@ public class TrentThread extends Thread {
     }
   }
 
-  private boolean registerServer(PublicKey pub, int port) {
-    if(my_ts.serverList == null) return false;
+  private String registerServer(PublicKey pub, int port) {
+    if(my_ts.serverList == null) return null;
     String address = socket.getInetAddress() + ":" + port;
     address = address.replace("/", "");
-    if (my_ts.serverList.checkServer(address)) return false;
+    if (my_ts.serverList.checkServer(address)) return null;
 
     Security.addProvider(new BouncyCastleProvider());
     Cipher cipherRSA;
@@ -127,7 +135,7 @@ public class TrentThread extends Thread {
     }
 
     my_ts.serverList.addServer(address, pub, sigBytes);
-    return true;
+    return socket.getInetAddress().toString().split("/")[1];
   }
 
   // TODO: Remove File Server -- EXTRA CREDIT

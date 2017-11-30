@@ -21,6 +21,7 @@ public class TrentClient extends Client {
 
   private SecretKey sessionKey;
 
+
   @SuppressWarnings("all")
   public PublicKey getPublicKey(String ipaddress, int port, PublicKey trentPubKey) throws Exception {
     Security.addProvider(new BouncyCastleProvider());
@@ -52,7 +53,7 @@ public class TrentClient extends Client {
 
     if(match)
       return fileServerPublicKey;
-    System.out.println("Error verifing Trent's public key");
+    System.out.println("Error verifying Trent's public key");
     return null;
   }
 

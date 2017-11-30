@@ -34,6 +34,8 @@ class ClientApp {
   TrentClient trentClient = new TrentClient();
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
+
+  String choice = null;
   public ClientApp() throws Exception {
     // INTERACTIVE SETUP
     String temp;
@@ -109,16 +111,25 @@ class ClientApp {
   public void run() throws Exception {
     Security.addProvider(new BouncyCastleProvider());
 
+    String fileServerAddress = new String(fileHost + "^" + FILE_PORT);
+    String groupServerAddress = new String(groupHost + "^" + GROUP_PORT);
 
-    // Connect to Server
+
+    // Connect to Servers, setup
     groupClient.connect(groupHost, GROUP_PORT);
     trentClient.connect(trentHost, TRENT_PORT);
-    PublicKey trentPublicKey = trentClient.getTrentPub();
+    PublicKey trentPublicKey = trentClient.getTrentPub(); // Arbitrary way to get Trent's public key - Dr. Lee said it was a fair assumption that everyone can know Trent's public key
     PublicKey groupServerPublicKey = trentClient.getPublicKey(groupHost, GROUP_PORT, trentPublicKey); // Get group server's public key
     groupClient.setGroupPubKey(groupServerPublicKey);
+    groupClient.setFileServerAddress(fileServerAddress);
+    groupClient.setGroupServerAddress(groupServerAddress);
+    fileClient.setGroupPubKey(groupServerPublicKey);
     PublicKey fileServerPublicKey = trentClient.getPublicKey(fileHost, FILE_PORT, trentPublicKey); // Get selected File Server's public key from Trent to later use for verification
     fileClient.connect(fileHost, FILE_PORT);
+    fileClient.setFileServerAddress(fileServerAddress);
     fileClient.keyExchange(fileServerPublicKey);
+
+    // TODO: Give GroupThread info about File Server's address so it can be included on tokens
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
@@ -134,6 +145,10 @@ class ClientApp {
 
 
     UserToken token = groupClient.getToken(username);
+
+    ArrayList<ArrayList<String>> groupLists = null;
+    ArrayList<String> groupsBelongedTo = null;
+    ArrayList<String> groupsOwned = null;
 
     // Check to make sure token exists
     if(token == null) {
@@ -153,17 +168,19 @@ class ClientApp {
           isAdmin = true;
       }
 
+      token = groupClient.getToken(username);
+
+
       // Get groups belonged to
-      List<List<String>> groupLists = groupClient.listGroups(username, token);
-      ArrayList<String> groupsBelongedTo = (ArrayList<String>) groupLists.get(0);
-      ArrayList<String> groupsOwned = (ArrayList<String>) groupLists.get(1);
+      groupLists = new ArrayList<ArrayList<String>>(groupClient.listGroups(username, token));
+      groupsBelongedTo = new ArrayList<String>(groupLists.get(0));
+      groupsOwned = new ArrayList<String>(groupLists.get(1));
 
       // List groups
       System.out.println("These are the groups you belong to: ");
       for(int i=0; i<groupsBelongedTo.size(); i++)
       System.out.println(i + ") " + groupsBelongedTo.get(i));
 
-      // TODO: Support selection of multiple groups at once for operation
       // Select a group
       System.out.print("Please select a group you wish to access ('q' to quit, 'c' to create a new group) >> ");
       String selection = console.next();
@@ -172,19 +189,14 @@ class ClientApp {
         break;
       } else if(selection.equals("c")) {
         createGroup(token);
-        //updateConnection(groupClient, groupHost, GROUP_PORT);
         continue;
-      // } else if(selection.equals("r")) {
-      //   updateConnection(groupClient, groupHost, GROUP_PORT);
-      //   updateConnection(fileClient, fileHost, FILE_PORT);
-      //   continue;
       }
-      String choice = groupsBelongedTo.get(Integer.parseInt(selection));
+      choice = groupsBelongedTo.get(Integer.parseInt(selection));
       boolean isOwner = false;
 
       // Check if owner of selected group
       if(groupsOwned.contains(choice) && !isAdmin) {
-        System.out.print("Would you to perform owner actions? (y/n) >> ");
+        System.out.print("Would you like to perform owner actions? (y/n) >> ");
         String response = console.next();
 
         // Wanna be a big boy?
@@ -193,8 +205,11 @@ class ClientApp {
       } else if (groupsOwned.contains(choice) && isAdmin)
           isOwner = true;
 
-      // update token --> retrieve new partial token!!!
+      // update token --> retrieve new partial token!!! + give signed hash of that partial token to FileClient
       token = groupClient.getToken(username,choice);
+      Token fileToken = (Token) groupClient.getFileToken(username, choice);
+      System.out.println("FILETOKEN IDENTIFIER - " +fileToken.getIdentifier());
+      fileClient.setSignedHash(groupClient.getFileSignedHash());  // After groupClient has token, give GroupServer-signed hash of token identifier to file client to
 
       // Compile List of privileges for each level of usage
       ArrayList<String> adminList = new ArrayList<String>();
@@ -296,8 +311,8 @@ class ClientApp {
           // Delete group
           case "o3":
             if(isOwner) deleteGroup(choice, token);
-            //updateConnection(groupClient, groupHost, GROUP_PORT);
-            //updateConnection(fileClient, fileHost, FILE_PORT);
+            // now update mega-token so we have a fresh list of groups
+            //token = groupClient.getToken(username);
             doAgain = false;
             break;
 
@@ -305,43 +320,36 @@ class ClientApp {
           // USER ACTIONS -----------------
           // List files
           case "0":
-            listFiles(token);
+            listFiles(fileToken);
             break;
 
           // Upload files
           case "1":
-            uploadFile(choice, token);
+            uploadFile(choice, fileToken, token); // needs fileToken and groupToken
             break;
 
           // Download files
           case "2":
-            downloadFile(token);
+            downloadFile(fileToken, token); // needs fileToken and groupToken
             break;
 
           // Delete files
           case "3":
             // Delete files
-            deleteFile(token);
+            deleteFile(fileToken);
             break;
 
           // Create a group=
           case "4":
             // Create a group
             createGroup(token);
-            //updateConnection(groupClient, groupHost, GROUP_PORT);
-            //updateConnection(fileClient, fileHost, FILE_PORT);
+            //token = groupClient.getToken(username);
             break;
 
           //quit
           case "q":
             doAgain = false;
             break;
-
-          //refresh
-          // case "r":
-          //   updateConnection(groupClient, groupHost, GROUP_PORT);
-          //   updateConnection(fileClient, fileHost, FILE_PORT);
-          //   break;
 
           // Invalid choice
           default:
@@ -512,7 +520,7 @@ class ClientApp {
    * @param  UserToken myToken       Token of the user uploading the file
    * @return           Success of operation.
    */
-  private boolean uploadFile(String group, UserToken myToken) {
+  private boolean uploadFile(String group, UserToken fileToken, UserToken groupToken) {
     // Get file to be uploaded
     System.out.print("Path of the source file? >> ");
     String sourceFile = console.next();
@@ -527,7 +535,9 @@ class ClientApp {
     // Pick new filename
     System.out.print("Name of the destination file? >> ");
     String destinationFilename = console.next();
-    boolean status = fileClient.upload(sourceFile, destinationFilename, group, myToken);
+
+    groupClient.getKeyAndHash(groupToken.getSubject(), group, groupToken);
+    boolean status = fileClient.upload(sourceFile, destinationFilename, group, fileToken, groupClient.getKey(), groupClient.getHashNum());
     if(status)
       System.out.println("Successfully uploaded file '" + sourceFile + "'\n");
     else
@@ -540,12 +550,14 @@ class ClientApp {
    * @param  UserToken myToken       Token of the user downloading the file
    * @return           Sucess of operation.
    */
-  private boolean downloadFile(UserToken myToken){
+  private boolean downloadFile(UserToken fileToken, UserToken groupToken){
     System.out.print("What file do you want to download? >> ");
     String sourceFile = console.next();
     System.out.print("What do you want to save it as? >> ");
     String destFile = console.next();
-    boolean status = fileClient.download(sourceFile, destFile, myToken);
+
+    groupClient.getKeyAndHash(groupToken.getSubject(), choice, groupToken);
+    boolean status = fileClient.download(sourceFile, destFile, fileToken, groupClient.getKey(), groupClient.getHashNum());
     if(status)
       System.out.println("Successfully downloaded file '" + sourceFile + "'\n");
     else
