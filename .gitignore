@@ -3,6 +3,7 @@
 *.class
 *.bin
 *.pdf
+*.file
 testfiles/*
 src/shared_files/*
 .DS_STORE
