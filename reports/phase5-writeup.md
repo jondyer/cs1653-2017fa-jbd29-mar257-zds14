@@ -18,9 +18,9 @@ The final phase of the project involves self-directed hardening against self-dir
 
 ## Threat Models ##
 ### T8: Weak Passwords ###
-The lack of restriction for password creation makes it easy for users to be created with basic or simple passwords, giving a low level of protection should an attacker discover a username and attempt to guess the corresponding password. As our system is currently no rules are being enforced for password creation, even for the administrator account. Thus, common and short passwords such as `password` or `1234` are allowed, leaving those accounts vulnerable to a brute force attack on their passwords.
+The lack of restriction for password creation makes it easy for users to be created with basic or simple passwords, giving a low level of protection should an attacker discover a username and attempt to guess the corresponding password. Our system is currently enforcing no rules for password creation, not even for the administrator account. Thus, common and short passwords such as `password` or `1234` are allowed, leaving those accounts vulnerable to a brute force attack on their passwords.
 
-Our solution to this threat is to require a minimum length on all passwords, in accordance with the latest NIST guidelines<sup id="a1">[1](#f1)</sup>
+Our solution to this threat is to require a minimum length on all passwords, in accordance with the latest NIST guidelines.<sup id="a1">[1](#f1)</sup> We will make this minimum length to be no less than 8 characters. While we encourage the user to make lengthy passwords that are harder to brute force and/or guess, we will limit password length at 100 characters maximum, because excessively long passwords can take additional time to hash.  We do not find it necessary to add a complexity requirement, as per NIST guidelines<sup id="a1">[1](#f1)</sup>, because research has shown this to be somewhat ineffective, as it has potential to add negative value to the secret. If a user must add an uppercase letter, number, and a symbol; they will likely change `password` to `Password1!` -  making it very predictable to guess the behavior, and therefore adding no more security to the password.
 
 
 ### T9: Online Password Attack ###
