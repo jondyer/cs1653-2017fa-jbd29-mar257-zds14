@@ -31,7 +31,7 @@ We address this vulnerability by allowing a user a maximum number of login attem
 ### T10: Login DOS Attack ###
 This threat comes by way of any malicious party who decides to interrupt the availability of the file-hosting service. Specifically, someone can perform a denial-of-service (DOS) attack by attempting to login with garbage user/password pairs from many different clients at once. As per our attack script `attack_T10.sh` it is simple to write a basic script that performs this function, and our server *will* crash if overloaded in this way.  
 
-This problem can be solved on the server side by recording the IP addresses that are used to attempt connections, and disallowing those connections after a certain excessive (but still small) number of attempted SRP handshakes in a short period of time. Thus, such an address will be flagged and ignored in future connection attempts.
+This problem can be solved on the server side by requiring a puzzle to be solved, and disallowing those connections with an incorrect solution. The puzzle needs to be something that takes enough work on the client side to prevent the client from performing a DOS attack, but easy enough on the server to check so that it can still accept many incoming connections. An example of a puzzle that comes to mind is brute-forcing a small hash of say 3 or 4 alphanumeric characters. On the client side they will have to perform up to 3^62 hash operations and string comparisons. The size of our result stops the option of simply storing all results. However, the server simply needs one string comparison to verify a connection.
 
 
 ## Summary ##
