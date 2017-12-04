@@ -26,7 +26,7 @@ Our solution to this threat is to require a minimum length on all passwords, in 
 ### T9: Online Password Attack ###
 This threat involves the potential for someone to make a brute-force attack on a user's password by attempting to login repeatedly, perhaps with a dictionary of words, as a given user. This is currently possible since our interface simply returns "wrong password" on a mis-entry and allows the user to keep trying.
 
-We address this vulnerability by allowing a user a maximum number of login attempts before suspending the account temporarily. This will prevent a dictionary-type attack on the ... especially combined with the password rule enforcement above.
+We address this vulnerability by implementing a timed exponential backoff system for invlid login attempts. The user will be given three chances to enter their password. If all are invalid, there will be a slight delay before the next attempt is accepted. If this is also invalid, the delay time between login attempts will be increased again. The delay time will continue to increase in an exponential fashion for each successive failed login attempt. This will prevent a dictionary-type attack on a user's password especially combined with the password rule enforcement above.
 
 ### T10: Login DOS Attack ###
 This threat comes by way of any malicious party who decides to interrupt the availability of the file-hosting service. Specifically, someone can perform a denial-of-service (DOS) attack by attempting to login with garbage user/password pairs from many different clients at once. As per our attack script `attack_T10.sh` it is simple to write a basic script that performs this function, and our server *will* crash if overloaded in this way.  
