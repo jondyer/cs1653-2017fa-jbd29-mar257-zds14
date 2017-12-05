@@ -190,4 +190,46 @@ public class SymmetricKeyOps {
     }
     return hash;
   }
+
+  public static String makePuzzle(int strength) {
+
+    SecureRandom rand = new SecureRandom();
+    String rNum = Integer.toBinaryString(rand.nextInt((int) (Math.pow(2, strength))));
+    String prepend = "";
+    for (int i = 0; i < (strength - rNum.length()); i++) prepend += "0";
+    rNum = prepend + rNum;
+
+    System.out.println(rNum);
+    String s = null;
+    try{
+      s = new String(hash(rNum), "US-ASCII");
+    } catch(Exception e){
+      System.out.println(e.getStackTrace());
+    }
+    System.out.println(s);
+    return s;
+  }
+
+  public static void solvePuzzle(int strength, String puzzle) {
+    Integer rTest;
+    int max = (int) Math.pow(2, strength);
+
+    for(rTest = 0; rTest <= max; rTest++) {
+      String prepend = "";
+      String rNum = Integer.toBinaryString(rTest);
+      for (int i = 0; i < (strength - rNum.length()); i++) prepend += "0";
+      rNum = prepend + rNum;
+      String s = null;
+      try{
+        s = new String(hash(rNum), "US-ASCII");
+      } catch(Exception e){
+        System.out.println(e.getStackTrace());
+      }
+
+      if(s.equals(puzzle)) {
+        System.out.println(rNum);
+        break;
+      }
+    }
+  }
 }

@@ -309,7 +309,7 @@ public class FileThread extends Thread {
 										// Encrypt and send chunk
 										spec = SymmetricKeyOps.getGCM();
 										e.addObject(SymmetricKeyOps.encrypt(buf, this.sessionKey, spec));
-										e.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), this.sessionKey, spec));
+										e.addObject(SymmetricKeyOps.encrypt(Integer.valueOf(n).toString().getBytes(), this.sessionKey, spec));
 										e.addObject(spec.getIV());
 										// increment sequence number first
 										this.sequence++;
@@ -333,7 +333,7 @@ public class FileThread extends Thread {
 										e = new Envelope("EOF");
 
 										e.addObject(sf.getIV());
-										e.addObject(SymmetricKeyOps.encrypt(new Integer(sf.getHashNum()).toString().getBytes(), this.sessionKey, spec));
+										e.addObject(SymmetricKeyOps.encrypt(Integer.valueOf(sf.getHashNum()).toString().getBytes(), this.sessionKey, spec));
 										// increment sequence number first
 										this.sequence++;
 										e.setSeq(this.sequence);
