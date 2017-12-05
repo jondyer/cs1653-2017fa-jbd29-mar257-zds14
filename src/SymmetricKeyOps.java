@@ -199,14 +199,12 @@ public class SymmetricKeyOps {
     for (int i = 0; i < (strength - rNum.length()); i++) prepend += "0";
     rNum = prepend + rNum;
 
-    System.out.println(rNum);
     String s = null;
     try{
-      s = new String(hash(rNum), "US-ASCII");
+      s = new String(hash(rNum), "UTF-8");
     } catch(Exception e){
       System.out.println(e.getStackTrace());
     }
-    System.out.println(s);
     return s;
   }
 
@@ -221,13 +219,13 @@ public class SymmetricKeyOps {
       rNum = prepend + rNum;
       String s = null;
       try{
-        s = new String(hash(rNum), "US-ASCII");
+        s = new String(hash(rNum), "UTF-8");
       } catch(Exception e){
         System.out.println(e.getStackTrace());
       }
 
       if(s.equals(puzzle)) {
-        System.out.println(rNum);
+        //System.out.println(rNum);
         break;
       }
     }
