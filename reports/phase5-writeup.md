@@ -1,4 +1,4 @@
-# CS 1653: Applied Cryptography and Network Security -- Phase 4 #
+# CS 1653: Applied Cryptography and Network Security -- Phase 5 #
 ## Overview ##
 The final phase of the project involves self-directed hardening against self-directed threats to our Galactic File-Hosting Service (GFHS). We will operate under the same trust model as in phase 4 (described below), but will protect against other threats present within the framework of that trust model. Specifically, our trust model supposes the following from phase 4:  
 

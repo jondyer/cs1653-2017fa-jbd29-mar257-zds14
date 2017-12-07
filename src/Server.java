@@ -9,6 +9,9 @@ import java.io.ObjectOutputStream;
 import javax.crypto.*;
 import java.security.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+
 
 public abstract class Server {
 
@@ -26,6 +29,8 @@ public abstract class Server {
 	protected PrivateKey priv;
 
 	protected String keyFile;
+	protected HashMap<String, LocalDateTime> accessMap = new HashMap<String, LocalDateTime>();
+	protected HashMap<String, Integer> difficultyMap = new HashMap<String, Integer>();
 
 
 	public Server(int _SERVER_PORT, String _serverName) {

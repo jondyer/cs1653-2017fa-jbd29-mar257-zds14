@@ -23,6 +23,13 @@ public abstract class Client {
 			// Creates Input / Output streams with the server we connected to
 			output = new ObjectOutputStream(sock.getOutputStream());
 			input = new ObjectInputStream(sock.getInputStream());
+
+			if(port == 4321 || port == 8765) {
+				System.out.println("\n" + port + " is doing a puzzle!\n");
+				doPuzzle();
+			}
+				
+
 		} catch(Exception e) {
 		    System.err.println("Error: " + e.getMessage());
 		    e.printStackTrace(System.err);
@@ -47,6 +54,20 @@ public abstract class Client {
 		}
 
 		return isConnected();
+	}
+
+	private void doPuzzle() throws Exception {
+		Envelope e = (Envelope)input.readObject();
+		int strength = (int) e.getObjContents().get(0);
+		String puzzle = (String) e.getObjContents().get(1);
+		String solution = SymmetricKeyOps.solvePuzzle(strength, puzzle);
+		Envelope response = new Envelope("OK");
+		response.addObject(solution);
+		output.writeObject(response);
+
+		if(!isConnected()) {
+			System.exit(1);
+		}
 	}
 
 	public boolean isConnected() {

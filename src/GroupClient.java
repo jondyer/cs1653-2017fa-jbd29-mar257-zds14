@@ -42,7 +42,7 @@ public class GroupClient extends Client implements GroupClientInterface {
 	private SecretKey K;
 	private byte[] signedHash, fileSignedHash;
 	private String fileServerAddress;
-  private String groupServerAddress;
+ 	private String groupServerAddress;
 
 	public boolean clientSRP(String user, String pass) {
 		Security.addProvider(new BouncyCastleProvider());

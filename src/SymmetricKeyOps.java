@@ -191,8 +191,9 @@ public class SymmetricKeyOps {
     return hash;
   }
 
-  public static String makePuzzle(int strength) {
-
+  public static String[] makePuzzle(int strength) {
+    if(strength <= 0) strength = 1;
+    String[] ret = new String[2];
     SecureRandom rand = new SecureRandom();
     String rNum = Integer.toBinaryString(rand.nextInt((int) (Math.pow(2, strength))));
     String prepend = "";
@@ -205,10 +206,12 @@ public class SymmetricKeyOps {
     } catch(Exception e){
       System.out.println(e.getStackTrace());
     }
-    return s;
+    ret[0] = rNum;
+    ret[1] = s;
+    return ret;
   }
 
-  public static void solvePuzzle(int strength, String puzzle) {
+  public static String solvePuzzle(int strength, String puzzle) {
     Integer rTest;
     int max = (int) Math.pow(2, strength);
 
@@ -225,9 +228,9 @@ public class SymmetricKeyOps {
       }
 
       if(s.equals(puzzle)) {
-        //System.out.println(rNum);
-        break;
+        return rNum;
       }
     }
+    return null;
   }
 }
