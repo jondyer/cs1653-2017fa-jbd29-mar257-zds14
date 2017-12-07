@@ -380,7 +380,10 @@ class ClientApp {
       pw1 = console.next();
       System.out.print("Please enter the password again to confirm >> ");
       pw2 = console.next();
-      if(pw1.equals(pw2)) match = true;
+      if(pw1.length()<8 || pw2.length()<8){
+        match = false;
+        System.out.println("Password must be 8 characters or more. ");
+      } else if(pw1.equals(pw2)) match = true;
     }
 
 

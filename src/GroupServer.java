@@ -82,11 +82,14 @@ public class GroupServer extends Server {
       String pw2;
 
       while(!match) {
-        System.out.print("Enter a password for this account: ");
+        System.out.print("Password for this account? >> ");
         pw1 = console.next();
-        System.out.print("Please enter the password again to confirm: ");
+        System.out.print("Please enter the password again to confirm >> ");
         pw2 = console.next();
-        if(pw1.equals(pw2)) match = true;
+        if(pw1.length()<8 || pw2.length()<8){
+          match = false;
+          System.out.println("Password must be 8 characters or more. ");
+        } else if(pw1.equals(pw2)) match = true;
       }
 
       //Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
