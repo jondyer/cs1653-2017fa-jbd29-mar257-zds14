@@ -60,7 +60,9 @@ public abstract class Client {
 		Envelope e = (Envelope)input.readObject();
 		int strength = (int) e.getObjContents().get(0);
 		String puzzle = (String) e.getObjContents().get(1);
-		String solution = SymmetricKeyOps.solvePuzzle(strength, puzzle);
+		String prepend = (String) e.getObjContents().get(2);
+
+		String solution = SymmetricKeyOps.solvePuzzle(strength, prepend, puzzle);
 		Envelope response = new Envelope("OK");
 		response.addObject(solution);
 		output.writeObject(response);

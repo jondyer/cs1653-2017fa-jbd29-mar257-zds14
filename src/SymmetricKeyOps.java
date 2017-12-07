@@ -193,13 +193,15 @@ public class SymmetricKeyOps {
 
   public static String[] makePuzzle(int strength) {
     if(strength <= 0) strength = 1;
-    String[] ret = new String[2];
+    else if (strength > 64) strength = 64;
+
+    String[] ret = new String[3];
     SecureRandom rand = new SecureRandom();
     String rNum = Integer.toBinaryString(rand.nextInt((int) (Math.pow(2, strength))));
-    String prepend = "";
-    for (int i = 0; i < (strength - rNum.length()); i++) prepend += "0";
-    rNum = prepend + rNum;
+    String zeroExtend = "";
+    for (int i = 0; i < (strength - rNum.length()); i++) zeroExtend += "0";
 
+    rNum = Long.toBinaryString(rand.nextLong()) + zeroExtend + rNum;
     String s = null;
     try{
       s = new String(hash(rNum), "UTF-8");
@@ -208,18 +210,20 @@ public class SymmetricKeyOps {
     }
     ret[0] = rNum;
     ret[1] = s;
+    ret[2] = rNum.substring(0, rNum.length() - strength);
     return ret;
   }
 
-  public static String solvePuzzle(int strength, String puzzle) {
+  public static String solvePuzzle(int strength, String prepend, String puzzle) {
     Integer rTest;
     int max = (int) Math.pow(2, strength);
 
     for(rTest = 0; rTest <= max; rTest++) {
-      String prepend = "";
+      String zeroExtend = "";
       String rNum = Integer.toBinaryString(rTest);
-      for (int i = 0; i < (strength - rNum.length()); i++) prepend += "0";
-      rNum = prepend + rNum;
+      for (int i = 0; i < (strength - rNum.length()); i++) zeroExtend += "0";
+      rNum = prepend + zeroExtend + rNum;
+
       String s = null;
       try{
         s = new String(hash(rNum), "UTF-8");

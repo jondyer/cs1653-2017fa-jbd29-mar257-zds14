@@ -53,6 +53,7 @@ public class FileThread extends Thread {
 		Envelope resp = new Envelope("OK");
 		resp.addObject(strength);
 		resp.addObject(puzzle[1]);
+		resp.addObject(puzzle[2]);
 		output.writeObject(resp);
 		Envelope puzzleEnv = (Envelope)input.readObject();
 

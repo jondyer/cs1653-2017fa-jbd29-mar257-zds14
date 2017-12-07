@@ -10,7 +10,8 @@ public class test {
 	  	String s = new String(SymmetricKeyOps.hash("1" + append), "UTF-8");
 
 	    long startTime = System.nanoTime();
-		  SymmetricKeyOps.solvePuzzle(strength, s);
+
+		//  SymmetricKeyOps.solvePuzzle(strength, s);
 		  long endTime = System.nanoTime();
 
 		  long duration = (endTime - startTime) / 1000000;
