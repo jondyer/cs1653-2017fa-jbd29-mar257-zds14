@@ -126,7 +126,7 @@ public class GroupServer extends Server {
 
       while(true) {
         sock = serverSock.accept();
-        thread = new GroupThread(sock, this);
+        thread = new GroupThread(sock, this, 1);
         thread.start();
       }
     }
