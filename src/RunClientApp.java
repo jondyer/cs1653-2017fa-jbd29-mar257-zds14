@@ -5,7 +5,7 @@
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.File;
+import java.io.*;
 import javax.crypto.*;
 import java.security.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -34,6 +34,9 @@ class ClientApp {
   TrentClient trentClient = new TrentClient();
   GroupClient groupClient = new GroupClient();
   FileClient fileClient = new FileClient();
+  File file = new File("../dlb/longpass.txt");
+  BufferedReader bf = new BufferedReader(new FileReader(file));
+  DLBtrie<Boolean> tr = new DLBtrie<Boolean>();
 
   String choice = null;
   public ClientApp() throws Exception {
@@ -111,6 +114,11 @@ class ClientApp {
   public void run() throws Exception {
     Security.addProvider(new BouncyCastleProvider());
 
+    String line;
+    while((line = bf.readLine()) != null) {
+      tr.insert(line, true);
+    }
+
     String fileServerAddress = new String(fileHost + "^" + FILE_PORT);
     String groupServerAddress = new String(groupHost + "^" + GROUP_PORT);
 
@@ -129,7 +137,6 @@ class ClientApp {
     fileClient.setFileServerAddress(fileServerAddress);
     fileClient.keyExchange(fileServerPublicKey);
 
-    // TODO: Give GroupThread info about File Server's address so it can be included on tokens
 
     // Get Username & Token
     System.out.print("Welcome! Please login with your username >> ");
@@ -208,7 +215,6 @@ class ClientApp {
       // update token --> retrieve new partial token!!! + give signed hash of that partial token to FileClient
       token = groupClient.getToken(username,choice);
       Token fileToken = (Token) groupClient.getFileToken(username, choice);
-      System.out.println("FILETOKEN IDENTIFIER - " +fileToken.getIdentifier());
       fileClient.setSignedHash(groupClient.getFileSignedHash());  // After groupClient has token, give GroupServer-signed hash of token identifier to file client to
 
       // Compile List of privileges for each level of usage
@@ -380,9 +386,9 @@ class ClientApp {
       pw1 = console.next();
       System.out.print("Please enter the password again to confirm >> ");
       pw2 = console.next();
-      if(pw1.length()<8 || pw2.length()<8){
+      if(passProblem(pw1, pw2)) {
         match = false;
-        System.out.println("Password must be 8 characters or more. ");
+        System.out.println("This password sucks. Try again. ");
       } else if(pw1.equals(pw2)) match = true;
     }
 
@@ -632,5 +638,24 @@ class ClientApp {
   private boolean updateConnection(Client client, String hostName, int port) {
     client.disconnect();
     return client.connect(hostName, port, true);
+  }
+
+
+  /**
+   * Checks the DLB trie to see if password in the most common 1 million.
+   * @param  String pass          Candidate password
+   * @return        True if password in trie, false otherwise.
+   */
+  private boolean passProblem(String pass, String pass2) {
+    if (pass.length() > 100) {
+      System.out.println("Too long, bozo.");
+      return true;
+    }
+    if(pass.length()<8 || pass2.length()<8){
+      System.out.println("Password must be 8 characters or more. ");
+      return true;
+    }
+    if (tr.contains(pass)) return true;
+    return false;
   }
 }

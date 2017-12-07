@@ -57,8 +57,7 @@ public class GroupThread extends Thread {
 
   private void doPuzzle(int strength) throws Exception{
     String[] puzzle = SymmetricKeyOps.makePuzzle(strength);
-    System.out.println(puzzle[0].length() + "\t" + puzzle[0]);
-    System.out.println(strength + "\t" + puzzle[2]);
+    
     Envelope resp = new Envelope("OK");
     resp.addObject(strength);
     resp.addObject(puzzle[1]);

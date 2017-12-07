@@ -1,7 +1,15 @@
 /******************************
  * Global TODO tracking page  *
  ******************************/
+<<<<<<< HEAD
 TODO: Remove extraneous console output                                                @Everyone
+TODO: Force clients to solve a puzzle before connecting to Trent
+TODO: Force FileServer to solve a puzzle before connecting to Trent
+TODO: Check passwords against common list
+=======
+TODO: Remove extraneous console output                  @Everyone
+>>>>>>> 71a8bbcf1a2cf3786754c210a9fa9f4590c31b3f
+
 
 /*****************************************************
  * EXTRA CREDIT SECTION                              *

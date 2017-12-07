@@ -15,10 +15,37 @@ public class TrentThread extends Thread {
   private final Socket socket;
   private TrentServer my_ts;
   private SecretKey sessionKey;
+  private ObjectInputStream input = null;
+  private ObjectOutputStream output = null;
 
-  public TrentThread(Socket _socket, TrentServer _ts) {
-    socket = _socket;
-    my_ts = _ts;
+  public TrentThread(Socket _socket, TrentServer _ts, Integer strength) {
+    this.socket = _socket;
+    this.my_ts = _ts;
+    try {
+      input = new ObjectInputStream(socket.getInputStream());
+      output = new ObjectOutputStream(socket.getOutputStream());
+      System.out.println(this.socket.getInetAddress() + " is doing a puzzle!");
+      doPuzzle(strength);
+    } catch(Exception e) {
+        System.err.println("Error: " + e.getMessage());
+        e.printStackTrace(System.err);
+    }
+
+  }
+
+  private void doPuzzle(int strength) throws Exception{
+    String[] puzzle = SymmetricKeyOps.makePuzzle(strength);
+    Envelope resp = new Envelope("OK");
+    resp.addObject(strength);
+    resp.addObject(puzzle[1]);
+    resp.addObject(puzzle[2]);
+    output.writeObject(resp);
+    Envelope puzzleEnv = (Envelope)input.readObject();
+    if(!puzzle[0].equals((String) puzzleEnv.getObjContents().get(0))) {
+      System.out.println("Invalid puzzle solution!");
+      socket.close(); //Close the socket
+      System.exit(1);
+    }
   }
 
   public void run() {
@@ -27,8 +54,11 @@ public class TrentThread extends Thread {
     try {
       //Announces connection and opens object streams
       System.out.println("*** New connection from " + socket.getInetAddress() + ":" + socket.getPort() + "***");
-      final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
-      final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+
+      if(this.input == null || this.output == null ){
+        input = new ObjectInputStream(socket.getInputStream());
+        output = new ObjectOutputStream(socket.getOutputStream());
+      }
 
       do {
         Envelope e = (Envelope)input.readObject();
