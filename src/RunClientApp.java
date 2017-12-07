@@ -215,7 +215,6 @@ class ClientApp {
       // update token --> retrieve new partial token!!! + give signed hash of that partial token to FileClient
       token = groupClient.getToken(username,choice);
       Token fileToken = (Token) groupClient.getFileToken(username, choice);
-      System.out.println("FILETOKEN IDENTIFIER - " +fileToken.getIdentifier());
       fileClient.setSignedHash(groupClient.getFileSignedHash());  // After groupClient has token, give GroupServer-signed hash of token identifier to file client to
 
       // Compile List of privileges for each level of usage
