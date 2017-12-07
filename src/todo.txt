@@ -1,7 +1,7 @@
 /******************************
  * Global TODO tracking page  *
  ******************************/
-TODO: Remove extraneous console output                                                @Everyone
+TODO: Remove extraneous console output                  @Everyone
 
 
 /*****************************************************

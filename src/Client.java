@@ -25,10 +25,10 @@ public abstract class Client {
 			input = new ObjectInputStream(sock.getInputStream());
 
 			if(port == 4321 || port == 8765) {
-				System.out.println("\n" + port + " is doing a puzzle!\n");
+				System.out.println("Doing a puzzle for "+ port + "!\n");
 				doPuzzle();
 			}
-				
+
 
 		} catch(Exception e) {
 		    System.err.println("Error: " + e.getMessage());
