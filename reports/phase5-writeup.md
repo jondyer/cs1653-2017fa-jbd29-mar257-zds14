@@ -22,7 +22,7 @@ The lack of restriction for password creation makes it easy for users to be crea
 
 Our solution to this threat is to require a minimum length on all passwords, in accordance with the latest NIST guidelines.<sup id="a1">[1](#f1)</sup> We will make this minimum length to be no less than 8 characters. While we encourage the user to make lengthy passwords that are harder to brute force and/or guess, we will limit password length at 100 characters maximum, because excessively long passwords can take additional time to hash.  We do not find it necessary to add a complexity requirement, as per NIST guidelines<sup id="a1">[1](#f1)</sup>, because research has shown this to be somewhat ineffective, as it has potential to add negative value to the secret. If a user must add an uppercase letter, number, and a symbol; they will likely change `password` to `Password1!` -  making it very predictable to guess the behavior, and therefore adding no more security to the password. We also intend to check the user's password against a dictionary of common passwords and reject it if there is a match.  
 
-We believe that implementing these changes will make it much more difficult for an attacker to compromise attacks. They will have a harder time running through a dictionary and will be forced to brute force longer passwords.
+We believe that implementing these changes will make it much more difficult for an attacker to compromise passwords. They will have a harder time running through a dictionary and will be forced to brute force longer passwords.
 
 
 ### T9: Online Password Attack ###
@@ -30,14 +30,14 @@ This threat involves the potential for someone to make a brute-force attack on a
 
 We address this vulnerability by implementing a timed exponential backoff system for invalid login attempts. The user will be given three chances to enter their password. If all are invalid, there will be a slight delay before the next attempt is accepted. If this is also invalid, the delay time between login attempts will be increased again. The delay time will continue to increase in an exponential fashion for each successive failed login attempt. This will prevent a dictionary-type attack on a user's password especially combined with the password rule enforcement above.  
 
-We believe exponential backoff will prevent an attacker for compromising as many accounts. T8 forces the attacker to brute force a stronger password and the exponential backoff will greatly limit the number of attempts possible.  
+We believe exponential backoff will prevent an attacker from compromising as many accounts. T8 forces the attacker to brute force a stronger password and the exponential backoff will greatly limit the number of attempts possible.  
 
 ### T10: Login DOS Attack ###
 This threat comes by way of any malicious party who decides to interrupt the availability of the file-hosting service. Specifically, someone can perform a denial-of-service (DOS) attack by attempting to login with garbage user/password pairs from many different clients at once. As per our attack script `attack_T10.sh` it is simple to write a basic script that performs this function, and our server *will* crash if overloaded in this way.  
 
 This problem can be solved on the server side by requiring a puzzle to be solved, and disallowing those connections with an incorrect solution. The puzzle needs to be something that takes enough work on the client side to prevent the client from performing a DOS attack, but easy enough on the server to check so that it can still accept many incoming connections. An example of a puzzle that comes to mind is brute-forcing a small hash of say 3 or 4 alphanumeric characters. On the client side they will have to perform up to 3^62 hash operations and string comparisons. The size of our result stops the option of simply storing all results. However, the server simply needs one string comparison to verify a connection.  
 
-We believe that this will be effective because it will force the client to do work when submitting a connection so that they will effectiely DOS themselves before harming the server.  
+We believe that this will be effective because it will force the client to do work when submitting a connection so that they will effectively DOS themselves before harming the server.  
 
 
 ## Summary ##

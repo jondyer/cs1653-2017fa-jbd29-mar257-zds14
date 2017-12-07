@@ -8,6 +8,7 @@ myTerm="terminator"
 
 clientCmd="java -cp .:$jar_name RunClientApp"
 
+cd src/
 cd ../src/
 echo "I'm in $PWD"
 if [[ $PWD != *"$thePath"* ]]; then
@@ -16,7 +17,7 @@ if [[ $PWD != *"$thePath"* ]]; then
 fi
 
 
-for (( i = 0; i < 1000; i++ )); do
+for (( i = 0; i < 10; i++ )); do
   #statements
   $clientCmd < $attIn &
 done
