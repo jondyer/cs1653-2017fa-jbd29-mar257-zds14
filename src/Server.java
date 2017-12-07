@@ -88,16 +88,31 @@ public abstract class Server {
 	    }
 	}
 
+	private void doPuzzle() throws Exception {
+		Envelope e = (Envelope)input.readObject();
+		int strength = (int) e.getObjContents().get(0);
+		String puzzle = (String) e.getObjContents().get(1);
+		String solution = SymmetricKeyOps.solvePuzzle(strength, puzzle);
+		Envelope response = new Envelope("OK");
+		response.addObject(solution);
+		output.writeObject(response);
+		if(!isConnected()) {
+			System.exit(1);
+		}
+	}
+
 	protected boolean registerServer(String TRENT_IP, int TRENT_PORT) {
 		getKeyPair();
 
     if (!connect(TRENT_IP, TRENT_PORT, true)) return false;
+
 
     Envelope envelope = new Envelope("CSERV");
     envelope.addObject(pub);
     envelope.addObject(getPort());
 
     try {
+			doPuzzle();
 	  	output.writeObject(envelope);
 	    envelope = (Envelope)input.readObject();
 
@@ -113,6 +128,8 @@ public abstract class Server {
 		  e1.printStackTrace();
 		} catch (ClassNotFoundException e1) {
 		  e1.printStackTrace();
+		} catch(Exception e1) {
+			e1.printStackTrace();
 		} finally {
 		  disconnect();
 		}

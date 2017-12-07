@@ -2,7 +2,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
 import java.util.*;
-
+import java.time.LocalDateTime;
 
 public class TrentServer extends Server {
 
@@ -62,7 +62,25 @@ public class TrentServer extends Server {
 
       while(true) {
         sock = serverSock.accept();
-        thread = new TrentThread(sock, this);
+        LocalDateTime now = LocalDateTime.now();
+        String client = sock.getInetAddress().getHostAddress();
+        // If the address has already visited, check the map for last time it visited. If not, add it to the map.
+        if(accessMap.containsKey(client)) {
+
+          // Compare time of last visited to now
+          LocalDateTime lastConnection = accessMap.get(client);
+          if(now.isAfter(lastConnection.plusMinutes(10))) { // Last connection was longer than ten minutes ago, reset difficulty
+            difficultyMap.replace(client, 0);
+          } else {	// Make puzzle harder
+            difficultyMap.replace(client, difficultyMap.get(client)+1);
+          }
+          accessMap.replace(client, now);	// Update last connection time to now
+
+        } else {	// New Connection
+          accessMap.put(client, now);
+          difficultyMap.put(client, 0);
+        }
+        thread = new TrentThread(sock, this, difficultyMap.get(client));
         thread.start();
       }
     }
