@@ -113,7 +113,7 @@ public class FileServer extends Server {
 					accessMap.put(client, now);
 					difficultyMap.put(client, 0);
 				}
-				thread = new FileThread(sock, this);
+				thread = new FileThread(sock, this, difficultyMap.get(client));
 				thread.start();
 			}
 
