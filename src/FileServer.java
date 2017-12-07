@@ -9,6 +9,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.InetAddress;
+import java.time.LocalDateTime;
 import javax.crypto.*;
 import java.security.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -92,6 +94,25 @@ public class FileServer extends Server {
 
 			while(running) {
 				sock = serverSock.accept();
+				LocalDateTime now = LocalDateTime.now();
+				String client = sock.getInetAddress().getHostAddress();
+
+				// If the address has already visited, check the map for last time it visited. If not, add it to the map.
+				if(accessMap.keySet().contains(client)) {
+
+					// Compare time of last visited to now
+					LocalDateTime lastConnection = accessMap.get(client);
+					if(now.isAfter(lastConnection.plusMinutes(10))) { // Last connection was longer than ten minutes ago, reset difficulty
+						difficultyMap.replace(client, 0);
+					} else {	// Make puzzle harder
+						difficultyMap.replace(client, difficultyMap.get(client)+1);
+					}
+					accessMap.replace(client, now);	// Update last connection time to now
+
+				} else {	// New Connection
+					accessMap.put(client, now);
+					difficultyMap.put(client, 0);
+				}
 				thread = new FileThread(sock, this);
 				thread.start();
 			}
