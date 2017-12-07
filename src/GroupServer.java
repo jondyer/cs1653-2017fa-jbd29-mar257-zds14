@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.io.*;
 import java.util.*;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import javax.crypto.*;
 import java.security.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -81,11 +82,14 @@ public class GroupServer extends Server {
       String pw2;
 
       while(!match) {
-        System.out.print("Enter a password for this account: ");
+        System.out.print("Password for this account? >> ");
         pw1 = console.next();
-        System.out.print("Please enter the password again to confirm: ");
+        System.out.print("Please enter the password again to confirm >> ");
         pw2 = console.next();
-        if(pw1.equals(pw2)) match = true;
+        if(pw1.length()<8 || pw2.length()<8){
+          match = false;
+          System.out.println("Password must be 8 characters or more. ");
+        } else if(pw1.equals(pw2)) match = true;
       }
 
       //Create a new list, add current user to the ADMIN group. They now own the ADMIN group.
@@ -126,7 +130,26 @@ public class GroupServer extends Server {
 
       while(true) {
         sock = serverSock.accept();
-        thread = new GroupThread(sock, this, 1);
+        LocalDateTime now = LocalDateTime.now();
+        String client = sock.getInetAddress().getHostAddress();
+
+        // If the address has already visited, check the map for last time it visited. If not, add it to the map.
+        if(accessMap.containsKey(client)) {
+
+          // Compare time of last visited to now
+          LocalDateTime lastConnection = accessMap.get(client);
+          if(now.isAfter(lastConnection.plusMinutes(10))) { // Last connection was longer than ten minutes ago, reset difficulty
+            difficultyMap.replace(client, 0);
+          } else {	// Make puzzle harder
+            difficultyMap.replace(client, difficultyMap.get(client)+1);
+          }
+          accessMap.replace(client, now);	// Update last connection time to now
+
+        } else {	// New Connection
+          accessMap.put(client, now);
+          difficultyMap.put(client, 0);
+        }
+        thread = new GroupThread(sock, this, difficultyMap.get(client));
         thread.start();
       }
     }

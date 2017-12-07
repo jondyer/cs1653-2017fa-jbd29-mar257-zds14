@@ -98,7 +98,7 @@ public class FileServer extends Server {
 				String client = sock.getInetAddress().getHostAddress();
 
 				// If the address has already visited, check the map for last time it visited. If not, add it to the map.
-				if(accessMap.keySet().contains(client)) {
+				if(accessMap.containsKey(client)) {
 
 					// Compare time of last visited to now
 					LocalDateTime lastConnection = accessMap.get(client);
