@@ -3,7 +3,7 @@ public class test {
   	//int strength = 1;
   	for(int strength = 1; strength <= 15; strength++) {
   		System.out.println("Strength: " + strength);
-	  	//String s = SymmetricKeyOps.makePuzzle(strength);
+	  	//String s = SymmetricKeyOps.makePuzzle(strength)[1];
 	  	
 	  	String append = "";
 	  	for (int i = 1; i < strength; i++) append += "0";
