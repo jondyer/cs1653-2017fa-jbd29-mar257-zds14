@@ -26,6 +26,7 @@ fi
 
 while read -r line; do
   #statements
-  printf "150.212.31.108\n4444\n150.212.31.108\n8765\n150.212.31.108\n4321\nadmin\n$line" > input;
-  $clientCmd < "$input" &
+  printf "../scripts/attInput" > "../scripts/T9_input";
+  "$line" >> "../scripts/T9_input";
+  $clientCmd < "../scripts/T9_input" &
 done < $passfile

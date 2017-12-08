@@ -3,7 +3,6 @@
 ## useful vars
 jar_name=bcprov-jdk15on-158.jar
 thePath="cs1653-2017fa-jbd29-mar257-zds14"
-attIn="../scripts/attInput"
 myTerm="terminator"
 
 clientCmd="java -cp .:$jar_name RunClientApp"
@@ -23,6 +22,10 @@ if [[ $PWD != *"$thePath"* ]]; then
   echo "In the wrong directory! Make sure the /src folder is in this directory."
   exit
 fi
+
+cp "../scripts/attInput" "../scripts/T10_input"
+echo "aaaaaaaa" >> "../scripts/T10_input"
+attIn="../scripts/T10input"
 
 
 for (( i = 0; i < ct ; i++ )); do
