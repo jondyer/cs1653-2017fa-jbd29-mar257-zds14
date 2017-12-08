@@ -28,5 +28,5 @@ while read -r line; do
   #statements
   printf "../scripts/attInput" > "../scripts/T9_input";
   "$line" >> "../scripts/T9_input";
-  $clientCmd < "../scripts/T9_input" &
+  $clientCmd < "../scripts/T9_input"
 done < $passfile

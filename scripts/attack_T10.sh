@@ -8,7 +8,7 @@ ct=30;
 
 clientCmd="java -cp .:$jar_name RunClientApp"
 
-if [[ $# > 1 ]]; then
+if [[ $# > 0 ]]; then
   #statements
   ct=$1;
 fi
@@ -29,5 +29,5 @@ attIn="../scripts/T10_input"
 
 for (( i = 0; i < ct ; i++ )); do
   #statements
-  $clientCmd < $attIn &
+  $clientCmd < $attIn
 done
