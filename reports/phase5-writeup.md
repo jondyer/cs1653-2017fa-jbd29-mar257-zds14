@@ -30,7 +30,7 @@ We believe that implementing these changes makes it much more difficult for an a
 
 
 ### T9: Online Password Attack ###
-This threat involves the potential for someone to make a brute-force attack on a user's password by attempting to login repeatedly, perhaps with a dictionary of words, as a given user. This was previously possible since our interface simply exits the client app on a mis-entry and allows the user to start another one and keep trying.
+This threat involves the potential for someone to make a brute-force attack on a user's password by attempting to login repeatedly, perhaps with a dictionary of words, as a given user. This was previously possible since our interface simply exits the client app on a mis-entry and allows the user to start another one and keep trying. This is demonstrated in the simple script `attack_T9.sh`.
 
 We address this vulnerability by implementing an exponential backoff system for repeated connection attempts. This is implemented by requiring solution of an increasingly difficult hash puzzle before a connection can continue, with a 10-minute cooldown on difficulty reset. Here are the basic steps:  
 -   Any time a client makes a connection to a server, that client's machine is required to solve a hash inversion puzzle before anything else.  
@@ -54,7 +54,7 @@ This is effective because it forces the client to do work when submitting a conn
 
 
 ## Summary ##
-In summary, we have three new threats that each pose a problem for our GFHS. The first has to do with the potential for an adversary to guess a user's password. This is inhibited not only by the minimum password requirements we enforce, but also by the mechanism we implemented to protect against T9, which restricts the number of connections any IP address can attempt within a short period of time. This makes it impossible to run an online password attacking script like the one given above as `attack_T9.sh`, which previously might have guessed a common dictionary word if used as a password. This leads to our final threat, which is very similar and involves attempting to establish many connections in a short time in order to overwhelm the server and deny service to other legitimate users. It is clear that these three attacks are related, and their solutions work in harmony, without compromising any previously implemented security features.
+In summary, we have three new threats that each pose a problem for our GFHS. The first has to do with the potential for an adversary to guess a user's password. This is inhibited not only by the minimum password requirements we enforce, but also by the mechanism we implemented to protect against T9, which restricts the number of connections any IP address can attempt within a short period of time. This makes it impossible to run an online password attacking script like the one given above, which previously might have guessed a password and compromised an account. This leads to our final threat, which is very similar and involves attempting to establish many connections in a short time in order to overwhelm the server and deny service to other legitimate users. It is clear that these three attacks are related, and their solutions work in harmony, without compromising any previously implemented security features.
 
 
 
