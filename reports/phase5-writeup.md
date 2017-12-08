@@ -18,6 +18,8 @@ The final phase of the project involves self-directed hardening against self-dir
     -   SHA-256 -- For our hash puzzle (described above) we use the SHA-256 hash function, since it is already used elsewhere in this system and is thus most convenient. Additionally, it has all three properties desired of a cryptographically secure hash function (unlike MD5) which makes it ideal for this kind of puzzle.
     -   De la Briandais trie -- We use this structure to store strings at least 8 characters long that fall within the 1 million most common passwords. This structure is flexible and space-efficient, while still being very fast (constructed in less than 1s and with negligible lookup times).
 
+
+
 ## Threat Models ##
 ### T8: Weak Passwords ###
 The lack of restriction for password creation makes it easy for users to be created with basic or simple passwords, giving a low level of protection should an attacker discover a username and attempt to guess the corresponding password. Our system was previously enforcing no rules for password creation, not even for the administrator account. Thus, common and short passwords such as `password` or `1234` are allowed, leaving those accounts vulnerable to a brute force attack on their passwords.
@@ -52,14 +54,12 @@ This is effective because it forces the client to do work when submitting a conn
 
 
 ## Summary ##
+In summary, we have three new threats that each pose a problem for our GFHS. The first has to do with the potential for an adversary to guess a user's password. This is inhibited not only by the minimum password requirements we enforce, but also by the mechanism we implemented to protect against T9, which restricts the number of connections any IP address can attempt within a short period of time. This makes it impossible to run an online password attacking script like the one given above as `attack_T9.sh`, which previously might have guessed a common dictionary word if used as a password. This leads to our final threat, which is very similar and involves attempting to establish many connections in a short time in order to overwhelm the server and deny service to other legitimate users. It is clear that these three attacks are related, and their solutions work in harmony, without compromising any previously implemented security features.
 
 
 
-
-
-
-### Nice bonus features: ###
--   Salting our stored password hashes also prevents offline attacks in the event of a leak/hashdump
+### Nice extra credit features: ###
+-   Salting our stored password hashes also prevents offline attacks in the event of a leak/hashdump, since attackers are forced to freshly hash their guesses alongside the salt for any given user.
 
 #### References ####
 <b id="f1">1:</b> <https://pages.nist.gov/800-63-3/sp800-63b.html#appA> [↩](#a1)

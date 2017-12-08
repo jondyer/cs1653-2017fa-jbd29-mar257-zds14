@@ -3,16 +3,17 @@
 ## useful vars
 jar_name=bcprov-jdk15on-158.jar
 thePath="cs1653-2017fa-jbd29-mar257-zds14"
+attIn="../scripts/attInput"
 myTerm="terminator"
-ct=30;
+passfile="../dlb/rockyou.txt"
 
-clientCmd="java -cp .:$jar_name RunClientApp"
 
-if [[ $# > 0 ]]; then
+if [[ $# > 1 ]]; then
   #statements
-  ct=$1;
+  passfile = $1;
 fi
 
+clientCmd="java -cp .:$jar_name RunClientApp"
 
 cd src/
 cd ../src/
@@ -22,12 +23,10 @@ if [[ $PWD != *"$thePath"* ]]; then
   exit
 fi
 
-cp "../scripts/attInput" "../scripts/T10_input"
-echo "aaaaaaaa" >> "../scripts/T10_input"
-attIn="../scripts/T10_input"
 
-
-for (( i = 0; i < ct ; i++ )); do
+while read -r line; do
   #statements
-  $clientCmd < $attIn
-done
+  printf "../scripts/attInput" > "../scripts/T9_input";
+  "$line" >> "../scripts/T9_input";
+  $clientCmd < "../scripts/T9_input"
+done < $passfile
