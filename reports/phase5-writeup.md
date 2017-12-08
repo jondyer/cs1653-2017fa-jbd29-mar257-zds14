@@ -32,11 +32,13 @@ This threat involves the potential for someone to make a brute-force attack on a
 
 We address this vulnerability by implementing an exponential backoff system for repeated connection attempts. This is implemented by requiring solution of an increasingly difficult hash puzzle before a connection can continue, with a 10-minute cooldown on difficulty reset. Here are the basic steps:  
 -   Any time a client makes a connection to a server, that client's machine is required to solve a hash inversion puzzle before anything else.  
--   At first the difficulty is negligible, so there is only a slight delay. However, the server records that such a connection attempt was made (by that IP) and increments the 'difficulty level' of the puzzle for the next attempt.  
--   Further attempts to connect within the same 10-minute period will continue to increase the difficulty in an exponential fashion.
-This mechanism will prevent attackers from rapidly connecting to the  a dictionary-type attack on a user's password especially combined with the password rule enforcement above.  
+-   At first the difficulty is negligible, so there is only a slight delay. However, the server records that such a connection attempt was made (by that IP) and increments the 'difficulty level' of the puzzle for the next attempt.
+-   Further attempts to connect within a 10-minute period of the previous connection attempt will continue to increase the puzzle difficulty in an exponential fashion.
+-   If an attempt to connect is more than 10 minutes after the last attempt, the difficulty will reset, as mentioned.
 
-We believe exponential backoff will prevent an attacker from compromising as many accounts. T8 forces the attacker to brute force a stronger password and the exponential backoff will greatly limit the number of attempts possible.  
+This mechanism will prevent attackers from rapidly connecting to the server in order to launch a dictionary-type attack on a user's password,  *especially* combined with the password rule enforcement above.  
+
+Exponential backoff will prevent an attacker from compromising as many accounts as was previously possible. T8 forces the attacker to brute force a stronger password and the exponential backoff will greatly limit the number of attempts possible.  
 
 
 ### T10: Login DOS Attack ###
