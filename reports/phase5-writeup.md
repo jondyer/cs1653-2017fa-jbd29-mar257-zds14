@@ -12,7 +12,8 @@ The final phase of the project involves self-directed hardening against self-dir
 
 
 *   Protocols:  
-    -   Hash inversion puzzle -- for T9 and T10, we rely on the difficulty of finding the input that results in a given output hash (combined with a given "salt"). This requires brute-forcing the domain-space of the puzzle; so, if the puzzle has strength 'str' then on average a solution will take 2<sup>str</sup> operations to find.
+    -   Hash inversion puzzle -- for T9 and T10, we rely on the difficulty of finding the input that results in a given output hash (combined with a given "salt"). This requires brute-forcing the domain-space of the puzzle; so, if the puzzle has strength 'str' then on average a solution will take 2<sup>str</sup> operations to find. 
+
 
 *   Tools and Algorithms:  
     -   SHA-256 -- For our hash puzzle (described above) we use the SHA-256 hash function, since it is already used elsewhere in this system and is thus most convenient. Additionally, it has all three properties desired of a cryptographically secure hash function (unlike MD5) which makes it ideal for this kind of puzzle.
@@ -42,7 +43,6 @@ This mechanism will prevent attackers from rapidly connecting to the server in o
 
 Exponential backoff will prevent an attacker from compromising as many accounts as was previously possible. T8 forces the attacker to brute force a stronger password and the exponential backoff will greatly limit the number of attempts possible.  
 
-
 ### T10: Login DOS Attack ###
 This threat comes by way of any malicious party who decides to interrupt the availability of the file-hosting service. Specifically, someone can perform a denial-of-service (DOS) attack by attempting to connect and login with garbage user/password pairs from many different clients at once. As per our attack script `attack_T10.sh` it is simple to write a basic script that performs this function, and our server *did* crash/hang when overloaded in this way.  
 
@@ -51,6 +51,8 @@ This problem can be solved on the server side by requiring a puzzle to be solved
 These goals are accomplished by the **same mechanism described in T9**. That is, the exponential backoff system as implemented above provides the same protection against a DOS attack as it does for an online password attack. On the client side they will have to perform a large number of hash operations and string comparisons after several repeated attempts to connect. However, the server only needs one string comparison to verify a connection. This leverages the inherent **resource disparity** of the hash inversion puzzle.  
 
 This is effective because it forces the client to do work when submitting a connection so that they will effectively DOS themselves before harming the server.  
+
+![Hash Puzzle Solving](./img/puzzle.png)  
 
 
 ## Summary ##

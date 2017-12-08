@@ -1,0 +1,14 @@
+@startuml
+title __T9 & T10: Hash Puzzle__
+actor Client
+participant Server
+
+Client -> Server: Request to connect
+note right: Check when client last connected,\npick appropriate strength
+Server -> Client: h(salt||R) || strength || salt
+note left: Find i where h(salt||i) == h(salt||r)\nand i is in space 2<sup>strength</sup>
+Client -> Server: i
+note left: Check if i == r
+Server -> Client: OK
+
+@enduml
