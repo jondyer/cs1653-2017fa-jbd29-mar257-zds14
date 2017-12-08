@@ -26,5 +26,6 @@ fi
 
 while read -r line; do
   #statements
-  $clientCmd < "150.212.31.108\n4444\n150.212.31.108\n8765\n150.212.31.108\n4321\nadmin\n$line" &
+  printf "150.212.31.108\n4444\n150.212.31.108\n8765\n150.212.31.108\n4321\nadmin\n$line" > input;
+  $clientCmd < "$input" &
 done < $passfile
