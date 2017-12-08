@@ -5,16 +5,15 @@ jar_name=bcprov-jdk15on-158.jar
 thePath="cs1653-2017fa-jbd29-mar257-zds14"
 attIn="../scripts/attInput"
 myTerm="terminator"
+passfile="../dlb/rockyou.txt"
 
-clientCmd="java -cp .:$jar_name RunClientApp"
 
 if [[ $# > 1 ]]; then
   #statements
-  ct = $1;
-else
-  ct = 30;
+  passfile = $1;
 fi
 
+clientCmd="java -cp .:$jar_name RunClientApp"
 
 cd src/
 cd ../src/
@@ -25,7 +24,7 @@ if [[ $PWD != *"$thePath"* ]]; then
 fi
 
 
-for (( i = 0; i < ct ; i++ )); do
+while read -r line; do
   #statements
-  $clientCmd < $attIn &
-done
+  $clientCmd < "\n \n \n \n \n \n $line" &
+done < $passfile
