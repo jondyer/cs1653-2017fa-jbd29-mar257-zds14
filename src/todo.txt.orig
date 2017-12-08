@@ -1,0 +1,22 @@
+/******************************
+ * Global TODO tracking page  *
+ ******************************/
+<<<<<<< HEAD
+TODO: Remove extraneous console output                                                @Everyone
+TODO: Force clients to solve a puzzle before connecting to Trent
+TODO: Force FileServer to solve a puzzle before connecting to Trent
+TODO: Check passwords against common list
+=======
+TODO: Remove extraneous console output                  @Everyone
+>>>>>>> 71a8bbcf1a2cf3786754c210a9fa9f4590c31b3f
+
+
+/*****************************************************
+ * EXTRA CREDIT SECTION                              *
+ * Only do these if all of the above are complete!!! *
+ *****************************************************/
+TODO: FileServer get GS pubkey from Trent on registration (don't send it from client) @Whoever
+TODO: Support selection of multiple groups at once for operation
+TODO: Password reset
+TODO: Timestamp T5
+TODO: Send IP with a nonce and response to eliminate false server registration

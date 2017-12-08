@@ -190,4 +190,51 @@ public class SymmetricKeyOps {
     }
     return hash;
   }
+
+  public static String[] makePuzzle(int strength) {
+    if(strength <= 0) strength = 1;
+    else if (strength > 64) strength = 64;
+
+    String[] ret = new String[3];
+    SecureRandom rand = new SecureRandom();
+    String rNum = Integer.toBinaryString(rand.nextInt((int) (Math.pow(2, strength))));
+    String zeroExtend = "";
+    for (int i = 0; i < (strength - rNum.length()); i++) zeroExtend += "0";
+
+    rNum = Long.toBinaryString(rand.nextLong()) + zeroExtend + rNum;
+    String s = null;
+    try{
+      s = new String(hash(rNum), "UTF-8");
+    } catch(Exception e){
+      System.out.println(e.getStackTrace());
+    }
+    ret[0] = rNum;
+    ret[1] = s;
+    ret[2] = rNum.substring(0, rNum.length() - strength);
+    return ret;
+  }
+
+  public static String solvePuzzle(int strength, String prepend, String puzzle) {
+    Integer rTest;
+    int max = (int) Math.pow(2, strength);
+
+    for(rTest = 0; rTest <= max; rTest++) {
+      String zeroExtend = "";
+      String rNum = Integer.toBinaryString(rTest);
+      for (int i = 0; i < (strength - rNum.length()); i++) zeroExtend += "0";
+      rNum = prepend + zeroExtend + rNum;
+
+      String s = null;
+      try{
+        s = new String(hash(rNum), "UTF-8");
+      } catch(Exception e){
+        System.out.println(e.getStackTrace());
+      }
+
+      if(s.equals(puzzle)) {
+        return rNum;
+      }
+    }
+    return null;
+  }
 }

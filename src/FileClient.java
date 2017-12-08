@@ -311,7 +311,7 @@ public class FileClient extends Client implements FileClientInterface {
 			message.addObject(spec.getIV());
 			message.addObject(SymmetricKeyOps.encrypt(this.signedHash, this.sessionKey, spec));
 
-			message.addObject(SymmetricKeyOps.encrypt(new Integer(hashNum).toString().getBytes(), this.sessionKey, spec));
+			message.addObject(SymmetricKeyOps.encrypt(Integer.valueOf(hashNum).toString().getBytes(), this.sessionKey, spec));
 			spec = SymmetricKeyOps.getGCM();
 			message.addObject(spec.getIV());
 
@@ -367,7 +367,7 @@ public class FileClient extends Client implements FileClientInterface {
 				// Encrypt and send chunk
 				spec = SymmetricKeyOps.getGCM();
 				message.addObject(SymmetricKeyOps.encrypt(buf, sessionKey, spec));
-				message.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), sessionKey, spec));
+				message.addObject(SymmetricKeyOps.encrypt(Integer.valueOf(n).toString().getBytes(), sessionKey, spec));
 				message.addObject(spec.getIV());
 
 				// increment sequence number first

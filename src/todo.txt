@@ -3,13 +3,12 @@
  ******************************/
 TODO: Remove extraneous console output                                                @Everyone
 
-
 /*****************************************************
  * EXTRA CREDIT SECTION                              *
  * Only do these if all of the above are complete!!! *
  *****************************************************/
 TODO: FileServer get GS pubkey from Trent on registration (don't send it from client) @Whoever
 TODO: Support selection of multiple groups at once for operation
-TODO: Extra credit, password reset
-TODO: Extra credit, timestamp T5
+TODO: Password reset
+TODO: Timestamp T5
 TODO: Send IP with a nonce and response to eliminate false server registration

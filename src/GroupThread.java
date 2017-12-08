@@ -29,6 +29,8 @@ public class GroupThread extends Thread {
   private byte[] iv;
   private ArrayList<Object> temp = null;
   private int sequence = 0;
+  private ObjectInputStream input = null;
+  private ObjectOutputStream output = null;
 
   private static final BigInteger g_1024 = new BigInteger(1, Hex.decode("EEAF0AB9ADB38DD69C33F80AFA8FC5E86072618775FF3C0B9EA2314C"
         + "9C256576D674DF7496EA81D3383B4813D692C6E0E0D5D8E250B98BE4"
@@ -39,11 +41,36 @@ public class GroupThread extends Thread {
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
           "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"));
 
-  public GroupThread(Socket _socket, GroupServer _gs) {
+  public GroupThread(Socket _socket, GroupServer _gs, int strength) {
     socket = _socket;
     my_gs = _gs;
+
+    try{
+      input = new ObjectInputStream(socket.getInputStream());
+      output = new ObjectOutputStream(socket.getOutputStream());
+      doPuzzle(strength);
+    } catch(Exception e) {
+        System.err.println("Error: " + e.getMessage());
+        e.printStackTrace(System.err);
+    } 
   }
 
+  private void doPuzzle(int strength) throws Exception{
+    String[] puzzle = SymmetricKeyOps.makePuzzle(strength);
+    
+    Envelope resp = new Envelope("OK");
+    resp.addObject(strength);
+    resp.addObject(puzzle[1]);
+    resp.addObject(puzzle[2]);
+    output.writeObject(resp);
+    Envelope puzzleEnv = (Envelope)input.readObject();
+
+    if(!puzzle[0].equals((String) puzzleEnv.getObjContents().get(0))) {
+      System.out.println("Invalid puzzle solution!");
+      socket.close(); //Close the socket
+      System.exit(1);
+    }
+  }
 
   public void run() {
     boolean proceed = true;
@@ -51,8 +78,6 @@ public class GroupThread extends Thread {
     try {
       //Announces connection and opens object streams
       System.out.println("*** New connection from " + socket.getInetAddress() + ":" + socket.getPort() + "***");
-      final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
-      final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
       byte[] c1 = new byte[12]; // Challenge to be looked at in CHAL
 
       do {

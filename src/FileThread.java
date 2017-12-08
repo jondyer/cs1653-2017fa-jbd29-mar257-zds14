@@ -30,20 +30,45 @@ public class FileThread extends Thread {
 	private PublicKey groupServerPublicKey;
 	ArrayList<Object> temp = null;
 	private int sequence = 0;
+	private ObjectInputStream input = null;
+	private ObjectOutputStream output = null;
 
-
-	public FileThread(Socket _socket, FileServer _fs) {
+	public FileThread(Socket _socket, FileServer _fs, int strength) {
 		this.socket = _socket;
 		this.my_fs = _fs;
 		Security.addProvider(new BouncyCastleProvider());
+
+		try{
+			input = new ObjectInputStream(socket.getInputStream());
+			output = new ObjectOutputStream(socket.getOutputStream());
+			doPuzzle(strength);
+		} catch(Exception e) {
+		    System.err.println("Error: " + e.getMessage());
+		    e.printStackTrace(System.err);
+		}	
+	}
+
+	private void doPuzzle(int strength) throws Exception{
+		String[] puzzle = SymmetricKeyOps.makePuzzle(strength);
+		Envelope resp = new Envelope("OK");
+		resp.addObject(strength);
+		resp.addObject(puzzle[1]);
+		resp.addObject(puzzle[2]);
+		output.writeObject(resp);
+		Envelope puzzleEnv = (Envelope)input.readObject();
+
+		if(!puzzle[0].equals((String) puzzleEnv.getObjContents().get(0))) {
+          System.out.println("Invalid puzzle solution!");
+          socket.close(); //Close the socket
+          System.exit(1);
+        }
 	}
 
 	public void run() {
 		boolean proceed = true;
 		try {
 			System.out.println("*** New connection from " + socket.getInetAddress() + ":" + socket.getPort() + "***");
-			final ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
-			final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+			
 			Envelope response;
 
 			do {
@@ -104,10 +129,7 @@ public class FileThread extends Thread {
 
 						// TODO: Move token verification up here instead of repeating it all over the place
 					}
-				}
-
-				// Handler to list files that this user is allowed to see
-				if(e.getMessage().equals("LFILES")) {
+				} else if(e.getMessage().equals("LFILES")) {
 
 					if (e.getObjContents().size() < 1)
 						response = new Envelope("FAIL-BADCONTENTS");
@@ -150,8 +172,7 @@ public class FileThread extends Thread {
 					this.sequence++;
 					response.setSeq(this.sequence);
 					output.writeObject(response);
-				}
-				if(e.getMessage().equals("UPLOADF")) {
+				} else if(e.getMessage().equals("UPLOADF")) {
 
 					if(e.getObjContents().size() < 3)
 						response = new Envelope("FAIL-BADCONTENTS");
@@ -309,7 +330,7 @@ public class FileThread extends Thread {
 										// Encrypt and send chunk
 										spec = SymmetricKeyOps.getGCM();
 										e.addObject(SymmetricKeyOps.encrypt(buf, this.sessionKey, spec));
-										e.addObject(SymmetricKeyOps.encrypt(new Integer(n).toString().getBytes(), this.sessionKey, spec));
+										e.addObject(SymmetricKeyOps.encrypt(Integer.valueOf(n).toString().getBytes(), this.sessionKey, spec));
 										e.addObject(spec.getIV());
 										// increment sequence number first
 										this.sequence++;
@@ -333,7 +354,7 @@ public class FileThread extends Thread {
 										e = new Envelope("EOF");
 
 										e.addObject(sf.getIV());
-										e.addObject(SymmetricKeyOps.encrypt(new Integer(sf.getHashNum()).toString().getBytes(), this.sessionKey, spec));
+										e.addObject(SymmetricKeyOps.encrypt(Integer.valueOf(sf.getHashNum()).toString().getBytes(), this.sessionKey, spec));
 										// increment sequence number first
 										this.sequence++;
 										e.setSeq(this.sequence);
